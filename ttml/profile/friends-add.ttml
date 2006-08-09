@@ -1,0 +1,93 @@
+[% SET js = [ "/js/form.js" ] %]
+[% INCLUDE includes/header.ttml %]
+[%
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+  IF from_profile;
+    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&search_id=$search_id\">$from_profile</a>");
+  END;
+ELSIF from_profile;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
+ELSE;
+  breadcrumbs.push("<a href=\"/profile/friendsandblocks.pl\">Manage your friends</a>");
+END;
+breadcrumbs.push("Add Friend");
+%]
+
+
+<div id="mainphoto"
+     class="thumbnail-container"
+     style="float:left; clear:left;">
+[% caption = friend_main_photo.caption FILTER html_entity %]
+[% IF !friend_main_photo.checked_date; # Quick and Nasty Kludge!
+     friend_main_photo.tnnc_width = 100;
+     friend_main_photo.tnnc_height = 100;
+   END %]
+  <a [% IF from_profile %]
+     title="[% caption %]"
+     [% ELSE %]
+     href="/profile/view.pl?profile_name=[% friend_profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+     title="Go to [% friend_profile_name %]'s profile."
+     [% END %]
+     class="thumbnail-shadow">
+    <div class="thumbnail-shadow"
+         style="background-image:url('/images/thumbnail-shadow/[% friend_main_photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% friend_main_photo.tnnc_width %]x[% friend_main_photo.tnnc_height %].png');
+                width:[% friend_main_photo.tnnc_width %]px;
+                height:[% friend_main_photo.tnnc_height %]px;
+                position:absolute;
+                top: 50%; margin-top:-[% (friend_main_photo.tnnc_height+15) / 2 %]px;
+                left: 50%; margin-left:-[% (friend_main_photo.tnnc_width+15) / 2 %]px;">
+      <img src="[% friend_main_photo.thumbnail %]"&nc=1"
+           style="width:[% friend_main_photo.tnnc_width %]px;
+                  height:[% friend_main_photo.tnnc_height %]px;"
+           alt="[% caption %]" />
+    </div>
+  </a>
+</div>
+
+
+
+</div>
+
+[% IF existing_friend_link.friend_link_id %]
+  [% IF existing_friend_link.requester_profile_id == core.profile_id %]
+    [% IF (existing_friend_link.status == 'accepted') OR (existing_friend_link.status == 'reciprocal') %]
+      <p><strong>[% friend_profile_name %]</strong> is already a linked friend.</p>
+    [% ELSIF (existing_friend_link.status == 'unread') OR (existing_friend_link.status == 'read') %]
+      <p>You've already sent a request to <strong>[% friend_profile_name %]</strong> to link profiles.
+        If they haven't replied, you could always <a href="/profile/messages/send.pl?mode=compose&profile_id=[% friend_profile_id %][% query_string_params %]">send them a reminder</a>.
+      </p>
+    [% END %]
+  [% ELSIF existing_friend_link.requestee_profile_id == core.profile_id %]
+    <p><strong>[% friend_profile_name %]</strong> has already sent you a request to link profiles.<br />
+      [% IF existing_friend_link.status == 'read' %]
+        Oddly, you've already read it but you haven't replied yet!  Come on now, get with the program.
+      [% ELSIF existing_friend_link.status == 'unread' %]
+        Ooh OOH!  A new unread message too.. How exciting and what a coincidence!  You are made for each other.
+      [% END %]<br />
+      You should be able to find it in <a href="/profile/messages/inbox.pl[% query_string_params.replace('^\&', '?') %]">your inbox</a>.
+    </p>
+  [% END %]
+[% ELSE %]
+  <p>A message will be sent to <strong>[% friend_profile_name %]</strong> for confirmation.</p>
+  <p>You will receive a message when they confirm or deny your request.</p>
+  <p>You can add a personal message if you like:</p>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <p>
+      <input type="hidden" name="mode" value="addfriend" />
+      <input type="hidden" name="send" value="1" />
+      <input type="hidden" name="friend_profile_id" value="[% friend_profile_id %]" />
+      [% IF from_profile %]
+        <input type="hidden" name="from_profile" value="[% from_profile %]" />
+        [% IF search_id %]
+          <input type="hidden" name="search_id" value="[% search_id %]" />
+        [% END %]
+      [% END %]
+      <textarea rows="4" cols="40" name="message" onfocus="focusify(this)" onblur="blurify(this)" class="flat"></textarea>
+    </p>
+    <p><input type="submit" value="Send"/></p>
+  </form>
+[% END %]
+
+[% INCLUDE includes/footer.ttml %]

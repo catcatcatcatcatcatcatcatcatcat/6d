@@ -1,0 +1,88 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% INCLUDE includes/header.ttml %]
+
+
+[% IF prev_action %]
+  [% IF success == 1 %]
+    [% IF prev_action == "send" %]Your message has been sent successfully
+    [% ELSE %]Your previous action was completed successfully
+    [% END %]
+  [% ELSE %]
+    [% IF prev_action == "send" %]Your message could not be sent
+    [% ELSE %]Your previous action could not be completed
+    [% END -%]
+    .<br />
+    Reason:
+    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist
+    [% ELSIF reason == "badprofileid" %]The profile specified does not exist
+    [% ELSIF reason == "noprofileidorname" %]No profile was specified
+    [% ELSIF reason == "noprofile" %]You have not created a profile
+    [% ELSE %]An unknown error occured
+    [% END %]
+    .<br />Please try again.<br /><br />
+  [% END %]
+[% END %]
+
+
+<h2>[% IF tray == "inbox" %]My Inbox
+    [% ELSIF tray == "sent" %]My Sent Messages
+    [% ELSIF tray == "drafts" %]My Drafts[% END %]</h2>
+
+
+[% UNLESS core.profile_id %]
+  <p class="err">You need to
+    <a href="account.pl">create a profile</a>
+    before you can send and receive messages.
+  </p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+<p>&nbsp;</p>
+
+
+
+
+<script type="text/javascript">
+function selectAll() {
+  var form = document.messages;
+  for (x=0; x<form.elements.length; x++) {
+    form.elements[x].checked = true;
+  }
+}
+</script>
+
+<form action="message.pl" name="messages" id="messages" method="POST">
+  
+	<table style="border:none;width:100%;background:url(/images/profile/inboxbackground.png) repeat;padding:4px">
+		<tr>
+			<th style="width:20%">Date</th>
+			<th style="width:55%">Subject</th>
+			<th style="width:20%">[% IF tray == "inbox" %]From
+                            [% ELSIF tray == "sent" %]To
+                            [% ELSIF tray == "drafts" %]To
+                            [% END %]</th>
+			<th style="width:5%;text-align:center">Delete</th>
+		</tr>
+    [% FOREACH message = messages %]
+		<tr[% UNLESS message.read_date %] class="unread"[% END %]>
+			<td>[% sent_date %]</td>
+			<td><a href="/profile/message.pl?mode=read&message_id=[% message.message_id %]">[% message.subject %]</a></td>
+			<td>[% IF tray == "inbox" %]<a href="/[% sender_profile_name %]">[% sender_profile_name %]</a>
+          [% ELSIF tray == "sent" %]<a href="/[% recipient_profile_name %]">[% recipient_profile_name %]</a>
+          [% ELSIF tray == "drafts" %]<a href="/[% recipient_profile_name %]">[% recipient_profile_name %]</a>
+          [% END %]</td>
+			<td class="del"><input type="checkbox" name="[% message.message_id %]" /></td>
+		</tr>
+    [% END %]
+  </table>
+  
+  <ul class="opt" style="float:right;font-size:0.9em">
+    <li class="opt"><a href="#" onClick="selectAll()">Select All</a></li>
+    <li class="opt2"><input type="image" src="images/submit.gif" border="0" alt="Delete Selected"></li>
+  </ul>
+  
+</form>
+
+
+[% INCLUDE includes/footer.ttml %]

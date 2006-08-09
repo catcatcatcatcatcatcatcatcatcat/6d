@@ -1,0 +1,73 @@
+
+
+<form name="loginform" method="post" action="/login.pl">
+  <input type="hidden" name="mode" value="login" />
+  <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
+
+  <fieldset class="exist">
+    <div class="container">
+    <h2>Existing customers <span>Sign in here</span></h2>
+    <p>
+      <label for="profile_name">Username:</label>
+      <input type="text" id="profile_name" tabindex="5" name="profile_name"
+         [% IF profile_name %]value="[% profile_name %]"
+         [%- ELSIF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] />
+    </p>
+    <p>
+      <label for="password">Password: </label>
+      <input type="password" id="password" tabindex="6" name="password"
+         value="[% password %]" />
+    </p>
+    <p>
+      <label for="remember_me">Remember me</label>
+      <input type="checkbox" id="remember_me" name="remember_me"
+             value="1" [% IF remember_me %]checked="checked"[% END %] />
+    </p>
+    <p id="signinButton">
+      <input type="image" alt="Sign in" name="submit" src="/images/login/sign_in_button.gif" />
+    </p>
+    <ul>
+      <li class="o"><a href="/help/forgotten-login-details.pl"
+                       onclick="openWindow(this.href + '?popup=1', 'forgottenLoginDetails', 500, 300, 'yes');return false;"
+                    >Forgotten your username or password?</a></li>
+      <li class="o"><a href="/help/enabling-cookies.html"
+                       onclick="openWindow(this.href + '?popup=1', 'enablingCookies', 700, 500, 'yes');return false;"
+                    >Problems logging in? (cookies FAQ)</a></li>
+    </ul>
+    </div>
+  </fieldset>
+
+<!--
+  <table cellspacing="0" cellpadding="0" style="border:3px dashed #DDD">
+  <tr><td style="height:10px"></td></tr>
+  <tr>
+      <td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:0 10px;">
+  <label for="profile_name">Username:</label>
+  </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:5px 10px;">
+  <input type="text" id="profile_name" tabindex="5" name="profile_name"
+         [% IF profile_name %]value="[% profile_name %]"
+         [%- ELSIF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] /><br />
+  </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:0 10px;">
+  <label for="pasword">Password:</label>
+  </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:5px 10px;">
+  <input type="password" id="password" tabindex="6" name="password"
+         value="[% password %]" />
+  </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:0 10px;">
+  <input type="checkbox" id="remember_me" tabindex="7"
+         name="remember_me" value="1" style="height: 10px; width: 10px; vertical-align:middle;"
+         [% IF core.remember_me %]checked="checked"[% END %] />
+  <label for="remember_me">remember me</label>
+  </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:5px 10px 0 10px;">
+  <input type="submit" id="submit" tabindex="8" name="submit"
+         value="Login" style="float:right; padding-bottom:10px; margin-right:-10px"/>
+  </td></tr>
+  </table>
+  
+
+<p><a href="/help/forgotten-login-details.pl">Forgotten your username or password?</a></p>
+<p><a href="/help/enabling-cookies.html">Problems logging in? (cookies FAQ)</a></p>
+<p><a href="/signup.pl">Not a member? Signup here!</a></p>
+-->
+
+</form>
+

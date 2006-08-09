@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+[%- BLOCK ignore -%]
+<!--  <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">  -->
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+[%- END -%]
+  <head>
+    <title>[% title %]</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="rating" content="General" />
+    <meta name="ROBOTS" content="All" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="keywords" content="faceparty, dating, profiles" />
+    <meta name="description" content="With thousands of members online now, you're sure to find hundreds of like-minded people, meet dozens of new friends and fall victim to the odd one night stand! Our free chat and dating service is the ultimate online entertainment." />
+    <link rel="SHORTCUT ICON" href="/favicon.ico" />
+    <link rel="home" title="Home" href="http://www.livejournal.com/" />
+    <link rel="contents" title="Site Map" href="http://www.livejournal.com/site/" />
+    <link rel="help" title="Technical Support" href="http://www.livejournal.com/support/" />
+    
+    [% IF !js %][% js = [] %][% ELSE %][% js = js.list %][% END %]
+    [% IF !css %][% css = [] %][% ELSE %][% css = css.list %][% END %]
+    
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="/css/profile.css" />
+    <link rel="stylesheet" type="text/css" href="/css/sweetTitles.css" />
+    
+[% UNLESS core.no_nav_links %]
+    
+    <link rel="stylesheet" type="text/css" href="/css/navmenu.css" />
+    
+  [% IF core.emi && (core.emi > 0) %]
+    [% SET onload = onload _ "show(" _ core.emi _ ");" %]
+    [% IF core.esmi && (core.esmi > 0) %]
+      [% SET onload = onload _ "subselect(" _ core.esmi _ ");" %]
+    [% END %]
+  [% END %]
+    
+  [% IF core.open_assistant %]
+    [% SET onload = onload _ "OpenAssistant();" %]
+  [% ELSIF core.close_assistant %]
+    [% SET onload = onload _ "CloseAssistant();" %]
+  [% END %]
+    
+  [% js.push("/js/navmenu.js") %]
+  [% js.push("/js/common.js") %]
+  [% js.push("/js/addEvent.js") %]
+  [% #js.push("/js/sweetTitles.js") %]
+    
+[% END %]
+
+    [% FOREACH stylesheet = css %]
+      <link rel="stylesheet" type="text/css" href="[% stylesheet %]" />
+    [%+ END %]
+    
+    [% js.push("/js/assistant.js") %]
+    [% js.push("/js/cookies.js") %]
+    
+    [%+ IF (js AND (js.size > 0)) OR header_js %]
+    <!-- The script 'defer' attribute provides a hint to the user agent 
+         that the script is not going to generate any document 
+         content (e.g., no "document.write" in javascript) and 
+         thus, the user agent can continue parsing and rendering. -->
+    [% END %]
+    [% FOREACH javascript = js %]
+    <script type="text/javascript" src="[% javascript %]" defer></script>
+    [% END %]
+    [%+ IF header_js %]
+<script type="text/javascript" defer>
+//<!--
+[% INCLUDE header_js %]
+//-->
+</script>
+    [% END %]
+    [%+ IF header_css %]
+<style>
+[% INCLUDE header_css %]
+</style>
+    [% END %]
+  </head>
+
+  <body[% IF onload %] onload="[% onload %]"[% END %]>
+
+
+
+[% UNLESS core.no_nav_links %]
+<div id="Content" onclick="unshow();">
+    <div style='float: right; margin-left: 2em; margin-bottom: 1em;'></div>
+[% END %]
+
+[% IF core.open_assistant %]
+  <!-- this content is added when an onload popup is requested (for assistant) on login
+       but only becomes visible (display:block) if javascript is available and enabled
+       but the javascript can't open the popup! -->
+  <div id="popups_blocked_alert" class="err" style="display:none">
+  <h2 class="err">You appear to have blocked our lovely assistant!</h2>
+  <p>Click here to <a href="/assistant.pl" target="_blank"
+          onclick="OpenAssistant(); return false;" >manually open the assistant</a>
+  this time (this shouldn't be blocked by any intelligent popup blockers).</p>
+  <p>To stop this happening in the future, click here to find out
+  <a href="/help/stop-popup-blockers.html">how to disable popup blockers for certain websites</a>.</p>
+  </div>
+  
+  <!-- if the popup couldn't even attempt to popup due to javascript not being available
+       or enabled then tell the user (the above message won't have been made visible..). -->
+  <noscript>
+    <div class="err">
+      <h2 class="err">You don't appear to have javascript enabled!</h2>
+      <p>This website should work perfectly without it, but if you can
+         turn it on, things will be a lot faster and a lot more fun! :)<br />
+      <p>First of all, click here to <a href="/assistant.pl" target="_blank"
+         onclick="OpenAssistant(); return false;" >manually open the assistant</a>.<br />
+         And learn <a href="/help/enabling-javascript.html">how to enable javascript</a>.
+      </p>
+    </div>
+  </noscript>
+[% END %]
+
+[% IF core.nocookies %]
+  <!-- This only gets set on login if login couldn't create and find the test cookie
+       (user gets sent back to the page they logged in from with nocookies=1 in query string!) -->
+  <div class="err">
+  <h2 class="err">You appear to have a problem with cookies! ( munch, munch =)</h2>
+  <p>Basically, we store a little bit of information on your computer to let us
+  know that you really are who you say you are and to check that you are logged in..&nbsp;
+  Most websites that let you 'log in' use this technology and it really is perfectly
+  normal and <em>totally safe</em>.&nbsp; I think you need to enable cookies, otherwise
+  you and I just won't get along (and you won't be able to use this website properly!).</p>
+  <p>Learn
+  <a href="/help/enabling-cookies.html">how to enable cookies</a>.</p>
+  </div>
+[% END %]
+
+[% IF core.timed_out %]
+  <p class="err">Your last session timed out due to inactivity.<br />
+  It will do this if you don't clicky for 30 mins.<br />
+  The moral of the story?  Get clicky clicky!</p>
+[% END %]
+<!-- Content -->
+
+
+

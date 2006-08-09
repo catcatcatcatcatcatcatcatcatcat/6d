@@ -1,0 +1,37 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% INCLUDE includes/header.ttml %]
+[%
+profile_title = photo.profile_name;
+IF photo.profile_name == core.profile_name;
+  profile_title = 'My Profile';
+END;
+
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$photo.profile_name&search_id=$search_id\">$profile_title</a>");
+  breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=$photo.profile_id&search_id=$search_id\">Photos</a>");
+ELSIF adminmode;
+  breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage My Photos</a>");
+ELSE;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$photo.profile_name\">$profile_title</a>");
+  breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=$photo.profile_id\">Photos</a>");
+END;
+breadcrumbs.push("Full Size Photo");
+%]
+
+
+[% IF error %]
+  <p class="err">[% error %]</p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+<p>This picture has been viewed [% photo.total_visit_count %] times since it was uploaded on [% photo.uploaded %]</p>
+
+<p style="clear:both;margin-left:16px">
+<img src="/profile/photo.pl?id=[% photo.photo_id %]&f=1[% IF adminmode %]&a=1[% END %]"
+     alt="[% photo.caption FILTER html_entity %]" style="margin-top:8px" /></p>
+<p>[% photo.caption FILTER html_entity %]</p>
+
+[% INCLUDE includes/footer.ttml %]

@@ -1,0 +1,404 @@
+[% INCLUDE includes/header.ttml %]
+[%
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+END;
+IF own_profile;
+  breadcrumbs.push('My Profile');
+ELSE;
+  breadcrumbs.push(profile_name);
+END;
+%]
+
+[% IF NOT profile_name %]
+  <p>Please specify a profile to view!</p>
+  [% INCLUDE includes/footer.ttml %][% RETURN %]
+[% ELSIF NOT profile_id %]
+  <p>Sorry, but no profile with nickname <span style="color:red">[% profile_name %]</span> was found.</p>
+  <p><a href="/profile/search.pl">Click here</a> to search for profiles.. Maybe you'll find it! ;)</p>
+  [% INCLUDE includes/footer.ttml %][% RETURN %]
+[% ELSIF deleted_date %]
+  <p>Sorry, but <span style="color:red">[% profile_name %]</span> deleted their profile on [% deleted_date %].</p>
+  <p><a href="/profile/search.pl">Click here</a> to search for profiles.. Maybe you'll find their new profile! ;)</p>
+  [% INCLUDE includes/footer.ttml %][% RETURN %]
+[% END %]
+
+
+
+[% IF own_profile %]
+  <ul class="opt" style="float:right">
+    <li class="opt"><img
+        src="/images/icons/profile/edit_profile.gif"
+        alt="Edit Profile">
+      <a href="/profile/account.pl">Edit Profile</a></li>
+    <li class="opt2" style="font-weight:bold"><img
+        src="/images/icons/friendsandblocks/manage.gif"
+        alt="Manage Friends/Blocks">
+      <a href="/profile/friendsandblocks.pl">Manage Friends/Blocks</a></li>
+  </ul>
+[% ELSIF core.user_id %]
+  <ul class="opt" style="float:right">
+    [% UNLESS block %]
+    <li class="opt"><a [% IF fave %]
+      href="/profile/friendsandblocks.pl?mode=delfave&fave_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Remove Favourite"><img src="/images/icons/friendsandblocks/delete_fave.gif" alt="Remove Favourite"></a></li>
+                       [% ELSE %]
+      href="/profile/friendsandblocks.pl?mode=addfave&fave_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Add Favourite"><img src="/images/icons/friendsandblocks/add_fave.gif" alt="Add Favourite"></a></li>
+                       [% END %]
+    <li class="opt"><a [% IF friend %]
+      href="/profile/friendsandblocks.pl?mode=delfriend&friend_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Remove Friend"><img src="/images/icons/friendsandblocks/delete_friend.gif" alt="Remove Friend"></a></li>
+                       [% ELSE %]
+      href="/profile/friendsandblocks.pl?mode=addfriend&friend_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Add Friend"><img src="/images/icons/friendsandblocks/add_friend.gif" alt="Add Friend"></a></li>
+                       [% END %]
+    <li class="opt"><a
+      href="/profile/message.pl?mode=compose&to=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Send Message"><img src="/images/icons/message/compose_message.gif" alt="Send Message"></a></li>
+    [% END %]
+    <li class="opt2"><a [% IF block %]
+      href="/profile/friendsandblocks.pl?mode=unblock&block_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Unblock"><img src="/images/icons/friendsandblocks/unblock.gif" alt="Unblock"></a></li>
+                       [% ELSE %]
+      href="/profile/friendsandblocks.pl?mode=block&block_profile_name=[% profile_name %]&from_profile=[% profile_name %][% IF search_id %]&search_id=[% search_id %][% END %]"
+      title="Block"><img src="/images/icons/friendsandblocks/block.gif" alt="Block"></a></li>
+                       [% END %]
+  </ul>
+[% END %]
+
+
+<div id="mainphoto"
+     class="thumbnail-info-container"
+     style="float:left; clear:left;">
+  <div class="thumbnail-container">
+    [% IF main_photo.photo_id %]
+[% caption = main_photo.caption FILTER html_entity %]
+[% IF !main_photo.checked_date; # Quick and Nasty Kludge!
+     main_photo.tnnc_width = 100;
+     main_photo.tnnc_height = 100;
+   END %]
+    <a href="/profile/photo-album.pl?profile_id=[% profile_id %][% IF search_id %]&search_id=[% search_id %][% END %]"
+       class="thumbnail-shadow"
+       title="[% caption %] :: Photo Album:[% photo_count %] photos">[% END %]
+      <div class="thumbnail-shadow"
+           style="background-image:url('/images/thumbnail-shadow/[% main_photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% main_photo.tnnc_width %]x[% main_photo.tnnc_height %].png');
+                  width:[% main_photo.tnnc_width %]px;
+                  height:[% main_photo.tnnc_height %]px;
+                  position:absolute;
+                  top: 50%; margin-top:-[% (main_photo.tnnc_height+15) / 2 %]px;
+                  left: 50%; margin-left:-[% (main_photo.tnnc_width+15) / 2 %]px;">
+        <img src="[% main_photo.thumbnail %]&nc=1"
+             style="width:[% main_photo.tnnc_width %]px;
+                    height:[% main_photo.tnnc_height %]px;"
+             alt="[% caption %]" />
+      </div>
+    [% IF main_photo.photo_id %]
+    </a>[% END %]
+  </div>
+  <!--<p style="font-size:0.9em;">[% caption %]</p>-->
+</div>
+
+<h3 style="clear:left;padding-top:32px">About Me</h3>
+<table style="border:none; padding-left:10px; width:100%">
+  <tr>
+    <td class="padb">Age / Sex / Location</td>
+    <td class="pad" colspan="3">[% IF age %][% age %][% ELSE %]Unspecified[% END %]
+                              / [% IF gender %][% gender FILTER ucfirst %][% ELSE %]Unspecified[% END %]
+                              / [% IF nationality %]
+                                  [% IF cityname %][% cityname FILTER ucfirst %], [% END %]
+                                  [% nationality FILTER ucfirst %]
+                                [% ELSE %]Unspecified
+                                [% END %]
+    </td>
+  </tr>
+  <tr>
+    <td class="padb" width="20%">[% UNLESS hide_empty_info && !sexuality %]Sexuality[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !sexuality %]
+                      [% IF sexuality %][% sexuality FILTER ucfirst %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+    <td class="pad2b">[% UNLESS hide_empty_info && !starsign %]Star sign[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !starsign %]
+                      [% IF starsign %][% starsign FILTER ucfirst %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+  </tr>
+ <tr>
+    <td class="padb">[% UNLESS hide_empty_info && !relationship_status %]Relationship status[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !relationship_status %]
+                      [% IF relationship_status %][% relationship_status FILTER ucfirst %]
+                      [% ELSE %]Rather not say
+                      [% END %]
+                    [% END %]
+   </td>
+    <td class="pad2b">[% UNLESS hide_empty_info && !profession %]Profession[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !profession %]
+                      [% IF profession %][% profession FILTER ucfirst FILTER html_entity %]
+                      [% ELSE %]Rather not say
+                      [% END %]
+                    [% END %]
+    </td>
+  </tr>
+  <tr>
+    <td class="padb">[% UNLESS hide_empty_info && !website %]Personal website[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !website %]
+                      [% IF website %]<a href="http://[% website FILTER uri FILTER html %]" target="_blank">[% website FILTER html %]</a>
+                      [% ELSE %]Rather not say
+                      [% END %]
+                    [% END %]
+    </td>
+    <td class="pad2b">[% UNLESS hide_empty_info && !smoker %]Smoker[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !smoker %]
+                      [% IF smoker %][% smoker %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+  </tr>
+  <tr>
+    <td class="padb">[% UNLESS hide_empty_info && !drinker %]Drinker[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !drinker %]
+                      [% IF drinker %][% drinker %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+    <td class="pad2b">[% UNLESS hide_empty_info && !drug_taker %]Drug user[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !drug_taker %]
+                      [% IF drug_taker %][% drug_taker %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+  </tr>
+</table>
+
+
+
+
+[% UNLESS hide_empty_info && !perfect_partner %]
+  <p class="title">Perfect partner</p>
+  <p class="data">[% perfect_partner FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+[% UNLESS hide_empty_info && !interests %]
+  <p class="title">My interests</p>
+  <p class="data">[% interests FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+[% UNLESS hide_empty_info && !happy %]
+  <p class="title">Makes me happy</p>
+  <p class="data">[% happy FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+[% UNLESS hide_empty_info && !sad %]
+  <p class="title">Makes me sad</p>
+  <p class="data">[% sad FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+[% UNLESS hide_empty_info && !bad_habits %]
+  <p class="title">Bad habits</p>
+  <p class="data">[% bad_habits FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+[% UNLESS hide_empty_info && !own_words %]
+  <p class="title">In my own words</p>
+  <p class="data">[% own_words FILTER html_entity FILTER html_line_break %]</p>
+[% END %]
+<h3 style="margin-top:32px">Vital Statistics</h3>
+<table style="border:none;width:100%;padding-left:10px">
+<tr>
+  <td class="padb" width="20%">[% UNLESS hide_empty_info && !ethnic_origin %]Ethnic origin[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !ethnic_origin %]
+                    [% IF ethnic_origin %][% ethnic_origin %][% ELSE %]Rather not say[% END %]
+                  [% END %]
+  </td>
+  <td class="pad2b">[% UNLESS hide_empty_info && !hair %]Hair[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !hair %]
+                    [% IF hair %][% hair FILTER html_entity %][% ELSE %]Rather not say[% END %]
+                  [% END %]
+  </td>
+</tr>
+<tr>
+  <td class="padb">[% UNLESS hide_empty_info && !eye_colour %]Eye colour[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !eye_colour %]
+                    [% IF eye_colour %][% eye_colour %][% ELSE %]Rather not say[% END %]
+                  [% END %]
+  </td>
+  <td class="pad2b">[% UNLESS hide_empty_info && !height_cm %]Height[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !height_cm %]
+                    [% IF !height_cm || (height_cm == 0) %]Rather not say
+                    [% ELSIF height_cm == 1 %]Under 4'0" (121cm)
+                    [% ELSIF height_cm == 255 %]Over 7' (213cm)
+                    [% ELSE %][% height_ft %]'[% height_in %]" ([% height_cm %]cm)
+                    [% END %]
+                  [% END %]
+  </td>
+</tr>
+<tr>
+  <td class="padb">[% UNLESS hide_empty_info && !weight %]Weight[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !weight %]
+                    [% IF weight %][% weight %] [% weight_type %][% ELSE %]Rather not say[% END %]
+                  [% END %]
+  </td>
+  <td class="pad2b">[% UNLESS hide_empty_info && !waist_cm %]
+                      [% IF gender == "male" %]Waist[% ELSIF gender == "female" %]Dress Size[% END %]
+                    [% END %]
+  </td>
+  <td class="pad">
+  [% UNLESS hide_empty_info && !waist_cm %]
+    [% IF gender == "male" %]
+      [% IF !waist_cm || (waist_cm == 0) %]Rather not say
+      [% ELSIF waist_cm == 1 %]Under 28" (70cm)
+      [% ELSIF waist_cm == 255 %]Over 48" (121cm)
+      [% ELSIF waist_cm == 70 %]28" (70cm)
+      [% ELSIF waist_cm == 73 %]29" (73cm)
+      [% ELSE %][% waist_in %]" ([% waist_cm %]cm)
+      [% END %]
+    [% ELSIF gender == "female" %]
+      [% IF !waist_cm || (waist_cm == 0) %]Rather not say
+      [% ELSIF waist_cm == 1 %]Under 6
+      [% ELSIF waist_cm == 255 %]Over 20
+      [% ELSE %][% waist_cm %]
+      [% END %]
+    [% END %]
+  [% END %]
+  </td>
+</tr>
+<tr>
+  <td class="padb">[% UNLESS hide_empty_info && !body_type %]Body type[% END %]</td>
+  <td class="pad">[% UNLESS hide_empty_info && !body_type %]
+                    [% IF body_type %][% body_type %][% ELSE %]Rather not say[% END %]
+                  [% END %]
+  </td>
+  [% IF gender == "male" %]
+    <td class="pad2b">[% UNLESS hide_empty_info && !body_hair %]Body hair[% END %]</td>
+    <td class="pad">[% UNLESS hide_empty_info && !body_hair %]
+                      [% IF body_hair %][% body_hair %][% ELSE %]Rather not say[% END %]
+                    [% END %]
+    </td>
+  [% ELSE %]
+    <td colspan="2"></td>
+  [% END %]
+</tr>
+
+</table>
+<h3 style="margin-top:32px">My favourites</h3>
+<table style="border:none;padding-left:10px;width:100%">
+  [% UNLESS hide_empty_info && !fave_food %]
+  <tr>
+    <td class="padb" width="20%">Food</td>
+    <td class="pad">[% fave_food FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_music %]
+  <tr>
+    <td class="padb" width="20%">Music</td>
+    <td class="pad">[% fave_music FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_tvshow %]
+  <tr>
+    <td class="padb" width="20%">TV Show</td>
+    <td class="pad">[% fave_tvshow FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_author %]
+  <tr>
+    <td class="padb" width="20%">Author</td>
+    <td class="pad">[% fave_author FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_movie %]
+  <tr>
+    <td class="padb" width="20%">Movie</td>
+    <td class="pad">[% fave_movie FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_club_bar %]
+  <tr>
+    <td class="padb" width="20%">Club / Bar</td>
+    <td class="pad">[% fave_club_bar FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_animal %]
+  <tr>
+    <td class="padb" width="20%">Animal</td>
+    <td class="pad">[% fave_animal FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_person %]
+  <tr>
+    <td class="padb" width="20%">Person</td>
+    <td class="pad">[% fave_person FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_food %]
+  <tr>
+    <td class="padb" width="20%">Food</td>
+    <td class="pad">[% fave_food FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_website %]
+  <tr>
+    <td class="padb">Website</td>
+    <td class="pad">
+      <a href="http://[% fave_website FILTER html_entity %]" target="_blank">
+        [% fave_website FILTER html_entity %]</a>
+    </td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_place %]
+  <tr>
+    <td class="padb" width="20%">Place</td>
+    <td class="pad">[% fave_place FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+  [% UNLESS hide_empty_info && !fave_thing %]
+  <tr>
+    <td class="padb" width="20%">Thing</td>
+    <td class="pad">[% fave_thing FILTER html_entity %]</td>
+  </tr>
+  [% END %]
+</table>
+[% UNLESS hide_empty_info && !thought_text %]
+<h3 style="margin-top:32px">Final thought</h3>
+<table style="border:none;padding-left:10px;width:100%">
+  <tr>
+    <td class="padb" width="20%" valign="top">[% thought_type %]</td>
+    <td class="pad" valign="top">[% thought_text FILTER html_entity %]</td>
+  </tr>
+</table>
+[% END %]
+
+<br />
+<br />
+
+[% IF friends && friends.size > 0 %]
+<h3>Linked Friends</h3>
+<a href="/[% random_friend.name %]">
+<img src="[% random_friend.thumbnail %]" style="float:left;width:50px;height:50px"/></a>
+<ul class="opt" style="padding-left:10px">
+  <li class="opt" style="font-weight:bold"><a href="/[% random_friend.name %]">[% random_friend.name %]</a></li>
+  [% FOREACH friend = linked_friends %]
+    [% UNLESS friend.id == random_friend.id %]
+      <li class="opt" style="font-weight:bold"><a href="/[% friend.name %]">[% friend.name %]</a></li>
+    [% END %]
+  [% END %]
+</ul>
+[% END %]
+
+
+[% IF visitors && visitors.size > 0 %]
+<h3 style="clear:left;padding-top:32px">Recent visitors</h3>
+<a href="/[% last_visitor.profile_name %]">
+<img src="[% last_visitor.main_photo.thumbnail %]" style="float:left;width:50px;height:50px"/></a>
+<ul class="opt" style="padding-left:10px">
+  [% FOREACH visitor = visitors %]
+    <li class="opt" style="font-weight:bold"><a href="/[% visitor.profile_name %]">[% visitor.profile_name %]</a></li>
+  [% END %]
+</ul>
+[% END %]
+
+
+<br style="clear:both" />
+<br />
+<p><span style="font-weight:bold;color:[% IF online_now %]green">Online now[% ELSE %]red">Last online: [% last_session_end %][% END %]</span><br />
+Last updated: [% updated %]<br />
+Viewed: [% total_visit_count %] times since it was created on [% created %]<br />
+The user joined on [% joined %]</p>
+<br />
+
+
+[% INCLUDE includes/footer.ttml %]

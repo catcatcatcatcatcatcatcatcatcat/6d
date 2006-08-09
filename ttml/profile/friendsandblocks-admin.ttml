@@ -1,0 +1,250 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% SET js = [ "/js/tipMessage.js" ] %]
+[% INCLUDE includes/header.ttml %]
+[%
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+  IF from_profile;
+    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&search_id=$search_id\">$from_profile</a>");
+  END;
+ELSIF from_profile;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
+END;
+breadcrumbs.push("Manage Friends/Blocks");
+%]
+
+<div id="TipLayer" style="visibility:hidden;position:absolute;z-index:1000;top:-100;"></div>
+
+[% IF prev_action %]
+  [% IF success == 1 %]
+  <span class="msg">
+    [% IF prev_action == "addfriend" %]Your friend link request has been sent successfully
+    [% ELSIF prev_action == "delfriend" %]Your friend link has been deleted successfully
+    [% ELSIF prev_action == "addfave" %]Your favourite link has been added successfully
+    [% ELSIF prev_action == "delfave" %]Your favourite link has been deleted successfully
+    [% ELSIF prev_action == "respond" %]Your friend link request has been processed successfully<br />
+    [% ELSIF prev_action == "block" %]Your block has been added successfully
+    [% ELSIF prev_action == "unblock" %]Your block has been removed successfully
+    [% ELSIF prev_action == "updateprefs" %]Your preferences have been updated successfully
+    [% ELSE %]Your previous action was completed successfully
+    [% END %]
+  [% ELSE %]
+  <span class="err">
+    [% IF prev_action == "addfriend" %]Your friend link request could not be sent
+    [% ELSIF prev_action == "delfriend" %]Your friend link could not be deleted
+    [% ELSIF prev_action == "addfave" %]Your favourite link could not be added
+    [% ELSIF prev_action == "delfave" %]Your favourite link could not be deleted
+    [% ELSIF prev_action == "respond" %]Your friend link request response could not be processed
+    [% ELSIF prev_action == "block" %]Your block could not be added
+    [% ELSIF prev_action == "unblock" %]Your block could not be removed
+    [% ELSE %]Your previous action could not be completed
+    [% END -%]
+    .<br />
+    Reason:
+    [% IF reason == "badprofilename" %]The profile name <strong>[% IF friend_profile_name %][% friend_profile_name %][% ELSIF fave_profile_name %][% fave_profile_name %][% ELSIF block_profile_name %][% block_profile_name %][% END %]</strong> does not exist
+    [% ELSIF reason == "badprofileid" %]The profile specified does not exist
+    [% ELSIF reason == "noprofileidorname" %]No profile was specified
+    [% ELSIF reason == "nofriendlinkfound" %]The profile is not currently linked as your friend
+    [% ELSIF reason == "nopendingfriendlinkfound" %]No pending request could be found from this profile
+    [% ELSIF reason == "linkrequestdeleted" %]The pending request was deleted by
+      the other user since you opened the message (weird, huh?).. I'd talk to him if I were you
+    [% ELSIF reason == "favelinkalreadyexists" %]The profile is already added as a favourite
+    [% ELSIF reason == "blocklinkalreadyexists" %]You already have a block on this profile
+    [% ELSIF reason == "noblocklinkfound" %]This profile is not currently blocked
+    [% ELSIF reason == "noprofile" %]You have not created a profile
+    [% ELSIF reason == "itisyou" %]You cannot create a link to yourself
+    [% ELSIF reason == "friendblocked" %]The profile is blocked - please remove this link first
+    [% ELSIF reason == "faveblocked" %]The profile is blocked - please remove this link first
+    [% ELSIF reason == "blockisfriend" %]The profile is a friend - please remove this link first
+    [% ELSIF reason == "blockisfave" %]The profile is a favourite - please remove this link first
+    [% ELSE %]An unknown error occured
+    [% END %]
+    .<br />Please try again.<br /><br />
+  [% END %]
+  </span>
+[% END %]
+
+
+[% IF prev_action == "respond" %]
+  <span class="msg">
+  [% IF (response == "accept") || (response == "acceptandreciprocate") %]
+    A happy message has been sent to <strong>[% requester_profile_name %]</strong>
+    to inform them of your acceptance! :)<br />
+    [% IF response == "acceptandreciprocate" %]
+      The happy bunny has also been added to your friends!<br />
+    [% ELSE %]
+      Don't you want to
+      <a href="/profile/friendsandblocks.pl?mode=addfriend&friend_profile_id=[% requester_profile_id %]">
+        add them as a friend</a> too?
+    [% END %]
+  [$ ELSIF (response == "reject") || (response == "rejectandblock") %]
+    A sad message has been sent to <strong>[% requester_profile_name %]</strong>
+    to inform them of your rejection. :(<br />
+    [% IF response == "rejectandblock" %]
+      The poor lamb has also been added to your blocked users.<br />
+      You won't see any more messages from them!<br />
+    [% END %]
+  [% END %]
+  </span>
+[% END %]
+
+<h2 style="clear:left;">Manage my Friends and Blocks</h2>
+
+
+[% UNLESS core.profile_id %]
+  <p class="err">You need to
+    <a href="account.pl">create a profile</a>
+    before you can play with your friends, favourites and blocks. :)
+  </p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+<p>&nbsp;</p>
+
+<h3>My Friends</h3>
+[% UNLESS friend_links %]
+  <p>You currently have no friends (aww). You can add a friend by clicking on
+  &quot;Add friend&quot; on their profile page or by entering the profile name below.</p>
+[% ELSE %]
+  <p>Your friends are listed below. Click on their name to view their
+     profile, or on &quot;delete&quot; to unlink your profiles.</p>
+  <ol>
+  [% FOREACH link = friend_links %]
+    <li>
+      <a href="/[% link.profile_name %]" title="[%
+            IF link.status == "unread"
+               %]friend link request sent to [% link.profile_name %]: [% link.requested_date %] (unread)[%
+            ELSIF link.status == "read"
+               %]friend link request read by [% link.profile_name %]: [% link.read_date %][% 
+            ELSIF (link.status == "accepted") OR (link.status == "reciprocal")
+               %]friend [% link.profile_name %] added: [% link.decision_date %][%
+            END %]"
+      onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
+      onMouseOut="htm()"
+      >[% link.profile_name %]</a>
+      <a href="/profile/friendsandblocks.pl?mode=delfriend&friend_profile_id=[% link.profile_id %][% query_string_params %]"
+         title="delete friend [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_friend.gif"
+                                                                 alt="delete friend [% link.profile_name %]"></a>
+    </li>
+    </li>
+  [% END %]
+  </ol>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <input type="hidden" name="mode" value="updateprefs" />
+    <input type="hidden" name="updateparam" value="showfriends" />
+    [% IF from_profile %]
+      <input type="hidden" name="from_profile" value="[% from_profile %]" />
+      [% IF search_id %]
+        <input type="hidden" name="search_id" value="[% search_id %]" />
+      [% END %]
+    [% END %]
+    Show friends on profile: <input type="checkbox" name="showfriends" value="1"[% IF display_prefs.showfriends %] checked="checked" [% END %]
+      onclick="this.form.submit()" /><noscript><input type="submit" value="Update" /></noscript>
+  </form>
+[% END %]
+<p>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <input type="hidden" name="mode" value="addfriend" />
+    [% IF from_profile %]
+      <input type="hidden" name="from_profile" value="[% from_profile %]" />
+      [% IF search_id %]
+        <input type="hidden" name="search_id" value="[% search_id %]" />
+      [% END %]
+    [% END %]
+    <img src="/images/icons/friendsandblocks/add_friend.gif">
+    Add friend: <input type="textbox" name="friend_profile_name" value="[% friend_profile_name %]">
+    <input type="submit" value="Add" />
+  </form>
+</p>
+
+<p>&nbsp;</p>
+
+<h3>My Favourites</h3>
+[% UNLESS fave_links %]
+  <p>You currently have no favourites. You can add a favourites by clicking on
+  &quot;Add favourite&quot; on their profile page or by entering the profile name below.</p>
+[% ELSE %]
+  <p>Your favourites are listed below. Click on their name to view their
+     profile, or on &quot;delete&quot; to delete them from your favourites.</p>
+  <ol>
+  [% FOREACH link = fave_links %]
+    <li>
+      <a href="/[% link.profile_name %]"
+         title="favourite [% link.profile_name %] added: [% link.added_date %]"
+         onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
+         onMouseOut="htm()"
+      >[% link.profile_name %]</a>
+      <a href="/profile/friendsandblocks.pl?mode=delfave&fave_profile_id=[% link.profile_id %][% query_string_params %]"
+         title="delete favourite [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_fave.gif"
+                                                                 alt="delete favourite [% link.profile_name %]"></a>
+    </li>
+  [% END %]
+  </ol>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <input type="hidden" name="mode" value="updateprefs" />
+    <input type="hidden" name="updateparam" value="showfaves" />
+    [% IF from_profile %]
+      <input type="hidden" name="from_profile" value="[% from_profile %]" />
+      [% IF search_id %]
+        <input type="hidden" name="search_id" value="[% search_id %]" />
+      [% END %]
+    [% END %]
+    Show friends on profile: <input type="checkbox" name="showfaves" value="1"[% IF display_prefs.showfaves %] checked="checked" [% END %]
+      onclick="this.form.submit()" /><noscript><input type="submit" value="Update" /></noscript>
+  </form>
+[% END %]
+<p>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <input type="hidden" name="mode" value="addfave" />
+    <img src="/images/icons/friendsandblocks/add_fave.gif">
+    Add favourite: <input type="textbox" name="fave_profile_name" value="[% fave_profile_name %]">
+    <input type="submit" value="Add"/>
+  </form>
+</p>
+
+<p>&nbsp;</p>
+
+<h3>My Blocks</h3>
+[% UNLESS block_links %]
+  <p>You currently have no blocks (aren't you a nice person?).
+  You can add a block by clicking on
+  &quot;Block this person&quot; on their profile page or by entering the profile name below.<br />
+  Don't worry - they won't know you've blocked them, it just stops them from contacting you.
+  If you decide to unblock them at a later stage,
+    you will see all of the messages they sent to you while you had blocked them.</p>
+[% ELSE %]
+  <p>Your blocked profiles are listed below. Click on their name to view their
+     profile, or on &quot;unblock&quot; to unblock their profile.</p>
+  <ol>
+  [% FOREACH block = block_links %]
+    <li>
+      <a href="/[% block.profile_name %]"
+         title="[% block.profile_name %] blocked: [% block.blocked_date %]"
+         onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
+         onMouseOut="htm()"
+      >[% block.profile_name %]</a>
+      <a href="/profile/friendsandblocks.pl?mode=unblock&block_profile_id=[% block.profile_id %][% query_string_params %]"
+         title="unblock [% block.profile_name %]"><img src="/images/icons/friendsandblocks/unblock.gif"
+                                                                 alt="unblock [% link.profile_name %]"></a>
+    </li>
+  [% END %]
+  </ol>
+[% END %]
+<p>
+  <form action="/profile/friendsandblocks.pl" method="post">
+    <input type="hidden" name="mode" value="block" />
+    [% IF from_profile %]
+      <input type="hidden" name="from_profile" value="[% from_profile %]" />
+      [% IF search_id %]
+        <input type="hidden" name="search_id" value="[% search_id %]" />
+      [% END %]
+    [% END %]
+    <img src="/images/icons/friendsandblocks/block.gif">
+    Add block: <input type="textbox" name="block_profile_name" value="[% block_profile_name %]">
+    <input type="submit" value="Add"/>
+  </form>
+</p>
+
+[% INCLUDE includes/footer.ttml %]

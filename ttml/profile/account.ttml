@@ -1,0 +1,424 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% SET js = [ "/js/form.js" ] %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('My Account') %]
+
+<h2 class="smaller" style="padding-top:0">My Profile</h2>
+
+[% IF core.profile_info.deleted_date %]
+<p class="err">
+You deleted your profile on [% core.profile_info.deleted_date %].<br />
+If you want to restore your profile, you may do some stuff that is not written yet.<br />
+For a start you can't yet delete it in the first place and second of all, do we let
+you restore it (so you then realise we never delete it and might try to hide away by
+deleting it every now and then) or do we get them to create a new profile (but then
+we could have people messing around and creating loads!  Put a time-limit on it and warn
+them of this when they press the delete button?  They might just sign up again..) Hmm!
+</p>
+[% ELSIF core.profile_id %]
+<p style="clear:both">Your profile can be found at
+<a href="/profile/view.pl?profile_name=[% profile_name %]">
+http://www.website.com/[% profile_name %]</a><br/>
+Use the links above to upload/manage your photos and change your account details.
+</p>
+[% ELSE %]
+<p style="clear:both">Create your profile, [% profile_name %].</p>
+<p style="clear:both">Please enter your details below to activate your profile.</p>
+<p style="font-size:1.1em">Remember to upload a photo of yourself when you're done!</p>
+[% END %]
+
+[% IF not_posted %]
+<h2>Request method was not POST</h2>
+<p class="err">You must use the form normally -
+    sorry, this is just for security reasons..</p>
+[% ELSIF errors.size && errors.size > 0 %]
+<p style="color:red;font-weight:bold">[% errors.size %]
+  small problem[% IF errors.size && errors.size > 1 %]s[% END %]
+  occurred while processing your profile:
+</p>
+<ul>
+[% FOREACH field = errors.keys %]
+<li style="border:none;font-weight:bold">
+  [% param_info.$field.title %] &nbsp; 
+  <span style="color:red;font-weight:normal">[% errors.$field %]</span>
+</li>
+[%+ END %]
+</ul>
+</p>
+<p style="color:red;font-weight:bold">Everything you need to fix is highlighted below in red:</p>
+[% ELSIF msg %]
+<h2>[% msg %]</h2>
+[%+ END %]
+
+<form method="post" action="/profile/account.pl" name="profileform">
+
+<input type="hidden" name="submitting" id="submitting" value="1" />
+
+[% IF core.profile_id %]
+<input type="hidden" name="profile_id" id="profile_id" value="[% core.profile_id %]">
+[% END %]
+
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">About Me</h3>
+
+<table style="border:none;width:100%">
+  <tr>
+    <td class="pad[% IF errors.starsign_id %]-error[% END %]">
+      <label for="starsign_id">Starsign</label>
+    </td>
+    <td>
+      <select name="starsign_id" id="starsign_id">
+        [% FOREACH s = starsigns +%]
+        <option value="[% s.value %]" [% IF s.value == starsign_id %] selected="selected"[% END %]>
+          [% s.name %]
+        </option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.relationship_status_id %]-error[% END %]">
+      <label for="relationship_status_id">Relationship status</label>
+    </td>
+    <td class="pad[% IF errors.relationship_status_id %]-error[% END %]">
+      <select name="relationship_status_id" id="relationship_status_id">
+        [% FOREACH r = relationship_statuses +%]
+        <option value="[% r.value %]" [% IF r.value == relationship_status_id %] selected="selected"[% END %]>[% r.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad2[% IF errors.profession %]-error[% END %]">
+      <label for="profession">Profession</label>
+    </td>
+    <td class="pad[% IF errors.profession %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="profession" id="profession" size="30" maxlength="50" value="[% profession FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.website %]-error[% END %]">
+      <label for="website">Personal website</label>
+    </td>
+    <td class="pad[% IF errors.website %]-error[% END %]">
+      http://
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !website %]onclick="this.value=''; this.onclick=null" [% END %]class="flat" name="website" id="website" size="30" maxlength="50" value="[% IF website %][% website FILTER html_entity %][% ELSE %]www.THIS-website-name.com[% END %]" />
+    </td>
+    <td class="pad2[% IF errors.smoker_id %]-error[% END %]">
+      <label for="smoker_id">Smoker</label>
+    </td>
+    <td class="pad[% IF errors.smoker_id %]-error[% END %]">
+      <select name="smoker_id" id="smoker_id">
+        [% FOREACH s = smokers +%]
+        <option value="[% s.value %]" [% IF s.value == smoker_id %] selected="selected"[% END %]>[% s.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.drinker_id %]-error[% END %]">
+      <label for="drinker_id">Drinker</label>
+    </td>
+    <td class="pad[% IF errors.drinker_id %]-error[% END %]">
+      <select name="drinker_id" id="drinker_id">
+        [% FOREACH s = drinkers +%]
+        <option value="[% s.value %]" [% IF s.value == smoker_id %] selected="selected"[% END %]>[% s.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad2[% IF errors.drug_user_id %]-error[% END %]">
+      <label for="drug_user_id">Drug user</label>
+    </td>
+    <td class="pad[% IF errors.drug_user_id %]-error[% END %]">
+      <select name="drug_user_id" id="drug_user_id">
+        [% FOREACH d = drug_users +%]
+        <option value="[% d.value %]" [% IF d.value == drug_user_id %] selected="selected"[% END %]>[% d.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.perfect_partner %]-error[% END %]">
+      <label for="perfect_partner">Perfect partner</label>
+    </td>
+    <td class="pad[% IF errors.perfect_partner %]-error[% END %]">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="perfect_partner" id="perfect_partner" cols="25" rows="4">[% perfect_partner FILTER html_entity %]</textarea>
+    </td>
+    <td class="pad2[% IF errors.interests %]-error[% END %]">
+      <label for="interests">My interests</label>
+    </td>
+    <td class="pad[% IF errors.interests %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="interests" id="interests" size="30" maxlength="65535" value="[% interests FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.happy %]-error[% END %]">
+      <label for="happy">Makes me happy</label>
+    </td>
+    <td class="pad[% IF errors.happy %]-error[% END %]">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="happy" id="happy" cols="25" rows="4">[% happy FILTER html_entity %]</textarea>
+    </td>
+    <td class="pad2[% IF errors.sad %]-error[% END %]">
+      <label for="sad">Makes me sad</label>
+    </td>
+    <td class="pad[% IF errors.sad %]-error[% END %]">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="sad" id="sad" cols="25" rows="4">[% sad FILTER html_entity %]</textarea>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.bad_habits %]-error[% END %]">
+      <label for="bad_habits">Bad habits</label>
+    </td>
+    <td class="pad[% IF errors.bad_habits %]-error[% END %]">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="bad_habits" id="bad_habits" cols="25" rows="4">[% bad_habits FILTER html_entity %]</textarea>
+    </td>
+    <td class="pad2[% IF errors.own_words %]-error[% END %]">
+      <label for="own_words">In my own words</label>
+    </td>
+    <td class="pad[% IF errors.own_words %]-error[% END %]">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="own_words" id="own_words" cols="25" rows="4">[% own_words FILTER html_entity %]</textarea>
+    </td>
+  </tr>
+</table>
+  
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Vital Statistics</h3>
+
+<table style="border:none;width:100%">
+  <tr>
+    <td class="pad20[% IF errors.ethnic_origin_id %]-error[% END %]">
+      <label for="ethnic_origin_id">Ethnic origin</label>
+    </td>
+    <td class="pad[% IF errors.ethnic_origin_id %]-error[% END %]">
+      <select name="ethnic_origin_id" id="ethnic_origin_id">
+        [% FOREACH e = ethnic_origins +%]
+        <option value="[% e.value %]" [% IF e.value == ethnic_origin_id %] selected="selected"[% END %]>[% e.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad220[% IF errors.hair %]-error[% END %]">
+      <label for="hair">Hair</label>
+    </td>
+    <td class="pad[% IF errors.hair %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="hair" id="hair" size="30" maxlength="50" value="[% hair FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.eye_colour_id %]-error[% END %]">
+      <label for="eye_colour_id">Eye colour</label>
+    </td>
+    <td class="pad[% IF errors.eye_colour_id %]-error[% END %]">
+      <select name="eye_colour_id" id="eye_colour_id">
+        [% FOREACH e = eye_colours +%]
+        <option value="[% e.value %]" [% IF e.value == eye_colour_id %] selected="selected"[% END %]>[% e.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad2[% IF errors.height %]-error[% END %]">
+      <label for="height">Height</label>
+    </td>
+    <td class="pad[% IF errors.height %]-error[% END %]">
+      <select name="height" id="height">
+        [% FOREACH h = heights +%]
+        <option value="[% h.value %]" [% IF h.value == height %] selected="selected"[% END %]>[% h.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.weight %]-error[% END %]">
+      <label for="weight">Weight</label>
+    </td>
+    <td class="pad[% IF errors.weight %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="weight" id="weight" size="30" maxlength="100" value="[% IF weight %][% weight %][% END %]" />
+      &nbsp;&nbsp;
+      <select name="weight_type" id="weight_type" onchange="document.profileform.weight.focus()">
+        [% FOREACH w = weight_types +%]
+        <option value="[% w.value %]" [% IF w.value == weight_type %] selected="selected"[% END %]>[% w.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad2[% IF errors.waist %]-error[% END %]">
+      <label for="waist">[% IF gender == "male" %]Waist[% ELSIF gender == "female" %]Dress Size[% END %]</label>
+    </td>
+    <td class="pad[% IF errors.waist %]-error[% END %]">
+      <select name="waist" id="waist">
+        [% FOREACH w = waists +%]
+        <option value="[% w.value %]" [% IF w.value == waist %] selected="selected"[% END %]>[% w.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.body_type %]-error[% END %]">
+      <label for="body_type">Body type</label>
+    </td>
+    <td class="pad[% IF errors.body_type %]-error[% END %]">
+      <select name="body_type" id="body_type">
+        [% FOREACH b = body_types +%]
+        <option value="[% b.value %]" [% IF b.value == body_type %] selected="selected"[% END %]>[% b.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    [% IF gender == "female" %]
+    <td><input type="hidden" name="body_hair" value="1" /></td>
+    <td>&nbsp;</td>
+    [% ELSIF gender == "male" %]
+    <td class="pad2[% IF errors.body_hair %]-error[% END %]">
+      <label for="body_hair">Body hair</label>
+    </td>
+    <td class="pad[% IF errors.body_hair %]-error[% END %]">
+      <select name="body_hair" id="body_hair">
+        [% FOREACH b = body_hairs +%]
+        <option value="[% b.value %]" [% IF b.value == body_hair %] selected="selected"[% END %]>[% b.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    [% END %]
+  </tr>
+</table>
+
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">My favourites</h3>
+
+<table style="border:none;width:100%">
+  <tr>
+    <td class="pad20[% IF errors.fave_food %]-error[% END %]">
+      <label for="fave_food">Food</label>
+    </td>
+    <td class="pad[% IF errors.fave_food %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_food" id="fave_food" size="30" maxlength="100" value="[% fave_food FILTER html_entity %]" />
+    </td>
+    <td class="pad220[% IF errors.fave_music %]-error[% END %]">
+      <label for="fave_music">Music</label>
+    </td>
+    <td class="pad[% IF errors.fave_music %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_music" id="fave_music" size="30" maxlength="100" value="[% fave_music FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.fave_tvshow %]-error[% END %]">
+      <label for="fave_tvshow">TV Show</label>
+    </td>
+    <td class="pad[% IF errors.fave_tvshow %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_tvshow" id="fave_tvshow" size="30" maxlength="100" value="[% fave_tvshow FILTER html_entity %]" />
+    </td>
+    <td class="pad220[% IF errors.fave_author %]-error[% END %]">
+      <label for="fave_author">Author</label>
+    </td>
+    <td class="pad[% IF errors.fave_author %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_author" id="fave_author" size="30" maxlength="100" value="[% fave_author FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.fave_movie %]-error[% END %]">
+      <label for="fave_movie">Movie</label>
+    </td>
+    <td class="pad[% IF errors.fave_movie %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_movie" id="fave_movie" size="30" maxlength="100" value="[% fave_movie FILTER html_entity %]" />
+    </td>
+    <td class="pad220[% IF errors.fave_club_bar %]-error[% END %]">
+      <label for="fave_club_bar">Club / Bar</label>
+    </td>
+    <td class="pad[% IF errors.fave_club_bar %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_club_bar" id="fave_club_bar" size="30" maxlength="100" value="[% fave_club_bar FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.fave_animal %]-error[% END %]">
+      <label for="fave_animal">Animal</label>
+    </td>
+    <td class="pad[% IF errors.fave_animal %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_animal" id="fave_animal" size="30" maxlength="100" value="[% fave_animal FILTER html_entity %]" />
+    </td>
+    <td class="pad220[% IF errors.fave_person %]-error[% END %]">
+      <label for="fave_person">Person</label>
+    </td>
+    <td class="pad[% IF errors.fave_person %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_person" id="fave_person" size="30" maxlength="100" value="[% fave_person FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.fave_website %]-error[% END %]">
+      <label for="fave_website">Website</label>
+    </td>
+    <td class="pad[% IF errors.fave_website %]-error[% END %]">
+      http://
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !fave_website %]onclick="this.value=''; this.onclick=null" [% END %]class="flat" name="fave_website" id="fave_website" size="30" maxlength="100" value="[% IF fave_website %][% fave_website FILTER html_entity %][% ELSE %]www.THIS-website-name.com[% END %]" />
+    </td>
+    <td class="pad220[% IF errors.fave_place %]-error[% END %]">
+      <label for="fave_place">Place</label>
+    </td>
+    <td class="pad[% IF errors.fave_place %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_place" id="fave_place" size="30" maxlength="100" value="[% fave_place FILTER html_entity %]" />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad20[% IF errors.fave_thing %]-error[% END %]">
+      <label for="fave_thing">Thing</label>
+    </td>
+    <td class="pad[% IF errors.fave_thing %]-error[% END %]">
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_thing" id="fave_thing" size="30" maxlength="100" value="[% fave_thing FILTER html_entity %]" />
+    </td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Final thought</h3>
+  
+<table style="border:none">
+  <tr>
+    <td class="pad[% IF errors.thought_type_id %]-error[% END %]">
+      <select name="thought_type_id" id="thought_type_id"
+              onchange="document.profileform.thought_text.focus()">
+        [% FOREACH t = thought_types +%]
+        <option value="[% t.value %]" [% IF t.value == thought_type_id %]
+                selected="selected"[% END %]>[% t.name %]</option>
+        [% END %]
+      </select>
+    </td>
+    <td class="pad2[% IF errors.thought_type_id %]-error[% END %]" colspan="3">
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="thought_text" id="thought_text" cols="25" rows="4">[% thought_text FILTER html_entity %]</textarea>
+    </td>
+  </tr>
+</table>
+
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Email alerts</h3>
+
+<table style="border:none">
+  <tr>
+    <td class="pad[% IF errors.email_alert %]-error[% END %]">
+      <label for="email_alert">
+        If you'd like us to email you when somebody sends you a message, tick this box.
+      </label>
+    </td>
+    <td class="pad2[% IF errors.email_alert %]-error[% END %]">
+      <input type="checkbox" name="email_alert" id="email_alert" value="1"[% IF email_alert == 1 %] checked="checked"[% END %]>
+    </td>
+  </tr>
+</table>
+
+<p style="margin-top:32px;margin-bottom:32px">
+  
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Hide empty info</h3>
+
+<table style="border:none">
+  <tr>
+    <td class="pad[% IF errors.hide_empty_info %]-error[% END %]">
+      <label for="hide_empty_info">
+        Hide profile information where you have selected "Rather not say"
+        or information which you have left blank.
+      </label>
+    </td>
+    <td class="pad2[% IF errors.hide_empty_info %]-error[% END %]">
+      <input type="checkbox" name="hide_empty_info" id="hide_empty_info" value="1"[% IF hide_empty_info == 1 %] checked="checked"[% END %]>
+    </td>
+  </tr>
+</table>
+
+<p style="margin-top:32px;margin-bottom:32px">
+  <input type="submit" name="submit" value="[% IF core.profile_id %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px">
+</p>
+
+</form>
+
+
+
+    
+[% INCLUDE includes/footer.ttml %]

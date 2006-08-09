@@ -1,0 +1,64 @@
+[% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Forgotten Login Details') %]
+
+
+<h2>Retrieve login details:</h2>
+
+[% IF not_posted %]
+<h2>Request method was not POST</h2>
+<p class="err">You must use the form normally -
+    sorry, this is just for security reasons..</p>
+[% ELSIF sent == 1 %]
+<p class="err">Login details have been sent to
+  '<strong><em>[% IF profile_name %][% profile_name %][% ELSIF email %][% email %][% END %]</em></strong>'.
+</p>
+[% ELSIF sent == 2 %]
+<p class="err">The [% IF profile_name %]profile name '<strong><em>[% profile_name %]</em></strong>'
+                   [% ELSIF email %]email '<strong><em>[% email %]</em></strong>'
+									 [% END %] is not registered with us.</p>
+[% END %]
+
+<table>
+  <tr>
+    <td>
+      <form method="post" action="/help/forgotten-login-details.pl">
+      <table>
+        <tr>
+          <td>email</td>
+          <td>
+            <input type="text" name="email" maxlength="50" value="[% email %]" />
+          </td>
+        </tr>
+        <tr>
+          <td align="center" colspan="2">
+					  [% IF popup == 1 %]<input type="hidden" name="popup" value="1" />[% END %]
+            <input type="submit" name="submitted" value="Go!" />
+          </td>
+        </tr>
+        </table>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="/help/forgotten-login-details.pl">
+        <table>
+	  <tr>
+	    <td>profile_name</td>
+	    <td>
+	      <input type="text" name="profile_name" maxlength="20" value="[% profile_name %]" />
+	    </td>
+	  </tr>
+	  <tr>
+	    <td align="center" colspan="2">
+			  [% IF popup == 1 %]<input type="hidden" name="popup" value="1" />[% END %]
+	      <input type="submit" value="Go!" />
+	    </td>
+	  </tr>
+        </table>
+        </form>
+      </td>
+    </tr>
+</table>
+
+
+[% INCLUDE includes/footer.ttml %]

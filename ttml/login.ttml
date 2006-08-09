@@ -1,0 +1,37 @@
+[% css = ['/css/login_form.css'] %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Login') %]
+
+[% IF not_posted %]
+<h2>Login request method was not POST</h2>
+<p class="err">You must use the login box to login -
+  sorry, this is just for security reasons..</p>
+[% ELSIF invalid_login %]
+<h2>Invalid login information</h2>
+<p class="err">
+  [% IF no_username %]
+Please enter your username.
+  [% ELSIF no_password %]
+Please enter your password.
+  [% ELSE %]
+Incorrect username or password.
+  [% END %]
+</p>
+[% ELSIF redirected %]
+<p class="err">You must be logged in to view that page.<br />
+  Log in below or sign up if you are not already a member
+  and we'll take you right back to the page you were asking for..
+</p>
+[% END %]
+
+
+<div id="signin">
+[% INCLUDE 'includes/login-box.ttml' %]
+[% INCLUDE 'includes/registration-box.ttml' %]
+  <p style="margin-top:30px;text-align:center;font-weight:bold;">
+	  If you are having problems, please email
+    <a href="mailto:support@rustypea.com?subject=login&body=[% FILTER uri %]Please specify specific details of the problem here, being as detailed as possible:[% END %]">support@rustypea.com</a>
+    with specific details of your problem.
+	</p>
+</div>
+[% INCLUDE includes/footer.ttml %]

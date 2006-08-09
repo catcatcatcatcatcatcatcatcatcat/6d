@@ -1,0 +1,74 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% SET js = [ "/js/png_bg_ie_fix.js" ] %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push("Manage My Photos"); %]
+
+[% # All options on one page (pic with caption below)
+   # Buttons for update caption, delete photo, set as main photo
+   # is having the caption in a textbox ugly? yes :) %]
+
+
+<h2 class="smaller" style="padding-top:0">My Photos</h2>
+
+
+[% IF prev_action %]
+  [% IF success == 1 %]
+    Your
+    [% IF prev_action == "setmainphoto" %]main photo was successfully changed
+    [% ELSIF prev_action == "delete" %]photo was successfully deleted
+    [% ELSIF prev_action == "editcaption" %]photo caption was successfully updated
+    [% ELSE %]previous action was completed successfully
+    [% END %]
+  [% ELSE %]
+    Your
+    [% IF prev_action == "setmainphoto" %]main photo could not be changed
+    [% ELSIF prev_action == "delete" %]photo could not be deleted
+    [% ELSIF prev_action == "editcaption" %]photo caption could not be updated
+    [% ELSIF prev_action == "list" %]photos cannot be displayed
+    [% ELSE %]previous action could not be completed
+    [% END %]
+    <br />
+    Reason:
+    [% IF reason == "nophotoid" %]No photo was specified
+    [% ELSIF reason == "mismatch" %]The photo specified does not belong to you
+    [% ELSIF reason == "badphotoid" %]The photo specified does not exist
+    [% ELSIF reason == "noprofile" %]You have not created a profile
+    [% ELSE %]An unknown error occured
+    [% END %]
+    <br />Please try again.<br /><br />
+  [% END %]
+[% END %]
+
+
+[% UNLESS core.profile_id %]
+  <p class="err">You need to
+    <a href="account.pl">create a profile</a>
+    before you can play with your photos.
+  </p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+[% UNLESS updated %]
+  <p style="clear:both">You have not yet activated your profile. Please do so by
+  <a href="account.pl">entering your details here</a>.</p>
+  [% RETURN %]
+[% END %]
+
+
+<p style="clear:both;margin-bottom:32px">
+[% IF main_photo_id && main_photo_id > 0 %]
+Your main photo is shown below with a pink border. This is
+the photo that appears at the top of your profile, and is the one people will see when you
+appear in a search listing. To set another photo as your main one, click on it. You can still
+<a href="/profile/photo-upload.pl">upload more photos</a>!
+[% ELSE %]
+You have not yet uploaded any photos. <a href="/profile/photo-upload.pl">Upload some here!</a>
+[% END %]
+</p>
+
+[% SET photo_album_mode = "admin";
+   INCLUDE "profile/includes/photos-block.ttml" %]
+
+
+[% INCLUDE includes/footer.ttml %]

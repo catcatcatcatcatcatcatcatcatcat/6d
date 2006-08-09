@@ -1,0 +1,217 @@
+[% SET header_js = 1; BLOCK header_js %]
+if (document.all) { self.status = 'Press CTRL + D to bookmark this page'; };
+var showNothing = function () { show(0) };
+if (window.attachEvent)
+    window.attachEvent("onload", showNothing);
+if (window.addEventListener)
+    window.addEventListener("load", showNothing, false);
+[% END %]
+
+[% SET header_css = 1; BLOCK header_css %]
+#Content {
+    margin: 120px auto 0px auto;
+    width: 740px;
+}
+* html div#Content { width: 740px; }
+a.color_dark:link {
+    color: #036;
+    background-color: transparent;
+}
+a.color_dark:visited {
+    color: #036;
+    background-color: transparent;
+}
+a.color_dark:hover {
+    color: #69c;
+    background-color: transparent;
+}
+.smalltext {
+    font-size: smaller;
+}
+.bullets {
+    margin: 5px 0px 5px 0px;
+}
+.bullet_text {
+    white-space: nowrap;
+}
+table .stats-meter {
+    width: 130px;
+    border: 1px solid #cbcbcb;
+    border-collapse: collapse;
+}
+
+.stats-meter td {
+    background: url(/images/stats_back.gif) repeat-x bottom;
+    border: 1px solid #cbcbcb;
+    border-collapse: collapse;
+    padding: 0.1em 0.2em 0em 0.2em;
+    font-weight: bold;
+}
+
+.news .subject {
+    color: #036;
+    font-weight: bold;
+}
+.news .date {
+    color: #909090;
+    font-weight: bold;
+}
+
+.sub_head {
+    color: #036;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.link_span {
+    padding: 5px 0px 5px 0px;
+    text-decoration: underline;
+}
+
+.mousearea {
+    text-decoration: none;
+}
+[% END %]
+
+[% INCLUDE includes/header.ttml %]
+
+
+[% IF nocookies %]
+  <div class="error">
+  <h2 class="err">You appear to have a problem with cookies! ( munch, munch =)</h2>
+  <p>Basically, we store a little bit of information on your computer to let us
+  know that you really are who you say you are and to check that you are logged in..&nbsp;
+  Most websites that let you 'log in' use this technology and it really is perfectly
+  normal and <em>totally safe</em>.&nbsp; I think you need to enable cookies, otherwise
+  you and I just won't get along (and you won't be able to use this website properly!).</p>
+  <p>Learn
+  <a href="/help/enabling-cookies.html">how to enable cookies</a>.</p>
+  </div>
+[% END %]
+
+[% IF core.user_id %]
+  [% UNLESS core.email_validated %]
+    <p>Your account has not yet been activated  You are restreeected!
+    To request another activation email, 
+    <a href="/help/resend-activation.pl">click here</a>.</p>
+  [% END %]
+  <noscript>
+    <div class="error">
+      <h2 class="err">You don't appear to have javascript enabled!</h2>
+      <p>This website should work perfectly without it, but if you can
+         turn it on, things will be a lot faster and a lot more fun! :)<br />
+         Learn <a href="/help/enabling-javascript.html">how to enable javascript</a>.
+      </p>
+    </div>
+  </noscript>
+  
+  <p>You have logged in [% user_stats.num_logins.chunk(-3).join(',') %] times,
+     spending
+     [% IF user_stats.time_online.years %][% user_stats.time_online.years %] year[% IF user_stats.time_online.years > 1 %]s[% END %], [% END %]
+     [% IF user_stats.time_online.months %][% user_stats.time_online.months %] month[% IF user_stats.time_online.months > 1 %]s[% END %],
+     [% ELSIF user_stats.time_online.weeks %][% user_stats.time_online.weeks %] week[% IF user_stats.time_online.weeks > 1 %]s[% END %], [% END %]
+     [% IF user_stats.time_online.days %][% user_stats.time_online.days %] day[% IF user_stats.time_online.days > 1 %]s[% END %], [% END %]
+     [% IF user_stats.time_online.hours %][% user_stats.time_online.hours %] hour[% IF user_stats.time_online.hours > 1 %]s[% END %], [% END %]
+     [% user_stats.time_online.mins %] minute[% IF user_stats.time_online.mins > 1 %]s[% END %]
+     online
+     visiting [% user_stats.num_clicks.chunk(-3).join(',') %] pages
+     since you joined at [% user_stats.joined %].<br />
+     That's [% (user_stats.num_clicks / user_stats.mins_online) * 60 FILTER format('%.1f') %]
+     clicks every hour - you can do better than that!</p>
+  <p>You were last online at [% user_stats.last_session_end %]
+     and you have looked at [% user_stats.unique_visited_count.chunk(-3).join(',') %] different profiles
+     a total of [% user_stats.total_visited_count.chunk(-3).join(',') %] times.</p>
+     
+
+
+  
+[% ELSE %]
+  [% IF logged_out %]
+    <p>You are now logged out.  Please come back soon!</p>
+  [% ELSIF timed_out %]
+    <p>Your last session timed out due to inactivity.<br />
+    It will do this if you don't clicky for 30 mins.<br />
+    The moral of the story?  Get clicky clicky!</p>
+  [% END %]
+[% END %]
+
+
+[% # Let's cheat a little bit! :) %]
+[% site_stats.signups = site_stats.signups + 1234567 %]
+[% site_stats.logins  = site_stats.logins  + 54321 %]
+[% site_stats.online  = site_stats.online  + 123 %]
+  
+  <div style="width: 150px; float: left;">
+    <table style='margin-top: 4px;' width="100%" bgcolor="#bbddff" border="0" cellpadding="1" cellspacing="0">
+      <tr bgcolor="#bbddff">
+        <td bgcolor="#bbddff"><b>&nbsp;<a href="#">Website Stats</a></b></td>
+      </tr>
+      <tr>
+        <td>
+          <table bgcolor="#ffffff" width="100%">
+            <tr>
+              <td valign='top' align='right' style="padding: 0em 0.3em 0em 0.3em;">
+                <p>
+                  <div class="smalltext">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.signups.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>signups
+                  </div>
+                </p>
+                <div class="smalltext" style="margin-top: 4px"><a href="#">Latest Profiles</a></div>
+                <p>
+                  <div class="smalltext">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.logins.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>logins
+                  </div>
+                </p>
+                <p>
+                  <div class="smalltext">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.online.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>online
+                  </div>
+                </p>
+                
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <div style='clear: both'></div>
+  
+[% INCLUDE includes/footer.ttml %]

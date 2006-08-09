@@ -1,0 +1,36 @@
+
+
+
+
+<!-- /Content -->
+
+[% UNLESS core.no_nav_links %][% INCLUDE includes/navigation.ttml %][% END %]
+
+[% PERL %]
+    if (defined $stash->get('benchmark')) {
+      $stash->get('benchmark')->stop('total');
+      $stash->get('benchmark')->stop('template');
+    }
+    # Calculate a simple line for the total.
+    $stash->get('core')->{benchmarktotal} = "total: "
+      . sprintf('%0.3fms', $stash->get('benchmark')->result('total') * 1000);
+    $stash->get('core')->{benchmark} = $stash->get('benchmark')->reports();
+    # Remove the total report from our list of benchmark reports.
+    $stash->get('core')->{benchmark} =~ s/^.+ of total .+\n//o;
+    # Change the output format to a more concise listing.
+    $stash->get('core')->{benchmark} =~ s/^(\d+) trials? of (\w+) \(([\d\.]+.?s) total\)$/$1 x $2: $3/mgo;
+    $stash->get('core')->{benchmark} = $stash->get('core')->{benchmark}
+                                     . $stash->get('core')->{benchmarktotal}
+                                     . "\n";
+    
+[% END %]
+
+[% IF core.benchmark %]
+  <pre style="padding:1px;margin:5px;clear:both;float:left;
+              border:2px dashed #F2EEEE; background-color:#FAF8F8;color:#401"
+       title="benchmark before processing template (which can be the biggest lag!)"
+  >[% core.benchmark %]</pre>
+[% END %]
+
+  </body>
+</html>

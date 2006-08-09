@@ -1,0 +1,386 @@
+/*************************************************************************/
+/* default font style (IE has problems with tr & td not inheriting fonts */
+/* so this applies this font styling to the whole document)              */
+/*************************************************************************/
+
+body, tr, td {
+  font-size: 70%;
+}
+
+body, select, option {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  color:       black;
+  font-weight: normal;
+  line-height: 1.4em;
+  /* line-height: 18px; */
+}
+
+table, tr, td, select, option, textarea, input { font-size: 1.0em }
+
+body {
+  margin: 0; padding: 0;
+}
+
+
+/**************************/
+/* default element styles */
+/**************************/
+
+
+
+/* form */
+input.text, select, textarea {
+  background-color: #f2f6fA;
+  border: 1px inset #d6d3d6;
+  color: #555;
+  /* background:inherit; - for 'flat' elements */
+}
+
+
+/* p { padding: 0; margin: 16px 0 16px 0; text-align: justify } */
+p {
+    margin: 0.75em 0;
+}
+
+
+h1, h2, h3, h4, h5 { font-family: Arial, Helvetica, sans-serif; padding: 0; color: #000; }
+h1 { font-size: 1.8em; font-weight: normal; margin: 10px 0 10px 0;
+     /* line-height: 24px; padding-bottom:10px; border-bottom: 1px solid #d5d9d5 */ }
+h2 { font-size: 1.4em; font-weight: bold; margin: 6px 0 6px 0; }
+h3 { font-size: 1.2em; font-weight: bold; margin: 3px 0 3px  0; }
+h4 { font-size: 1.1em; font-weight: bold; }
+h5 { font-size: 0.8em; font-weight: normal; color: #444; }
+
+
+h1 {
+    font-weight: bold;
+    color: #036; background-color: transparent;
+    margin: 0 0 0.5em 0; padding: 0;
+}
+h1 a {
+    font-weight: normal;
+    font-size: 80%;
+}
+h2 {
+    font-weight: normal;
+    color: #036; background-color: transparent;
+    margin: 0.3em 0 0.1em 0; padding: 0;
+}
+h3 {
+    color: #024; background-color: transparent;
+    font-style: italic;
+    margin: 0.2em 0 0.2em 0; padding: 0;
+}
+hr {
+    border: 0;
+    width: 80%;
+    color: #369; background-color: #369;
+    height: 2px;
+}
+
+
+ul, ol { margin: 0;   padding-left: 24px; text-align: left; }
+li {     margin: 8px; padding: 0; /* font-size: 1.1em; */ }
+/* li:hover { border-bottom: 1px solid #ff3399; } */
+/* li.smaller { font-size: 1.0em; } */
+
+
+a:link, a:visited, a:hover, a:active { font-weight: bold; text-decoration: none; }
+a:link {
+    color: #00C; background-color: transparent;
+}
+a:visited {
+    color: #306; background-color: transparent;
+}
+a:active {
+    color:#F60; background-color: transparent;
+}
+a:hover   { text-decoration: underline; }
+a img { border: 0px; }
+
+
+li.home { list-style-image: url(/images/icons/icon_home.gif); }
+li.music { list-style-image: url(/images/icons/icon_music.gif); }
+li.films { list-style-image: url(/images/icons/icon_movies.gif); }
+li.signup { list-style-image: url(/images/icons/icon_signup.gif); }
+li.photogallery { list-style-image: url(/images/icons/icon_photogallery.gif); }
+li.clubs { list-style-image: url(/images/icons/icon_clubs.gif); }
+li.shopping { list-style-image: url(/images/icons/icon_shopping.gif); }
+li.restaurants { list-style-image: url(/images/icons/icon_restaurants.gif); }
+li.personals { list-style-image: url(/images/icons/icon_personals.gif); }
+li.messageboard { list-style-image: url(/images/icons/icon_messageboard.gif); }
+li.info { list-style-image: url(/images/icons/icon_info.gif); }
+li.competitions { list-style-image: url(/images/icons/icon_nav_star.gif); }
+li.inbox { list-style-image: url(/images/icons/icon_mail_sm.gif); }
+li.inboxnew { list-style-image: url(/images/icons/icon_mail_new_sm.gif); }
+li.interviews { list-style-image: url(/images/icons/icon_info.gif); }
+
+.input { color: black; }
+.input-error { color: red; }
+.err { color: red; font-weight: bold; }
+
+.lighter { font-weight: lighter; }
+.bold { font-weight: bold; }
+.nowrap { white-space: nowrap; }
+
+
+/**********************************/
+/* nice tables with hover changes */
+/**********************************/
+
+table.hovertable {
+  padding:         10px;
+  margin:          2%;
+  width:           98%;
+  border-collapse: collapse;
+  border-width:    0;
+  empty-cells:     show;
+}
+
+
+table.hovertable th {
+  background:     #999;
+  vertical-align: middle;
+  color:          white;
+  font-size:      1.1em;
+  font-weight:    bold;
+  text-align:     left;
+  padding:        8px 0px 8px 16px;
+  border-width:   0;
+  border-bottom:  1px solid #EAE7D4;
+}
+
+table.hovertable tr.buffered {
+  border-top:  solid 20px white;
+}
+
+table.hovertable tr.main th {
+  background:     #666;
+}
+
+table.hovertable td {
+  text-align:    left;
+  padding:       8px 28px 8px 16px;
+  border-width:  0;
+  border-bottom: 1px dashed #F1EFE3;
+}
+
+table.hovertable td.buy { background-color: #FAFAFA; }
+
+table.hovertable tr:hover { background-color: #F1EFE3; }
+table.hovertable tr:hover td.buy { background-color: #EBEADE; }
+
+/*
+   For STUPID IE. - doesn't use hover on all elements
+   So this allows onmouseover event to set this class.
+   In our HTML, add the following line to all table
+   & tr or td elements that are in the hovertable:
+   <table class="hovertable">
+     <tr onmouseover="this.className='hover'" onmouseout="this.className=''">
+*/
+table.hovertable tr.hover { background-color: #F1EFE3; }
+table.hovertable tr.hover td.buy { background-color: #EBEADE; }
+
+
+
+/*************************/
+/* images and errors */
+/*************************/
+
+
+div.img {
+  border: 1px solid #999999;
+  margin: 8px 16px 8px 16px;
+  padding: 2px;
+}
+
+div.error {
+  border: 1px solid red;
+  background-color: #fff7fb;
+  margin: 5px;
+  padding: 5px;
+}
+
+/*************************/
+/* form */
+/*************************/
+
+
+
+
+/* ######################################################### */
+/* # nice stuff to make input elements have a pretty arrow # */
+/* ######################################################### */
+
+div.input {
+  padding-right: 10px;
+  background-image: none;
+  clear: both;
+  /*border: 1px solid yellow;*/
+}
+div.input-active {
+  padding-right: 10px;
+  background: url("/images/input_arrow.gif") right no-repeat;
+  clear: both;
+  /*border: 1px solid orange;*/
+}
+div.table-left {
+  clear: left;
+  float: left;
+  padding-right: 5px;
+  /*border: 1px solid red;*/
+}
+div.table-right {
+  margin-left:100px;
+  padding-left:5px;
+  /* vertical-align: middle; */
+  /*border: 1px solid green;*/
+}
+div.table-full {
+  clear: both;
+  /*border: 1px solid pink;*/
+}
+div.space-line {
+  clear: both;
+  margin-bottom: 15px;
+  /*border: 1px solid blue;*/
+}
+
+/* ########################################################## */
+
+/* decent browsers will obey this */
+select:hover, input.text:hover, textarea:hover {
+  background-color: #fff7fb;
+  border: 1px inset #ff3399;
+  color: #000;
+}
+
+/* and this will be what the javascript uses to style stupid IE */
+/* have given up styling the selects/options onfocus/onclick in IE! */
+/* select.focus, */
+input.text-focus, textarea.focus {
+  background-color: #fff7fb;
+  border: 1px inset #ff3399;
+  color: #000;
+}
+
+/* ########################################################## */
+
+input.button {
+        border: 1px;
+        color: #fff;
+        padding: 2px;
+        font-weight: bold;
+        background-color: #C92B44;
+}
+
+
+/*************************/
+/* unknowns */
+/*************************/
+/* TODO: why are we using the z-index??
+   NB: Z-index only works on elements that 
+   have been positioned (eg position:absolute;)! */
+
+li.spaced {
+  padding-top: 16px;
+}
+
+
+div.content {
+	position:relative;
+	width:auto;
+	min-width:120px;
+        /* margin:20px 20px 0px 190px; */
+	margin:20px 240px -10px 190px;
+	/* border:1px solid #d6d3d6;
+	background-color:#e1e8e8;
+	padding:10px; */
+	z-index:3;
+	height: 100%;
+}
+
+#left {
+	position:absolute;
+	width:148px;
+	top:100px;
+	left:10px;
+	z-index:2;
+}
+
+div.leftbox {
+	width: 100%;
+	border: 1px solid #d6d3d6;
+	background-color: #eeeeee;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+div.leftbuttonbox {
+	background: none;
+	border: none;
+}
+
+#right {
+	position:absolute;
+	width:200px;
+	top:100px;
+	z-index:1;
+	right:30px;
+	voice-family: "\"}\"";
+	voice-family:inherit;
+	right:10px;
+}
+
+/* html>body #right {right: 30px;} */
+
+
+div.rightbox {
+	width: 100%;
+	border: 1px solid #d6d3d6;
+	background-color:#e1e8e8;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+
+img {
+	border: 0;
+	z-index: 5;
+}
+
+img.rightfloat {
+	position: relative;
+	float: right;
+	margin-left: 10px;
+	z-index: 5;
+}
+
+img.leftfloat {
+	position: relative;
+	float: left;
+	margin-right: 10px;
+	z-index: 5;
+}
+
+img.rightmain {
+	background-color: white;
+	float: right;
+	padding:6px;
+	margin-left: 10px;
+	border-left: 1px solid #d6d3d6;
+	border-bottom: 1px solid #d6d3d6;
+	border: 1px solid #d6d3d6;
+}
+
+img.leftmain {
+	background-color: white;
+	float: left;
+	padding:6px;
+	margin-right: 10px;
+	border-left: 1px solid #d6d3d6;
+}
+
+a.nohl {
+	text-decoration: none;
+	color: #009999;
+}

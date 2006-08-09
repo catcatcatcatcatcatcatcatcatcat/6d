@@ -1,0 +1,101 @@
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Sign up') %]
+
+[% IF not_posted %]
+<h2>Request method was not POST</h2>
+<p class="err">You must use the signup form normally -
+    sorry, this is just for security reasons..</p>
+[% ELSIF errors && errors.size > 0 %]
+<p style="color: red;">
+  [% FOREACH error_msg = errors.values %]
+  [% error_msg %] <br />
+  [% END %]
+</p>
+[% END %]
+
+<form method="post" action="/signup.pl">
+
+<input type="hidden" name="submitting" id="submitting" value="1" />
+
+<table>
+  <tr>
+    <td class="[% IF errors.gender %]input-error[% ELSE %]input[% END %]">Gender</td>
+    <td>
+      <select name="gender">
+        [% FOREACH g = genders %]<option value="[% g.value %]" [% IF g.value == gender %] selected="selected"[% END %]>[% g.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+  <tr>
+    <td class="[% IF errors.sexuality %]input-error[% ELSE %]input[% END %]">Sexuality</td>
+    <td>
+      <select name="sexuality">
+        [% FOREACH s = sexualities %]<option value="[% s.value %]"[% IF s.value == sexuality %] selected="selected"[% END %]>[% s.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="[% IF errors.country_id %]input-error[% ELSE %]input[% END %]">Country</td>
+    <td>
+      <select name="country_id">
+        [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="[% IF errors.city_id %]input-error[% ELSE %]input[% END %]">City</td>
+    <td>
+      <select name="city_id">
+        [% FOREACH c = cities %]<option value="[% c.value %]"[% IF c.value == city_id %] selected="selected"[% END %]>[% c.name %]</option>
+        [% END %]
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td class="[% IF errors.real_name %]input-error[% ELSE %]input[% END %]">Real Name</td>
+    <td><input name="real_name" maxlength="50" type="text" value="[% real_name %]"></td>
+  </tr>
+  <tr>
+    <td class="[% IF errors.profile_name %]input-error[% ELSE %]input[% END %]">Profile Name</td>
+    <td><input name="profile_name" maxlength="20" type="text" value="[% profile_name %]"></td>
+  </tr>
+  <tr>
+    <td style="font-size: 0.7em; color: #333333 ">
+      This will also determine your web address: www.website.com/profile.<br />
+      Member names can be any combination of letters, numbers, <br />
+      underscores and hyphens, up to 20 characters in length.<br />
+      Spaces, Accents and other punctuation are NOT permitted.</td>
+    </tr>
+  <tr>
+    <td class="[% IF errors.email %]input-error[% ELSE %]input[% END %]">Email</td>
+    <td><input name="email" maxlength="50" type="text" value="[% email %]"></td>
+    </tr>
+  <tr>
+    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">Password</td>
+    <td><input name="password1" maxlength="20" type="password"></td>
+    </tr>
+  <tr>
+    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">Confirm Password</td>
+    <td><input name="password2" maxlength="20" type="password"></td>
+    </tr>
+  <tr>
+    <td colspan="2">
+      <input name="passphrase_id" value="[% passphrase_id %]" type="hidden">
+      <img src="/passphrase.pl?[% passphrase_id %]" height="100" width="600"></td>
+    </tr>
+  <tr>
+    <td class="[% IF errors.passphrase %]input-error[% ELSE %]input[% END %]">Passphrase</td>
+    <td><input name="passphrase" maxlength="10" type="text"></td>
+    </tr>
+  <tr>
+    <td colspan="2" align="center"><input name="submitted" value="Go!" type="submit"></td>
+  </tr>
+</table>
+
+</form>
+
+[% INCLUDE includes/footer.ttml %]

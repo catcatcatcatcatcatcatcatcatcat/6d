@@ -1,0 +1,28 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% INCLUDE includes/header.ttml %]
+[%
+profile_title = profile_name;
+IF profile_name == core.profile_name;
+  profile_title = 'My Profile';
+END;
+
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$profile_name&search_id=$search_id\">$profile_title</a>");
+ELSE;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$profile_name\">$profile_title</a>");
+END;
+breadcrumbs.push("Photos");
+%]
+
+
+<p style="clear:both;padding-bottom:16px"></p>
+
+[% IF num_photos == 0 %]
+  <p><strong>[% profile_name %]</strong> has not uploaded any photos.</p>
+[% ELSE %]
+  [% INCLUDE "profile/includes/photos-block.ttml" %]
+[% END %]
+
+[% INCLUDE includes/footer.ttml %]

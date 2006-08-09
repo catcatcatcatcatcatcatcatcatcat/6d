@@ -1,0 +1,34 @@
+
+
+<form name="login" action="/signup.pl" method="POST">
+  <input type="hidden" name="mode" value="reg">
+  <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
+  
+  <fieldset class="new">
+    <div class="container">
+      <h2>New customers <span><strong>Register</strong> here</span></h2>
+      <p>
+        <label for="email">Email address: </label><input name="email" value="" class="ip" type="text" id="email" />
+      </p>
+      <p>
+        <label for="confirmemail">Confirm email: </label><input name="confirmemail" value="" class="ip" type="text" id="confirmemail" />
+      </p>
+      <p>
+        <label for="firstname">First Name: </label><input name="firstname" value="" class="ip" type="text" id="firstname" />
+      </p>
+      <p>
+        <label for="lastname">Surname: </label><input name="lastname" value="" class="ip" type="text" id="lastname" />
+      </p>
+      <p id="regButton">
+        <input type="image" alt="Register" name="confirm-register" src="/images/login/register_button.gif" />
+      </p>
+      <ul>
+        <li class="o"><a href="#notwrittenyet"
+                         onclick="openWindow(this.href + '&amp;popup=1', 'registerHelp', 700, 500, 'yes');return false;"
+                      >Need help registering?</a></li>
+      </ul>
+    </div>
+  </fieldset>
+</form>
+</div>
+

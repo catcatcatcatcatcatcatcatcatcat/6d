@@ -1,0 +1,225 @@
+
+  </div>
+  <div id="Logo" onclick="unshow();"><a href="/"><img
+       src="/images/navigation/navbar-logo.gif" alt="BustyParty" border="0" /></a></div>
+  <div id="LogoSubText" onclick="unshow();"><a href="/"
+       onclick="change_nab_sub_text_to_something_silly('this will be a nice easter egg'); return false;"
+       ><img src="/images/navigation/navbar-logo-subtext.gif" alt="Easter Egg" border="0" /></a></div>
+  [% IF NOT core.user_id %]
+  <div id="Userpic"><img src="/images/navigation/navbar-stud.gif" alt="i made this!" /></div>
+  <div id="NotLoggedInDiv"[% IF core.openloginnav %] style="display:none"[% END %]>
+    <i><a href="/login.pl?ref=[% FILTER uri %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" onclick="return xcShowLoginDiv();">Log in now</a>.</i>
+    <div style="font-size: 12px; margin-top: 0.4em"><i>(<a href="/signup.pl">Sign up</a>)</i></div>
+  </div>
+  <div id="LoginBox" style="display:[% IF core.openloginnav %]block[% ELSE %]none[% END %]">
+    <form id="login" action="/login.pl" method="post">
+      <input type="hidden" name="mode" value="login" />
+      <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
+      <table>
+        <tr>
+          <td>
+            <label for="xc_user">Username:</label>
+            <input type="text" name="profile_name" size="8" maxlength="20"
+                   tabindex="1" id="xc_user"
+                   [% IF profile_name %]value="[% profile_name %]"
+                   [%- ELSIF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %]
+                   style="background: url(/images/navigation/login-username.gif) no-repeat; background-color: #fff;
+                          background-position: 0px 1px; padding-left: 18px; color: #00C; font-weight: bold;" />
+          </td>
+          <td>
+            <label for="xc_password">Password:</label>
+            <input type="password" name="password" size="8" maxlength="20"
+                   tabindex="2" id="xc_password" />
+          </td>
+          <td>
+            <input type="submit" value="Go" tabindex="4" id="Login" />
+          </td>
+        </tr>
+        <tr>
+          <td style="font:10px Arial, Helvetica, sans-serif; text-align:right; line-height:1.0em; padding-right:10px;" valign="top">
+            forgotten your<br />
+            <a href="/help/recover-username.pl">username</a>
+            / <a href="/help/recover-password.pl">password</a>?
+          </td>
+          <td style="padding: 0; " colspan="2">
+            <table style="width:100%; border-collapse:collapse; ">
+              <tr>
+                <td style="font:10px Arial, Helvetica, sans-serif; text-align:left; padding-left:10px;" valign="top">
+                  <input type="checkbox" id="xc_remember" name="remember_me"
+                         value="1" style="height: 10px; width: 10px; vertical-align: top; " tabindex="3"
+                         [% IF core.remember_me %]checked="checked"[% END %] />
+                  <label for="xc_remember" style="vertical-align: top;">remember me</label>
+                </td>
+                <td style="font:10px Arial, Helvetica, sans-serif; text-align:right; " valign="top">
+                  <i>(or <a href="/signup.pl">signup</a>)</i>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  [% ELSE %]
+  <div id="Userpic"><a href="[% IF core.profile_info.main_photo_id %]/profile/photo-admin.pl"
+                        title="[% core.profile_info.main_photo.caption | html %]"
+                        ><img src="[% core.profile_info.main_photo.thumbnail %]&a=1"
+                        alt="[% core.profile_info.main_photo.caption | html %]"
+                    [% ELSE %]/profile/photo-upload.pl"><img src="/images/navigation/navbar-stud.gif" alt="i made this!"
+                    [% END %] /></a></div>
+  <form id="Greeting" action="/logout.pl" method="post">
+    Welcome,
+    <span style="white-space: nowrap">
+      <a href="/profile/view.pl">[% core.profile_name %]</a></span>!
+      <!--<a href="/logout.pl">Log out?</a>-->
+      <input type="submit" value="Log&nbsp;out?" id="Logout" />
+  </form>
+  [% END %]
+  
+<!--
+  <form id="Search" action="/multisearch.bml" method="post">
+    <label for="SearchTerm">Search:</label>
+    <input id="SearchTerm" type="text" name="q" size="15" value="" />
+    <label for="SearchType">Category:</label>
+    <select id="SearchType" name="type">
+      <option value="nav_and_user" selected="selected">Site &amp; Username</option>
+      <option value="nav">Site</option>
+      <option value="user">Username</option>
+      <option value="email">E-mail</option>
+      <option value="region">Region</option>
+      <option value="int">Interest</option>
+    </select>
+    <input type="submit" value="Search" />
+  </form>
+-->
+  
+  <h2 id="NavMenuListTitle">Navigate:</h2>
+  
+  <ul id="NavMenuList">
+    [% SET mi_count = 1; SET smi_count = 0 %]
+    [% IF NOT core.user_id %]
+      <li><a href="?emi=[% mi_count %]#tour_the_website" onmouseover="show([% mi_count %])"
+             onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+             >Welcome</a>
+        <ul class="NavSubMenuList">
+          <li><a href="/signup.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 >Create an Account</a></li>
+          <li><a href="/login.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 >Login</a></li>
+          <li><a href="/help/enabling-cookies.html?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 >Problems logging in?</a></li>
+          <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#all_site_options" id="Setlang"
+                 >English &#8226; Deutsch &#8226; &#8594;</a></li>
+        </ul>
+      </li>
+    [% ELSE %]
+      <li><a href="?emi=[% mi_count %]#my_account_hub_page" onmouseover="show([% mi_count %])"
+             onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+             >[% IF !core.email_validated %]<span style="color:#F06;"><strong>[% END %]My Account
+             [% IF !core.email_validated %]</strong></span>[% END %]</a>
+        <ul class="NavSubMenuList">
+          <li><a href="#/account.not_written_yet?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 >Update Details</a></li>
+          <li><a href="/assistant.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]" target="_blank"
+                 onclick="OpenAssistant(); return false;"
+                 >Open Assistant</a></li>
+          <li><a href="/logout.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 >Log Out</a></li>
+          [% IF !core.email_validated %]
+          <li><a href="/help/resend-activation.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                 ><span style="color:#F06;"><strong>Activate Account</strong></span></a></li>
+          [% END %]
+        </ul>
+      </li>
+      [% mi_count = mi_count + 1; smi_count = 0 %]
+      <li><a href="?emi=[% mi_count %]#my_profile_hub_page" onmouseover="show([% mi_count %])"
+             onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+             >[% IF !core.profile_info.main_photo_id %]<span style="color:#F06;"><strong>[% END %]My Profile
+             [% IF !core.profile_info.main_photo_id %]</strong></span>[% END %]</a>
+        <ul class="NavSubMenuList">
+          [% IF core.profile_id %]
+            <li><a href="/profile/account.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   >Update</a></li>
+            <li><a href="/profile/view.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   >View</a></li>
+            [% IF core.profile_info.main_photo_id %]
+            <li><a href="/profile/photo-admin.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   >Manage My Photos</a></li>
+            [% END %]
+            <li><a href="/profile/photo-upload.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   >[% IF !core.profile_info.main_photo_id %]<span style="color:#F06;"><strong>[% END %]Upload Photos
+                   [% IF !core.profile_info.main_photo_id %]</strong></span>[% END %]</a></li>
+            <li><a href="/profile/friendsandblocks.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   >Manage Friends/Blocks</a></li>
+          [% ELSE %]
+            <li><a href="/profile/account.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+                   ><span style="color:#F06;"><strong>Create Profile</strong></span></a></li>
+          [% END %]
+        </ul>
+      </li>
+      [% mi_count = mi_count + 1; smi_count = 0 %]
+      <li><a href="?emi=[% mi_count %]#my_messages_hub_page" onmouseover="show([% mi_count %])"
+             onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+             >My Messages</a>
+        <ul class="NavSubMenuList">
+          <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#whoooo"
+                 >All this to come!</a></li>
+        </ul>
+      </li>
+    [% END %]
+    [% mi_count = mi_count + 1; smi_count = 0 %]
+    <li><a href="?emi=[% mi_count %]#search_profiles_hub_page" onmouseover="show([% mi_count %])"
+           onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+           >Search Profiles</a>
+      <ul class="NavSubMenuList">
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Basic</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Advanced</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Online Now</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Username</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Region</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Interests</a></li>
+        <li><a href="/profile/search.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Random</a></li>
+    </ul></li>
+    [% mi_count = mi_count + 1; smi_count = 0 %]
+    <li><a href="?emi=[% mi_count %]#support_hub_page" onmouseover="show([% mi_count %])"
+           onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
+           >Help</a>
+      <ul class="NavSubMenuList">
+        <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#/help/support.pl"
+               >Ask a Question</a></li>
+        <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#/help/faq.html"
+               ><abbr title="Frequently Asked Questions">FAQ</abbr></a></li>
+        <li><a href="/help/forgotten-login-details.pl?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]"
+               >Lost Username or Password</a></li>
+        <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#/help/sitemap.pl"
+               >Site Map</a></li>
+        <!--<li><a href="#all_site_options">Browse Options</a></li>-->
+        <li><a href="?emi=[% mi_count %]&esmi=[% smi_count = smi_count + 1; smi_count %]#/help/contact.html"
+               >Contact&nbsp;Info</a></li>
+    </ul></li>
+  </ul>
+
+  <ul id="FooterNav">
+    <li><a id="menu-tos" href="#/legal/tos.html">Terms of Service</a></li>
+    <li><a id="menu-privacy" href="#/legal/privacy.html">Privacy Policy</a></li>
+    <li><a id="menu-legal" href="#/legal/">Legal Information</a></li>
+    <li><a id="menu-sitemap" href="#/help/sitemap.pl">Site Map</a></li>
+    <li><a id="menu-siteopts" href="#all_site_options">Browse Options</a></li>
+    <li><a id="menu-siteopts" href="/garbageman.pl">I'm Feeling Lucky!</a></li>
+  </ul>
+
+[% IF breadcrumbs && breadcrumbs.size > 0 %]
+  <span id="breadcrumbs">
+  <a href="/" title="Home Page">Home</a>
+  [% FOREACH crumb = breadcrumbs %]
+> [% crumb %]
+  [% END %]
+  </span>
+[% END %]

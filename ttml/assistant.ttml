@@ -1,0 +1,16 @@
+[% IF firstopen %][% SET onload = "setTimeout('self.focus()', 50); " %][% END %]
+[% SET core.no_nav_links = 1 %]
+[% INCLUDE includes/header.ttml %]
+[% IF core.user_id %]<p>I keep you logged in and say things like [% word1 %] and [% word2 %]!</p>
+<p>The cookie is set and you are user id [% core.user_id %] </p>
+
+<a href="/" target="_blank"
+   onClick="javascript:setMainFrameHref('/'); return false;">Main Menu</a><br>&nbsp;<br>
+<a href="javascript:window.close();">Close</a><br>&nbsp;<br>
+<a href="/logout.pl?comingfrommyass=1" target="_blank"
+   onClick="setMainFrameHref('/logout.pl?comingfrommyass=1'); window.close();">Logout</a>
+
+[% ELSIF session_cookie %]Your session has expired due to inactivity.
+[% ELSE %]Your connection has been eaten. Bad luck!
+[% END %]
+[% INCLUDE includes/footer.ttml %]

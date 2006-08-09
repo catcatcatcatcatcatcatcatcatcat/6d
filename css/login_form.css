@@ -1,0 +1,160 @@
+/* login/sign up form elements: */
+
+#signin {
+        width:55em;
+        margin:0 auto;
+        text-align:left;
+        font-size:0.9em;
+}
+#signin fieldset {
+        border:none;
+        padding:0;
+        margin:0;
+        margin-top:10px;
+        width:25em;
+}
+#signin fieldset .container {
+        height:355px;
+}
+#signin fieldset label {
+        display:block;
+        float:left;
+        clear:left;
+        width:11em;
+        padding:0 5px;
+        font-weight:bold;
+}
+#signin fieldset.new {
+        border:2px solid #00209F;
+}
+#signin fieldset.exist {
+        border:2px solid #dd0000;
+        margin:0;
+        margin-right:15px;
+        float: left;
+}
+#signin fieldset h2 {
+        padding:3px 7px 10px 7px;
+        white-space:nowrap;
+        margin:0;
+        font-size:1.15em;
+        line-height:1.9em;
+        border:none;
+        font-family:verdana, sans-serif;
+        font-weight:normal;
+}
+#signin fieldset h2 strong {
+        font-weight:normal;
+}
+#signin fieldset.exist h2 {
+        background:#FFF1F5 url(/images/login/signup_background.jpg) no-repeat top right;
+        color:#950027;
+        border-bottom:2px solid #dd0000;
+}
+#signin fieldset.new h2 {
+        background:#F5F6FB url(/images/login/register_background.jpg) no-repeat top right;
+        color:#003399;
+        border-bottom:2px solid #00209F;
+}
+#signin fieldset h2 span {
+        display:block;
+        font-size:2em;
+        width:auto;
+        float:none;
+}
+#signin fieldset.exist ul,
+#signin fieldset.new ul {
+        list-style-type:none;
+        margin:1em 0.5em 0 0.5em;
+        padding-top:1em;
+        padding-left: 5px;
+}
+#signin fieldset.exist ul {
+        border-top:2px solid #dd0000;
+}
+
+#signin fieldset.new ul {
+        border-top:2px solid #00209F;
+        clear:both;
+}
+
+#signin li {
+        padding:0.5em 0;
+        margin:0;
+        padding-left:8px;
+        background:url(/images/login/bullet.gif) no-repeat left center;
+}
+
+#signin li a {
+        font-weight:normal;
+}
+
+#signin #signinButton {
+        text-align:right;
+        padding:0;
+        margin:0;
+        clear:both;
+        float:none;
+}
+
+#signin #signinButton input {
+        margin:0.5em;
+}
+#signin #regButton {
+        text-align:right;
+        padding:0.5em;
+}
+input.ip {
+        border:1px solid #777;
+        width:125px;
+        font-size:1em;
+}
+
+
+
+/* registration form elements: */
+
+#register div {
+  text-align: right;
+}
+
+#register div input,select {
+  /*float: right;
+  clear: right; */
+  margin-right:10px;
+  margin-bottom:3px;
+}
+#register p {
+  display:block;
+  text-align:right;
+  margin:0;
+}
+
+#register p label {
+        display:block;
+        float:left;
+        clear:left;
+        /*width:11em;
+        margin-left:10px;
+        font-weight:bold;*/
+}
+
+
+#register p span.note {
+  display: block;
+  float:left;
+  clear:left;
+  color:#555;
+  font-size:0.8em;
+  font-style:italic;
+  vertical-align:top;
+  margin-left:10px;
+  margin-bottom:3px;
+  line-height:1.0em;
+  height:2.0em;
+}
+
+span.m {
+  color:#F00;
+  font-weight:bold;
+}

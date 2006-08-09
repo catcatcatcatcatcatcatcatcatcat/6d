@@ -1,0 +1,28 @@
+[% SET css = [ "/css/profile.css" ] %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage My Photos</a>");
+   breadcrumbs.push("Edit Caption"); %]
+
+[% UNLESS core.profile_id %]
+  <p class="err">You need to
+    <a href="account.pl">create a profile</a>
+    before you can play with your photo captions.
+  </p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+
+<form action="photo-admin.pl" method="post">
+<input type="hidden" name="mode" value="editcaption" />
+<input type="hidden" name="submitting" value="1" />
+<input type="hidden" name="photo_id" value="[% photo_info.photo_id %]" />
+<input type="text" name="caption" maxlength="75" size="30" value="[% photo_info.caption FILTER html_entity %]" />
+<input type="submit" value="Ok" />
+</form>
+<img src="/profile/photo.pl?id=[% photo_info.photo_id %]&f=1&a=1"
+     alt="[% photo_info.caption FILTER html_entity %]" style="margin-top:8px" />
+<br />
+</div>
+
+[% INCLUDE includes/footer.ttml %]

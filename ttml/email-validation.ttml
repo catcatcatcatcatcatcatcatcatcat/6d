@@ -1,0 +1,28 @@
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Email Validation') %]
+
+<h2>Activate account</h2>
+
+[% IF error %]<p class="err">[% error %]</p>
+  [% UNLESS email && profile_name && email_validation_code %]
+<ul>
+  [% END %]
+  [% UNLESS email %]
+  <li class="err">You must specify an email address</li>
+  [% END %]
+  [% UNLESS profile_name %]
+  <li class="err">You must specify a profile name</li>
+  [% END %]
+  [% UNLESS email_validation %]
+  <li class="err">You must specify a validation word</li>
+  [% END %]
+  [% UNLESS email && profile_name && email_validation_code %]
+</ul>
+  [% END %]
+[% ELSE %]
+  <p>"Thank you [% real_name %], </p>
+  <p>Your email address, '[% email %]' has been validated.
+  <a target="_self" href="/login.pl">Please click here to log in</a>
+[% END %]
+
+[% INCLUDE includes/footer.ttml %]
