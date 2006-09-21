@@ -27,7 +27,8 @@ $rusty->{data}->{title} = "Resend Activation";
 if (!$rusty->{core}->{'user_id'}) {
   
   warn "user tried to access resend-activation while not logged in";
-  $rusty->{data}->{error} = "You must be logged in to use this feature.";
+  print $rusty->CGI->redirect( -url => "/login.pl" );
+  $rusty->exit;
   
 } elsif ($rusty->{core}->{'email_validated'}) {
   

@@ -1,0 +1,13 @@
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Help') %]
+
+<h1>Help</h1>
+
+<ul>
+  <li><a href="/help/contact-us.pl">Contact Us</a></li>
+  <li><a href="/help/faq.pl">Frequently Asked Questions</a></li>
+  <li><a href="/help/forgotten-login-details.pl">Forgotten your Username / Password?</a></li>
+  <li><a href="/help/resend-activation.pl">Resend Email Activation Code</a></li>
+</ul>
+
+[% INCLUDE includes/footer.ttml %]

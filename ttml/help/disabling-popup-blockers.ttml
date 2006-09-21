@@ -1,0 +1,212 @@
+[% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
+[% breadcrumbs.push('Disabling Pop-up Blockers') %]
+
+<h1><a id="Top"></a>Disabling Pop-up Blockers</h1>
+
+<p>There several pop-up blockers available.&nbsp; &nbsp;Here 
+ is a list of the most popular and how to disable them:</p>
+
+<ul style="margin: 2em 1em; ">
+  <li><a href="#Google">Google&#8482; Toolbar</a></li>
+  <li><a href="#Yahoo">Yahoo<sup>&#174;</sup> Toolbar</a></li>
+  <li><a href="#AOL">AOL<sup>&#174;</sup> Toolbar</a></li>
+  <li><a href="#Microsoft">Microsoft Windows  XP SP2</a></li>
+  <li><a href="#Pop-Up">Pop-Up Stopper</a></li>
+  <li><a href="#Mozilla">Mozilla</a></li>
+  <li><a href="#Firefox">Firefox</a></li>
+  <li><a href="#Popup_Manager">Popup Manager (for Internet Explorer)</a></li>
+  <li><a href="#Starware">Starware Toolbar (for Internet Explorer)</a></li>
+  <li><a href="#Norton">Norton Internet Securities</a></li>
+</ul>
+
+<p><b>Note: </b>There are other pop-up 
+ blocking utilities - this is just a list of the most popular.&nbsp; One way 
+ to test if a user has a popup blocker installed if you are in doubt, navigate 
+ to <b>http://www.popuptest.com</b> and 
+ click on the Multi Pop-up link.&nbsp; It will open 10 pop-up windows, if it 
+ does not then you either have something blocking the popups or an issue 
+ with JavaScript.</p>
+
+<p>If this does not solve your problem, or if you have any other queries, please <a href="/help/contact-us.pl?dept=support&amp;problem=cookies">Contact Us</a>.</p>
+
+
+<hr style="margin: 3em 0; " />
+
+
+<a id="Google"></a>
+<h3>Google&#8482; Toolbar</h3>
+<p>If the Google Toolbar is blocking pop-ups, there are three ways to disable it:</p>
+<ul>
+<li>To let a pop-up through on a one-time basis, press 
+ and hold the <b>Ctrl</b> key as you click 
+ on a link to navigate to a new page.&nbsp; &nbsp;</li>
+<li>The pop-up blocker can also remember certain sites 
+ (like [% core.server_name %]) and allow them to launch pop-up windows.&nbsp; To 
+ add <b>[% core.server_name %]</b> to your list of permitted sites, click on the pop-up blocker 
+ button <img src="/images/help/popupblockimage1.gif" alt="example" /> while 
+ viewing our home page (<b>http://[% core.server_name %]/</b>).&nbsp; The pop-up 
+ blocker button will appear as <img src="/images/help/popupblockimage2.gif" alt="example" />.</li>
+<li>To completely disable the pop-up blocker, click 
+ the <b>Options</b> button in the Google 
+ toolbar and clear the checkbox next to <b>Popup 
+ Blocker</b> in the Accessories section.</li>
+</ul>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Yahoo"></a>
+<h3>Yahoo<sup>&#174;</sup>  Toolbar</h3>
+<p>If Pop-Up Blocker is blocking pop-ups, there are three ways to override it: </p>
+<ul>
+  <li>Turn off Pop-Up Blocker by clicking the Pop-Up 
+ Blocker menu <img src="/images/help/popupyahooblock.gif" alt="example" /> and deselect <b>Enable Pop-Up 
+ Blocker</b>.&nbsp; The toolbar button changes to indicate that the blocker 
+ is disabled <img src="/images/help/popupyahoounblock.gif" alt="example" />.</li>
+  <li>Press and hold the <b>Ctrl</b> 
+ (or ) key while clicking a link to override Pop-Up Blocker and allow any 
+ pop-up windows resulting from the click.</li>
+  <li>Add the source of the pop-up window to your <b>Allowed List</b> by clicking the Pop-Up 
+ Blocker menu and selecting <b>Always Allow 
+ Pop-Ups From...</b>.&nbsp; Then select &quot;[% core.server_name %]&quot; from the <b>Sources of Recently Blocked Pop-Ups</b> 
+ list and click <b>Allow</b>.</li>
+</ul>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="AOL"></a>
+<h3>AOL<sup>&#174;</sup> Toolbar</h3>
+<ol>
+  <li>Click <b>Settings</b> on the AOL toolbar.</li>
+  <li>Click <b>Pop-Ups</b> in the <b>Essentials</b> tab.</li>
+  <li>In the <b>Web Pop-Ups</b> tab of the <b>Pop-Up Control Settings</b> 
+  window, select <b>Allow Web pop-ups from these sites</b> from the available options.</li>
+  <li>Enter <b>[% core.server_name %]</b> and click <b>Add</b>.&nbsp; Click <b>Save</b>.&nbsp; 
+ </li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Microsoft"></a>
+<h3>Microsoft Windows XP SP2</h3>
+<p>When you install the Windows XP Service Pack 2 (SP2), Pop-up Blocker 
+ is automatically turned on in Internet Explorer and set to the medium 
+ setting, which means that it will block most automatic pop-ups.&nbsp; To allow 
+ Pop-ups from [% core.server_name %]:</p>
+<ol>
+  <li>Launch an Internet Explorer browser window.</li>
+  <li>In the <b>Tools</b> toolbar menu, point to <b>Pop-up Blocker</b>, 
+ and then click <b>Pop-up Blocker Settings</b>.&nbsp; 
+ </li>
+  <li>Type <b>http://[% core.server_name %]/</b> in the <b>Address of Web site to allow</b> 
+ box, and then click <b>Add</b>.&nbsp; Click the <b>Close</b> button to exit.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Pop-Up"></a>
+<h3>Pop-Up Stopper</h3>
+<p>If you have Pop-Up Stopper, an icon will appear in the bottom right hand corner of your screen.&nbsp; </p>
+<ol>
+  <li>To disable the blocker, right-click on the Pop-Up Stopper software icon.</li>
+  <li>Un-check the checkbox next to <b>Enable pop-up blocking</b>.</li>
+  <li>You can re-enable the software when you are done using ARTstor.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Mozilla"></a>
+<h3>Mozilla</h3>
+<ol>
+  <li>Open the <b>Edit</b> toolbar menu and choose the <b>Preferences</b> option.</li>
+  <li>On the right-hand column, under the <b>Privacy &amp; Security Preferences </b>category, click on the <b>Popup 
+ Windows</b> topic.&nbsp; (If no sub-categories are visible, double-click on the title <b>Privacy &amp; Security</b> 
+ to expand the list.)</li>
+  <li>You can either de-select the box next to <b>Block unrequested popup windows</b> to completely 
+ disable the pop-up blocking software, or add [% core.server_name %] to a list of allowed sites.</li>
+  <li>To do this, click the <b>Allowed 
+ Sites...</b> button, type <b>http://[% core.server_name %]/</b> 
+ into the text field, and then click the <b>Add</b>.&nbsp; Click <b>OK</b>.</li>
+  <li>An alternative method of doing this is to browse 
+ to our website (<b>http://[% core.server_name %]/</b>), and then click on 
+ the <b>Tools</b> toolbar menu.&nbsp; Choose <b>Popup Manager</b> and then select 
+ the <b>Allow Popus From This Site</b> option.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Firefox"></a>
+<h3>Firefox</h3>
+<ol>
+  <li>Go to the <b>Tools</b> toolbar menu and select <b>Options...</b>.</li>
+  <li>When the <b>Options</b> window opens, click on the <b>Web features 
+ </b>icon in the left-hand panel.</li>
+  <li>Uncheck the box next to <b>Block 
+ Popup Windows</b>.&nbsp; Then, click the <b>OK</b> 
+ button to exit the <b>Options</b> window.</li>
+  <li>Alternatively, you can leave the <b>Block 
+ Popup Windows</b> box checked and click on the <b>Allowed 
+ Sites</b> button to the right of it.&nbsp; In the <b>Allowed 
+ Sites</b> window that opens, type <b>http://[% core.server_name %]/</b> 
+ in the text field beneath <b>Address of 
+ the web site</b>.&nbsp; Click the <b>Allow</b> 
+ button to the right of the text field and then click <b>OK.</b></li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Popup_Manager"></a>
+<h3>Popup Manager (for Internet Explorer)</h3>
+<ol>
+  <li>Launch a new Internet Explorer browser window and navigate to <b>http://[% core.server_name %]/</b></li>
+  <li>Right-click with your mouse on the small color-coded 
+ area in the bottom left corner of your browser window.&nbsp; This bar of color 
+ will appear either red or green and is called a &quot;widget&quot;.</li>
+  <li>In the resulting drop-down menu, select the option 
+ to <b>Allow Popups from [% core.server_name %]</b>.</li>
+</ol>
+<p><b>Note:</b> In order to enable popups on an individual basis, press the <b>Ctrl</b> 
+ key while clicking on whatever is initiating the desired popup window.</p>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Starware"></a>
+<h3>Starware Toolbar (for Internet Explorer)</h3>
+<ul>
+  <li>To allow popups from us, launch a new Internet 
+ Explorer browser window and navigate to our home page (<b>http://[% core.server_name %]/</b>).&nbsp; 
+ Once you are on our home page, click on the Popup Blocker button 
+ in the Starware Toolbar <img src="/images/help/popupblockimage4.gif" alt="example" />.&nbsp; Once you do, the toolbar button 
+ will change to indicate that popups will now be allowed from us <img src="/images/help/popupblockimage3.gif" alt="example" />.</li>
+  <li>To completely disable the popup blocker, click 
+ on the arrow next to the Starware logo on the left-hand end of the toolbar.&nbsp; 
+ This will display the main menu; select the <b>Preferences...</b> 
+ option from the resulting drop-down list.&nbsp; In the message window that appears, 
+ uncheck the box to <b>Enable Popup Blocker</b>.&nbsp; 
+ Click <b>OK</b> to close the window.</li>
+</ul>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+<a id="Norton"></a>
+<h3>Norton Internet Securities</h3>
+<p>One of the more common popup blockers now is included in Norton's Internet 
+ Security suite.</p>
+<p>One of the easiest ways to identify if you have Norton's Internet Security 
+ suite is to locate the icon in the system tray (see image below).&nbsp; This 
+ is also how you can disable it temporarily.</p>
+<p><b>To disable it:</b></p>
+<ol>
+  <li>1.&nbsp; Right click on the icon</li>
+  <li>2.&nbsp; Choose <b>Disable</b> from the menu</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+
+
+<p>Can't find your answer here? 
+<a href="/help/contact-us.pl">Contact Us</a> with your problem right now and let us make everything better! =)</p>
+
+[% INCLUDE includes/footer.ttml %]

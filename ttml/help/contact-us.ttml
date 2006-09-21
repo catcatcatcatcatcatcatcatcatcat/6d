@@ -1,0 +1,105 @@
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push('Contact Us') %]
+
+<h1>Contact Us</h1>
+
+<!-- ONLY DISPLAY THIS IF SOMEONE IS ONLINE READY TO TALK!! -->
+<p>Impatient?&nbsp;
+Talk to one of us on
+<a href="#/livesupport/">Live Support</a>
+and get help right now.</p>
+<!-- -->
+
+[% IF not_posted %]
+  <h2>Request method was not POST</h2>
+  <p class="err">You must use the form normally -
+     sorry, this is just for security reasons..</p>
+[% ELSIF sent == 1 %]
+  <p class="success">Your message has been sent successfully.&nbsp;
+     You will receive a response within the next 24 hours.</p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% ELSIF error %]
+  <p class="err">The following problems occurred.  Please fix them and try again:<br />
+  [% IF error == "noemail" %]
+    Please enter an email address.
+  [% ELSIF error == "emailmismatch" %]
+    Email addresses do not match.
+  [% ELSIF error == "noproblemtype" %]
+    No Problem Type was selected
+  [% ELSIF error == "noproblem" %]
+    No Specific Problem was selected
+  [% ELSIF error == "nosubject" %]
+    Please enter a Subject.
+  [% ELSIF error == "nodescription" %]
+    Please enter a description.
+  [% ELSIF error == "hackedform" %]
+    Please don't try to hack the form. You git!
+  [% END %]
+  </p>
+[% END %]
+
+<p>Fields marked with a <span class="mandatory">*</span> must be filled in.</p>
+<form method="post" action="/help/contact-us.pl">
+<fieldset>
+<input type="hidden" class="text" name="send" value="1" />
+<table>
+  <tr>
+    <td>Email:<span class="mandatory">*</span></td>
+    <td><input type="text" class="text" name="email" maxlength="50" value="[% IF email %][% email %][% ELSE %][% core.user_info.email %][% END %]" /></td>
+  </tr>
+  <tr>
+    <td>Confirm Email:<span class="mandatory">*</span></td>
+    <td><input type="text" class="text" name="confirmemail" maxlength="50" value="[% IF confirmemail %][% confirmemail %][% ELSE %][% core.user_info.email %][% END %]" /></td>
+  </tr>
+  <tr>
+    <td>Name:</td>
+    <td><input type="text" class="text" name="name" maxlength="50" value="[% IF name %][% name %][% ELSE %][% core.user_info.real_name %][% END %]" /></td>
+  </tr>
+  <tr>
+    <td>Contact Telephone Number:</td>
+    <td><input type="text" class="text" name="email" maxlength="50" value="[% phone %]" /></td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      Type of Problem:<span class="mandatory">*</span><br />
+      <select style="width:300px" name="dept">
+        <option value="support" [% IF dept == "support" %]selected="selected"[% END %]>Technical Support</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      Specific Problem:<span class="mandatory">*</span><br />
+      <select style="width:300px" name="problem">
+        <option value="login" [% IF problem == "login" %]selected="selected"[% END %]>Logging In</option>
+        <option value="signup" [% IF problem == "signup" %]selected="selected"[% END %]>Signing Up</option>
+        <option value="activation" [% IF problem == "activation" %]selected="selected"[% END %]>Account Activation</option>
+        <option value="javascript" [% IF problem == "javascript" %]selected="selected"[% END %]>Enabling Javascript</option>
+        <option value="cookies" [% IF problem == "cookies" %]selected="selected"[% END %]>Enabling Cookies</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      Subject:<span class="mandatory">*</span><br />
+      <input type="text" class="text" name="subject" maxlength="100" style="width:300px" value="[% subject %]" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      Description:<span class="mandatory">*</span><br />
+      <textarea rows="10" cols="40" style="width:300px" name="description">[% description %]</textarea>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <input type="submit" name="submitted" value="Go!" />
+    </td>
+  </tr>
+</table>
+</fieldset>
+</form>
+
+[% INCLUDE includes/footer.ttml %]

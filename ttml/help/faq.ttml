@@ -1,0 +1,18 @@
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push('Frequently Asked Questions') %]
+
+<h1>Frequently Asked Questions</h1>
+
+<ul style="margin: 2em 1em; ">
+  <li><a href="/help/enabling-cookies.pl">Enabling Cookies (Problems Logging In?)</a></li>
+  <li><a href="/help/forgotten-login-details.pl">Forgotten your Username / Password?</a></li>
+  <li><a href="/help/enabling-javascript.pl">Enabling JavaScript</a></li>
+  <li><a href="/help/disabling-popup-blockers.pl">Disabling Pop-up Blockers</a></li>
+</ul>
+
+<p>Can't find your answer here? 
+<a href="/help/contact-us.pl">Contact Us</a> with your problem
+right now and let us make everything better! =)</p>
+
+[% INCLUDE includes/footer.ttml %]

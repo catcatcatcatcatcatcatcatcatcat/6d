@@ -1,0 +1,120 @@
+[% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
+[% breadcrumbs.push('Enabling Cookies') %]
+
+<h1>Enabling Cookies (Problems Logging In?)</h1>
+
+<p>If you have been directed here, it is because you may not have cookies enabled.</p>
+
+<p>Cookies are small pieces of data that web sites can store in order to remember
+  certain important facts.. nbsp; For example when you buy products over the Internet,
+  a list of items you want to buy is often stored in a cookie so that your shopping
+  list does not have to be stored elsewhere.</p>
+
+<p>We use cookies to determine whether you are logged in or not by the status of your cookie.. nbsp; 
+If you are having problems viewing any of our member-only pages then cookies are probably disabled.</p>
+
+<p>To enable cookies, choose your Internet browser version and follow the few steps:</p>
+
+<ul style="margin: 2em 1em; ">
+  <li><a href="#sect1">Internet Explorer 6.x</a></li>
+  <li><a href="#sect2">Internet Explorer 5.x</a></li>
+  <li><a href="#sect3">Internet Explorer 4.x</a></li>
+  <li><a href="#sect4">Netscape Navigator 7.x</a></li>
+  <li><a href="#sect5">Netscape Navigator 6.x</a></li>
+  <li><a href="#sect6">Netscape Navigator 4.x</a></li>
+</ul>
+
+<p>If this does not solve your problem, or if you have any other queries, please <a href="/help/contact-us.pl?dept=support&amp;problem=cookies">Contact Us</a>.</p>
+
+
+<hr style="margin: 3em 0; " />
+
+
+<a id="sect1"></a>
+<h3>Internet Explorer 6.x</h3>
+<ol>
+
+  <li>Select <b>Tools</b></li>
+  <li>Select <b>Internet Options</b></li>
+
+  <li>Select the <b>Privacy</b> tab</li>
+  <li>Select <b>Advanced</b></li>
+  <li>Deselect override automatic cookie handling button</li>
+
+  <li>Click on the <b>OK</b> button at the bottom of the screen</li>
+
+  <li>Click <b>OK</b> to exit</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect2"></a>
+<h3>Internet Explorer 5.x</h3>
+<ol>
+  <li>Go to <b>Tools</b> on the menu bar </li>
+  <li>Pick <b>Internet Options</b></li>
+  <li>Click the <b>Security</b> tab</li>
+  <li>Select the <b>Custom Level</b> tab </li>
+  <li>Under &quot;Allow Cookies that are stored on your computer&quot; click <b>Enable</b> </li>
+  <li>Under &quot;Allow per-session cookies (not stored)&quot; click <b>Enable</b></li>
+
+  <li>Select <b>OK</b>, Yes you want to save the settings</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect3"></a>
+<h3>Internet Explorer 4.x</h3>
+<ol>
+  <li>Go to <b>View</b> on the menu bar </li>
+  <li>Pick <b>Internet Options</b> </li>
+  <li>Click the <b>Advanced</b> tab </li>
+  <li>Go down to the <b>Cookies</b> section </li>
+  <li>Click &quot;Always Accept Cookies&quot; </li>
+  <li>Click <b>OK</b></li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect4"></a>
+<h3>Netscape Navigator 7.x</h3>
+<ol>
+
+  <li>Click <b>Edit</b> on the Toolbar</li>
+  <li>Click <b>Preferences</b> </li>
+
+  <li>Click the <b>Privacy and Security</b> category and expand the list to show the subcategories</li>
+  <li>Click <b>Cookies</b> </li>
+  <li>Click <b>Enable all cookies</b> </li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect5"></a>
+<h3>Netscape Navigator 6.x</h3>
+<ol>
+
+  <li>Click <b>Edit</b> on the Toolbar</li>
+  <li>Click <b>Preferences</b> </li>
+
+  <li>Click the <b>Privacy and Security</b> category and expand the list to show the subcategories</li>
+  <li>Click <b>Cookies</b> </li>
+  <li>Click <b>Enable all cookies</b> </li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect6"></a>
+<h3>Netscape Navigator 4.x</h3>
+<ol>
+  <li>Go to <b>Edit</b> on the menu bar </li>
+  <li>Pick <b>Preferences</b> </li>
+  <li>Go to the <b>Advanced</b> option on the <b>Category</b> menu </li>
+  <li>Click the check box next to &quot;Accept All Cookies&quot; </li>
+  <li>Click <b>OK</b></li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<p>Can't find your answer here? 
+<a href="/help/contact-us.pl">Contact Us</a> with your problem
+right now and let us make everything better! =)</p>
+
+[% INCLUDE includes/footer.ttml %]

@@ -10,7 +10,8 @@ no warnings qw(uninitialized);
 
 use CarpeDiem;
 
-use Email qw( send_email );
+require Email;
+#use Email qw( send_email );
 
 use rusty::Profiles;
 

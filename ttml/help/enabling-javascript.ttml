@@ -1,0 +1,147 @@
+[% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
+[% breadcrumbs.push('Enabling JavaScript') %]
+
+<h1>How do I enable JavaScript in my browser?</h1>
+
+<script type="text/javascript">
+<!-- // hide script
+document.writeln('<p class="success">JavaScript is <b>ENABLED<\/b> in your browser.. &nbsp; :-) You do not need to do anything!<\/p>');
+// end hiding -->
+</script>
+<form method="get" action="">
+<fieldset>
+  <input type="submit" name="tj" value="Test JavaScript" />
+</fieldset>
+</form>
+
+<p>If you have been directed here, it is because you may not have JavaScript enabled.</p>
+
+<p>This website has been written to work perfectly well without JavaScript but there are
+certain features that will look nicer, work faster and make your experience a lot smoother
+once you have enabled JavaScript.</p>
+
+<p>To test whether you have successfolly updated your browser settings 
+  to enable JavaScript, just press the &quot;Test JavaScript&quot; button 
+  above..  nbsp; If JavaScript is enabled, you shoold see green text above this 
+  paragraph telling you that JavaScript is enabled.
+</p>
+
+
+<p>To enable JavaScript, choose your Internet browser version and follow the few steps:</p>
+
+<ul style="margin: 2em 1em; ">
+  <li><a href="#sect1">Internet Explorer 5.x/6.x</a></li>
+  <li><a href="#sect2">Internet Explorer 5.x (Macintosh)</a></li>
+  <li><a href="#sect3">Internet Explorer 4.x</a></li>
+  <li><a href="#sect4">Mozilla Firefox 1.5</a></li>
+  <li><a href="#sect5">Mozilla Firefox 1.0</a></li>
+  <li><a href="#sect6">Netscape Navigator 4.8</a></li>
+  <li><a href="#sect7">Netscape Communicator 4.x / Netscape 6.x/7.x / Mozilla 1.x</a></li>
+  <li><a href="#sect8">Apple Safari 1.0</a></li>
+  <li><a href="#sect9">Opera 6.x/7.x</a></li>
+</ul>
+
+<p>If this does not solve your problem, or if you have any other queries, please <a href="/help/contact-us.pl?dept=support&amp;problem=javascript">Contact Us</a>.</p>
+
+
+<hr style="margin: 3em 0; " />
+
+
+<a id="sect1"></a>
+<h3>Internet Explorer 5.x/6.x</h3>
+<ol>
+  <li>Select <b>Tools</b> | <b>Internet Options...</b> menu item from the main menu.</li>
+  <li>Change to the <b>Security</b> tab at the top of the Internet Options window that pops up.</li>
+  <li>From the list of zones at the top of the Security options select the internet icon.</li>
+  <li>Select the button near the bottom that reads <b>Custom Level</b>.</li>
+  <li>In the new window that pops up, scroll down to the item that reads <b>Active Scripting</b>.</li>
+  <li>Select the option marked <b>Enable</b>.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect2"></a>
+<h3>Internet Explorer 5.x (Macintosh)</h3>
+<ol>
+  <li>Select the <b>Preferences</b> menu item in the <b>Edit</b> menu (Mac OS X users select from the <b>Explorer</b> menu).</li>
+  <li>Click on the <b>Web Browser</b> tab.. nbsp; Click on the <b>Web Content</b> bollet item.</li>
+  <li>Make sure the <b>Enable Scripting</b> box is checked in the <b>Active Content</b> section.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect3"></a>
+<h3>Internet Explorer 4.x</h3>
+<ol>
+  <li>Select the <b>View</b> | <b>Internet Options...</b> menu item from the main menu.</li>
+  <li>Change to the <b>Security</b> tab at the top of the Internet Options window that pops up.</li>
+  <li>From the list of zones at the top of the Security options select the internet icon.</li>
+  <li>Select the button near the bottom that reads custom and click on the settings button.</li>
+  <li>In the new window that pops up, scroll down to the item that reads <b>Active Scripting</b>.</li>
+  <li>Select the option marked <b>Enable</b>.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect4"></a>
+<h3>Mozilla Firefox 1.5</h3>
+<ol>
+  <li>Select <b>Tools</b> | <b>Options...</b> from the main menu.</li>
+  <li>Choose <b>Content</b> from the top navigation</li>
+  <li>Select the checkbox next to &quot;Enable JavaScript&quot; and click OK</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect5"></a>
+<h3>Mozilla Firefox 1.0</h3>
+<ol>
+  <li>Select <b>Tools</b> | <b>Options...</b> from the main menu.</li>
+  <li>Select <b>Web Features </b>from the left panel of options.</li>
+  <li>Select &quot;Enable JavaScript.&quot; and click OK.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect6"></a>
+<h3>Netscape Navigator 4.8</h3>
+<ol>
+  <li>Select 'Edit' from the top menu</li>
+  <li>Choose 'Preferences'</li>
+  <li>Choose 'Advanced'</li>
+  <li>Choose 'Scripts &amp; Plugins'</li>
+  <li> Select the 'Enable JavaScript' checkbox and click OK</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect7"></a>
+<h3>Netscape Communicator 4.x / Netscape 6.x/7.x / Mozilla 1.x</h3>
+<ol>
+  <li>Select <b>Edit</b> | <b>Preferences...</b> menu item from the main menu.</li>
+  <li>Click on the <b>Advanced</b> label displayed in the list of options on the left hand side of the Preferences window that pops up.</li>
+  <li>On the right hand side select the checkbox  marked <b>Enable Javascript</b>.</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect8"></a>
+<h3>Apple Safari 1.0</h3>
+<ol>
+  <li>Select 'Safari' from the top menu</li>
+  <li>Choose 'Preferences'</li>
+  <li>Choose 'Security'</li>
+  <li>Select the checkbox next to 'Enable JavaScript'</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<a id="sect9"></a>
+<h3>Opera 6.x/7.x</h3>
+<ol>
+  <li>Select <b>File</b> | <b>Preferences...</b> from the main menu.</li>
+  <li>Click <b>Moltimedia</b>.</li>
+  <li>Under the &quot;JavaScript&quot; heading,  select &quot;Enable JavaScript.&quot;</li>
+</ol>
+<a class="minilink" href="#">Back to Top</a><br /><br />
+
+<p>Can't find your answer here? 
+<a href="/help/contact-us.pl">Contact Us</a> with your problem
+right now and let us make everything better! =)</p>
+
+[% INCLUDE includes/footer.ttml %]
