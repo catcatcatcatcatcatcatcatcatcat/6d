@@ -10,9 +10,9 @@ no warnings qw(uninitialized);
 
 use CarpeDiem;
 
-use rusty;
+use rusty::Profiles;
 
-our $rusty = rusty->new;
+our $rusty = rusty::Profiles->new;
 
 my ($dbh, $query, $sth, $rows);
 
@@ -25,9 +25,6 @@ $dbh = $rusty->DBH;
 # removes and updates user stats for expired sessions,
 # and removes expired passphrase sessions.
 
-print $rusty->CGI->header,
-      $rusty->CGI->start_html( "Garbageman! He cleans things up." );
-
 # Delete all expired passphrase sessions (older than 30 mins)
 
 $query = <<ENDSQL
@@ -37,7 +34,8 @@ ENDSQL
 ;
 
 if (($rows = $dbh->do($query)) ne '0E0') {
-  print $rusty->CGI->p( "$rows expired passphrase sessions removed." );
+  push @{$rusty->{data}->{messages}},
+    "$rows expired passphrase sessions removed.";
 }
 
 # Delete all sessions which belong to cookie tests that failed
@@ -53,7 +51,8 @@ ENDSQL
 ;
 
 if (($rows = $dbh->do($query)) ne '0E0') {
-  print $rusty->CGI->p( "$rows cookie failure test sessions removed." );
+  push @{$rusty->{data}->{messages}},
+    "$rows cookie failure test sessions removed.";
 }
 
 # Grab all session information for sessions that have not been
@@ -121,7 +120,7 @@ while (my $expired_session = $sth->fetchrow_hashref) {
             . " has been left to rot in it's own ridiculousness.";
     warn $err;
     $rot_sth->execute($expired_session->{'session_id'});
-    print $rusty->CGI->p("<b>$err</b>");
+    push @{$rusty->{data}->{messages}}, "<b>$err</b>";
     # Leave session there to be found for debugging! =D
     next;
   }
@@ -149,13 +148,13 @@ while (my $expired_session = $sth->fetchrow_hashref) {
        . $expired_session->{'session_id'}."'. This is impossible!";
   }
   
-  print $rusty->CGI->p( "Updated user '".$expired_session->{'user_id'}."' as "
-           . "last online at ".$expired_session->{'updated'}." with "
-           . $expired_session->{'mins_online'}." more mins online & "
-           . $expired_session->{'clicks'}." clicks, thanks to session '"
-           . $expired_session->{'session_id'}."', which is now deleted." );
+  push @{$rusty->{data}->{messages}},
+    "Updated user '".$expired_session->{'user_id'}."' as "
+  . "last online at ".$expired_session->{'updated'}." with "
+  . $expired_session->{'mins_online'}." more mins online &amp; "
+  . $expired_session->{'clicks'}." clicks, thanks to session '"
+  . $expired_session->{'session_id'}."', which is now deleted.";
 }
-print join "\n", "", $rusty->CGI->end_html;
 $update_sth->finish;
 $delete_sth->finish;
 $rot_sth->finish;
@@ -172,7 +171,17 @@ WHERE mean_benchmark IS NULL
 ENDSQL
 ;
 if (($rows = $dbh->do($site_benchmarks_query)) ne '0E0') {
-  print $rusty->CGI->p( "$rows site benchmarks stats' averages calculated." );
+  push @{$rusty->{data}->{messages}},
+    "$rows site benchmarks stats' averages calculated.";
 }
+
+
+
+$rusty->{ttml} = "garbageman.ttml";
+$rusty->{data}->{title} = 'Garbageman! He cleans things up.';
+
+$rusty->process_template;
+$rusty->exit;
+
 
 $rusty->exit;
