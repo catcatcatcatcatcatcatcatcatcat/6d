@@ -1,0 +1,30 @@
+[% title = keyword FILTER ucfirst;
+   INCLUDE includes/header.ttml %]
+
+<h1>Welcome to Backpacking Buddies - the place
+[% IF keyword == 'backpackers' %]for backpackers like you.
+[% ELSIF keyword == 'hostels' %]to find and compare hostels.
+[% ELSIF keyword == 'friends' %]to make travel friends.
+[% ELSIF keyword == 'travels' %]to plan and track your travels.
+[% END %]</h1>
+
+<h3>Backpacking [% title %]</h3>
+
+<p>Backpacking Buddies offers travellers and backpackers like you a place to do 
+everything you could ever want to - before, during or after your trip.&nbsp; Arrange to meet people
+to travel with, before or during your trip.&nbsp; Invite people in the area you are
+will be for a drink, date or night out!&nbsp; Find locals to show you the area when
+you travel somewhere new.&nbsp; Whoooo!&nbsp;
+
+[% IF keyword == 'backpackers' %]Backpackers can chat, compare hostels, make other
+backpacker friends or backpack vicariously from their bedroom.
+[% ELSIF keyword == 'hostels' %]You can find hostels and youth hostels, compare hostel reviews,
+or simply browse them all to get a feel for the country (if you have too much time).
+[% ELSIF keyword == 'friends' %]Make new friends, keep in touch with friends, arrange dates,
+get groups together for parties/dinner/drinks/tours.&nbsp; Whatever you like!
+[% ELSIF keyword == 'travels' %]Find out where to travel, meet other travellers, and find out
+everything you need to know about your travels.
+
+</p>
+
+[% INCLUDE includes/footer.ttml %]

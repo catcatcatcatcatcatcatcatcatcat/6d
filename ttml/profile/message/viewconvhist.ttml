@@ -1,0 +1,70 @@
+[% core.no_nav_links = 1 %]
+[% title = 'Messages: Conversation History' %]
+[% INCLUDE includes/header.ttml %]
+
+<h1>[% title %]</h1>
+
+<p>
+<br />
+<b>From:</b> <a href="/[% message.sender_profile_name %]">[% message.sender_profile_name %]</a><br />
+<b>To:</b> <a href="/[% message.recipient_profile_name %]">[% message.recipient_profile_name %]</a><br />
+<b>Date:</b> [% message.sent_date %]<br />
+<b>Subject:</b> [% message.subject FILTER html_entity %]<br />
+</p>
+
+<script type="text/javascript" src="/js/smilies.js" defer="defer"></script>
+<div id="messagebody"
+     style="clear: left; margin-bottom: 20px; background-color: #FDFDFD; padding: 10px; ">
+  [% message.body FILTER html_entity FILTER replace("\n","<br />\n") %]
+
+[% IF message.original_message %]
+  [% MACRO recurse_inner_messages(this_msg, is_reply, is_forward, recurse_limit, recurse_level) BLOCK;
+    UNLESS recurse_level.defined && recurse_level > 0; recurse_level = 0; END;
+    UNLESS recurse_limit.defined && recurse_limit > 0; recurse_limit = 50; END;
+    UNLESS recurse_level_colour.defined && recurse_level_colour > 15; recurse_level_colour = recurse_level;
+    ELSE; recurse_level_colour = 15; END;
+    recurse_level = recurse_level + 1;
+    IF recurse_level > recurse_limit; LAST; END; 
+    IF is_reply %]
+        <div style="border-left: 3px solid #00[% 16 - recurse_level FILTER format('%x') %]; padding-left: 5px; ">
+          <h3>Original Message:</h3>
+          <b>From:</b> <a href="/[% message.sender_profile_name %]">[% this_msg.sender_profile_name %]</a><br />
+          <b>To:</b> <a href="/[% message.recipient_profile_name %]">[% this_msg.recipient_profile_name %]</a><br />
+          <b>Date:</b> [% this_msg.sent_date %]<br />
+          <b>Subject:</b> [% this_msg.subject FILTER html_entity %]<br />
+          <br />
+          [% this_msg.body FILTER html_entity FILTER replace("\n","<br />\n") %]<br />
+    [% ELSIF is_forward %]
+        <div style="border-left: 3px solid #0[% 16 - recurse_level FILTER format('%x') %]0; padding-left: 5px; ">
+          <h3>Original Message:</h3>
+          <b>From:</b> [% this_msg.sender_profile_name %]<br />
+          <b>To:</b> [% this_msg.recipient_profile_name %]<br />
+          <b>Date:</b> [% this_msg.sent_date %]<br />
+          <b>Subject:</b> [% this_msg.subject FILTER html_entity %]<br />
+          <br />
+          [% this_msg.body FILTER html_entity FILTER replace("\n","<br />\n") %]<br />
+    [% END %]
+    [% IF this_msg.forward_id || this_msg.reply_id;
+         IF this_msg.original_message;
+           recurse_inner_messages(this_msg.original_message,
+                                  this_msg.reply_id,
+                                  this_msg.forward_id,
+                                  recurse_limit,
+                                  recurse_level);
+         ELSE %]
+          <h2>There are more messages in this thread's history but I refuse to allow
+              more than 50 messages in a thread!  Stop sending chain messages, you silly billies.</h2>
+      [% END %]
+          <br />
+        </div>
+    [% END %]
+  [% END %]
+  
+  [% recurse_inner_messages(message.original_message,
+                            message.reply_id,
+                            message.forward_id) %]
+  
+[% END %]
+</div>
+
+[% INCLUDE includes/footer.ttml %]

@@ -1,0 +1,45 @@
+[% MACRO display_photo(photo, profile_name, adult_pass, from_profile, search_id) BLOCK %]
+<div id="mainphoto"
+     class="thumbnail-container"
+     style="float:left; clear:left;">
+[% caption = photo.caption FILTER html_entity %]
+[% IF (photo.adult || !photo.checked_date || !photo.photo_id)
+      && !adult_pass; # Quick and Nasty Kludge!
+   photo.tnnc_width = 100;
+   photo.tnnc_height = 100;
+   END %]
+[% real_photo_link = "/photos/${profile_name}/${photo.thumbnail_nocrop_filename}" %]
+[% IF photo.adult && !adult_pass;
+     photo_link = "/photos/adult.png";
+   ELSIF photo.photo_id && !photo.checked_date && !adult_pass;
+     photo_link = "/photos/pending.png";
+   ELSIF !photo.photo_id;
+     photo_link = "/photos/default.png";
+   ELSE;
+     photo_link = real_photo_link;
+  END %]
+  
+  <div class="thumbnail-shadow"
+       style="background-image:url('/images/thumbnail-shadow/[% photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% photo.tnnc_width %]x[% photo.tnnc_height %].png');
+              width:[% photo.tnnc_width %]px;
+              height:[% photo.tnnc_height %]px;
+              position:absolute;
+              top: 50%; margin-top:-[% (photo.tnnc_height+15) / 2 %]px;
+              left: 50%; margin-left:-[% (photo.tnnc_width+15) / 2 %]px;
+              z-index:1; ">
+    <a [% IF from_profile %]
+       title="[% caption %]"
+       [% ELSE %]
+       href="/profile/view.pl?profile_name=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+       title="Go to [% profile_name %]'s profile."
+       class="_blank thumbnail-shadow"
+       [% END %]>
+      <img src="[% photo_link %]"
+           style="width:[% photo.tnnc_width %]px;
+                  height:[% photo.tnnc_height %]px;
+                  position:relative; z-index:10; "
+           alt="[% caption %]" />
+    </a>
+  </div>
+</div>
+[% END %]

@@ -1,0 +1,44 @@
+[% MACRO display_navigation(from_template) BLOCK %]
+
+<!-- START account admin navigation -->
+
+<ul class="opt" style="float:right; margin-top: -1em; ">
+  <li class="opt"><img
+      src="/images/icons/profile/view_profile.gif"
+      alt="View Profile" />
+    [% UNLESS from_template == "view" %]<a href="/profile/view.pl">[% 
+       END %]View Profile[% UNLESS from_template == "view" %]</a>[% END %]</li>
+  <li class="opt"><img
+      src="/images/icons/profile/edit_profile.gif"
+      alt="Edit Profile" />
+    [% UNLESS from_template == "account" %]<a href="/profile/account.pl">[% 
+       END %]Edit Profile[% UNLESS from_template == "account" %]</a>[% END %]</li>
+  [% IF core.profile_info.main_photo_id AND from_template != "photo-admin"%]
+  <li class="opt"><img
+      src="/images/icons/profile/manage_photos.gif"
+      alt="Upload Photos" />
+    [% UNLESS from_template == "photo-admin" %]<a href="/profile/photo-admin.pl">[% 
+       END %]Manage Photos[% UNLESS from_template == "photo-admin" %]</a>[% END %]</li>
+  [% ELSE %]
+  <li class="opt"><img
+      src="/images/icons/profile/upload_photos.gif"
+      alt="Upload Photos" />
+    [% UNLESS from_template == "photo-upload" %]<a href="/profile/photo-upload.pl">[% 
+       END %]Upload Photos[% UNLESS from_template == "photo-upload" %]</a>[% END %]</li>
+  [% END %]
+  <li class="opt"><img
+      src="/images/icons/friendsandblocks/manage.gif"
+      alt="Manage Friends/Blocks" />
+    [% UNLESS from_template == "friendsandblocks-admin" %]<a href="/profile/friendsandblocks.pl">[% 
+       END %]Manage Friends/Blocks[% UNLESS from_template == "friendsandblocks-admin" %]</a>[% END %]</li>
+  <li class="opt2"><img
+      src="/images/icons/profile/list_visitors.gif"
+      alt="See recent visitors" />
+    [% UNLESS from_template == "visitors-list" %]<a href="/profile/visitors.pl">[% 
+       END %]See recent visitors[% UNLESS from_template == "visitors-list" %]</a>[% END %]</li>
+</ul>
+
+<!-- END account admin navigation -->
+
+[% END %]
+

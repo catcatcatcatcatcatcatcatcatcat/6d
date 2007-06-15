@@ -1,0 +1,16 @@
+/* override value of 10 from style.css for non-compliant box-model browsers */
+#right {
+  right:30px;
+}
+
+/* override value of 16 from navmenu.css */
+#NavMenuList a {
+  height: 20px;
+}
+
+/* Fix IE5 Horizontal scroll */
+* html div#Content { width: 100%; w\idth: auto; }
+
+#Userpic {
+  margin-right:-1px; /* Fix IE5 (from navmenu.css) */
+}

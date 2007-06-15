@@ -1,0 +1,136 @@
+[% SET js = [ "/js/tipMessage.js" ] %]
+[% title = 'My Visitors' %]
+[% header_css = BLOCK %]
+#visitor_table {
+  border: 1px #AAA solid;
+}
+#visitor_table td {
+  padding: 0 10px 0 10px;
+  margin: 0;
+  border: 1px #CCC solid;
+}
+[% END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push("$title") %]
+
+
+[% IF core.profile_id;
+     PROCESS 'profile/includes/admin-navigation.ttml';
+     display_navigation('visitors-list');
+   END %]
+
+
+<div id="TipLayer" style="visibility:hidden;position:absolute;z-index:1000;top:-100;"></div>
+
+<h1 style="clear:left;">My Visitors</h1>
+
+
+[% UNLESS core.profile_id %]
+  <p class="err">You need to
+    <a href="/profile/account.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]">Create your Profile</a>
+    before you can see your profile's visitors.<br />
+    Don't worry - once you've created you profile, we'll take you
+    straight back to this page and perform the action you originally requested.  :)
+  </p>
+  [% INCLUDE includes/footer.ttml %]
+  [% RETURN %]
+[% END %]
+
+<br />
+
+<h4>Search within recent visitors:</h4>
+
+<form method="post" action="/profile/visitors.pl">
+<fieldset>
+
+<input type="hidden" name="mode" value="list" />
+
+<label for="age_min">Min age:</label>
+<select name="age_min" id="age_min"
+        onclick="if(document.getElementById('age_max').selectedIndex < this.selectedIndex) { 
+                   document.getElementById('age_max').options[this.selectedIndex - 1].selected = true
+                         } ">
+  <option value="any"[% IF !age_min.defined || age_min == 'any' %] selected="selected"[% END %]>Any</option>
+  [% ages = [recent_visitors.visitor_stats.age_min .. recent_visitors.visitor_stats.age_max] %]
+  [% FOREACH a = ages %]<option value="[% a %]"[% IF age_min.defined && age_min == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
+</select>&nbsp;
+<label for="age_max">Max age:</label>
+<select name="age_max" id="age_max"
+        onclick="if(document.getElementById('age_min').selectedIndex > this.selectedIndex) { 
+                   document.getElementById('age_min').options[this.selectedIndex + 1].selected = true
+                         } ">
+  [% FOREACH a = ages %]<option value="[% a %]"[% IF age_max.defined && age_max == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
+  <option value="any"[% IF !age_max.defined || age_max == 'any' %] selected="selected"[% END %]>Any</option>
+</select>
+
+<label for="gender">Gender:</label>
+<select name="gender" id="gender">
+  <option value="any"[% IF gender == "any" %] selected="selected"[% END %]>Any</option>
+  [% IF recent_visitors.visitor_stats.genders.male %]
+  <option value="male"[% IF gender == "male" %] selected="selected"[% END %]>Male ([% recent_visitors.visitor_stats.genders.male %])</option>
+  [% END %]
+  [% IF recent_visitors.visitor_stats.genders.female %]
+  <option value="female"[% IF gender == "female" %] selected="selected"[% END %]>Female ([% recent_visitors.visitor_stats.genders.female %])</option>
+  [% END %]
+</select>
+
+<label for="country_id">Country:</label>
+<select name="country_id" id="country_id">
+  <option value=""[% IF country_id == "" %] selected="selected"[% END %]>Any</option>
+  [% FOREACH c = countries %]
+    [% IF recent_visitors.visitor_stats.country_ids.${c.value} %]
+      <option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]
+        ([% recent_visitors.visitor_stats.country_ids.${c.value} %])</option>
+      [% country_id_hash.${c.value} = c.name %]
+    [% END %]
+  [% END %]
+</select>
+
+<input type="submit" id="refine" name="refine" value="Refine" />
+
+</fieldset>
+</form>
+
+<p>&nbsp;</p>
+
+[% UNLESS recent_visitors.visits %]
+  <p>You currently have no visitors (aww). Give it time!</p>
+[% ELSE %]
+  Found[% IF recent_visitors.visitor_stats.total > recent_visitors.visits.size %]
+  over[% END %] [% recent_visitors.visits.size %] visitors:
+  <table id="visitor_table">
+    [% FOREACH visit = recent_visitors.visits %]
+      [% real_photo_link = "/photos/${visit.profile_name}/${visit.thumbnail_filename}" %]
+      [% IF visit.adult && !adult_pass;
+           photo_link = "/photos/adult.png";
+         ELSIF visit.photo_id && !visit.checked_date && !adult_pass;
+           photo_link = "/photos/pending.png";
+         ELSIF !visit.photo_id;
+           photo_link = "/photos/default.png";
+         ELSE;
+           photo_link = real_photo_link;
+        END %]
+    <tr>
+      <td>
+        [% visit.time %]
+      </td><td>
+        <a href="/profile/message.pl?mode=compose&amp;to=[% visit.profile_name %]"
+           title="Send message to [% visit.profile_name %]"><img
+           src="/images/icons/message/compose_message.gif" alt="Send Message" /></a>
+      </td><td>
+        <a href="/[% visit.profile_name %]" title=""
+           onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
+           onmouseout="htm()">[% visit.profile_name %]</a>
+      </td><td>
+        [% visit.gender | ucfirst %]
+      </td><td>
+        [% visit.age %]
+      </td><td>
+        [% country_id_hash.${visit.country_id} %]
+      </td>
+    </tr>
+    [% END %]
+  </table>
+[% END %]
+
+[% INCLUDE includes/footer.ttml %]

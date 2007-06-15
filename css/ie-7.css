@@ -1,0 +1,6 @@
+/* for SOME reason, IE7 wants to scroll right loads.
+   this is not a nice way of doing it, but it fixes it!
+   and yeees.. overflow-x is not a valid tag*/
+html {
+  overflow-x: hidden;
+}
