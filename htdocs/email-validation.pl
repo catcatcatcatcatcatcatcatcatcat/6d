@@ -23,8 +23,6 @@ $dbh = $rusty->DBH;
 
 $rusty->{ttml} = "email-validation.ttml";
 
-$rusty->{data}->{title} = "Activate account";
-
 (my $email = $rusty->{data}->{email}) = $rusty->{params}->{email};
 (my $profile_name = $rusty->{data}->{profile_name}) = $rusty->{params}->{profile};
 (my $email_validation_code = $rusty->{data}->{email_validation_code}) = $rusty->{params}->{validation};
@@ -39,7 +37,8 @@ unless ($email && $profile_name && $email_validation_code) {
 SELECT u.email, u.email_validation_code, u.email_validated, ui.real_name
 FROM `user` u
 INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-WHERE u.profile_name = ?
+INNER JOIN `user~profile` up ON up.user_id = u.user_id
+WHERE up.profile_name = ?
 LIMIT 1
 ENDSQL
 ;
@@ -67,11 +66,12 @@ ENDSQL
   } else {
     
     $query = <<ENDSQL
-UPDATE `user`
-SET email_validation_code = NULL,
-    email_validated = NOW()
-WHERE profile_name = ?
-  AND email = ?
+UPDATE `user` u
+INNER JOIN `user~profile` up ON up.user_id = u.user_id
+SET u.email_validation_code = NULL,
+    u.email_validated = NOW()
+WHERE up.profile_name = ?
+  AND u.email = ?
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
