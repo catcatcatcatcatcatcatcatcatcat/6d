@@ -13,6 +13,8 @@ use CarpeDiem;
 #use Email qw( send_email validate_email );
 require Email;
 
+use rusty;
+
 our $rusty = rusty->new;
 
 if ($rusty->{core}->{'user_id'}) {
@@ -21,7 +23,7 @@ if ($rusty->{core}->{'user_id'}) {
   $rusty->exit;
 }
 
-use vars qw ( $dbh $query $sth $passphrase_id );
+use vars qw ( $dbh $query $sth );
 
 $dbh = $rusty->DBH;
 
@@ -41,20 +43,57 @@ sub get_signup_select_options();
 
 
 
+$rusty->{param_info} = {
+  gender              => { title => 'Gender', type => 'select', regexp => '^(?:male|female)$' },
+  sexuality           => { title => 'Sexuality', type => 'select', regexp => '^(?:straight|gay/lesbian|bisexual/curious)$' },
+  dob_year            => { title => 'Year of birth', type => 'select', regexp => '^\d{4}$' },
+  dob_month           => { title => 'Month of birth', type => 'select', minnum => 1, maxnum => 12 },
+  dob_day             => { title => 'Day of birth', type => 'select', minnum => 1, maxnum => 31 },
+  country_id          => { title => 'Country', type => 'select', notregexp => '^select$' },
+  subentity_id        => { title => 'Location', type => 'select', notregexp => '^select$' },
+  real_name           => { title => 'Real name', maxlength => 50, regexp => '\S' },
+  profile_name        => { title => 'Profile name', maxlength => 20, regexp => '^[a-z0-9_\-]+$' },
+  email               => { title => 'Email', maxlength => 50, regexp => '\S' },
+  confirmemail        => { title => 'Email confirmation', maxlength => 50, regexp => '\S' },
+  password1           => { title => 'Password', minlength => 6, maxlength => 20, notregexp => '[^a-z0-9]' },
+  password2           => { title => 'Password confirmation', minlength => 6, maxlength => 20, notregexp => '[^a-z0-9]' },
+  passphrase          => { title => 'Passphrase', regexp => '\S' }
+};
 
-$passphrase_id = $rusty->{params}->{passphrase_id};
 
-if (!$passphrase_id) {
+my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
+
+if (!$rusty->{params}->{passphrase_id}) {
   
   # If this is the 1st call to signup, generate
   # a new passphrase and print blank signup form
-  
-  #$passphrase_id = generate_passphrase();
   $rusty->{data}->{passphrase_id} = generate_passphrase();
   
-  #print signup_form();
+  $rusty->{data}->{email} = $rusty->{params}->{email};
+  $rusty->{data}->{real_name} = $rusty->{params}->{real_name};
+  $rusty->{data}->{gender} = $rusty->{params}->{gender};
+  $rusty->{data}->{country_id} = $rusty->{params}->{country_id};
   
   get_signup_select_options();
+  
+  if ($rusty->{params}->{country_id}) {
+    
+    $query = <<ENDSQL
+SELECT subentity_id, subentity_name
+FROM `lookup~country~subentity`
+WHERE country_id = ?
+ORDER BY subentity_name
+ENDSQL
+;
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($rusty->{params}->{country_id});
+    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_id,
+                                               name  => $subentity_name };
+    }
+    $sth->finish;
+  }
+  
   $rusty->process_template;
   $rusty->exit;
   
@@ -62,114 +101,127 @@ if (!$passphrase_id) {
   
   # If this is 2nd call to signup (with passphrase),
   
-  # First, let's catch out the smart-ass monster-truckers..
+  # Hoorah for being lazy!
+  $rusty->{data} = $rusty->{params};
   
+  # User could be requesting that we fill up their cities list (no JS/AJAX)
+  if ($rusty->{params}->{reloadareas}) {
+    $rusty->{data} = $rusty->{params};
+    get_signup_select_options();
+    $rusty->process_template;
+    $rusty->exit;
+    
+  # Or re-allow them to select their countries list (still no JS/AJAX)
+  } elsif ($rusty->{params}->{changecountry}) {
+    $rusty->{data} = $rusty->{params};
+    get_signup_select_options();
+    delete $rusty->{params}->{enable_subentities_list};
+    delete $rusty->{params}->{subentity_id};
+    delete $rusty->{params}->{subentities};
+    $rusty->process_template;
+    $rusty->exit;
+  }
+  
+  
+  # First, let's catch out the smart-ass monster-truckers..
   unless ($rusty->ensure_post()) {
     $rusty->{data} = $rusty->{params};
-    $rusty->{data}->{'not_posted'} = "1";
+    $rusty->{data}->{not_posted} = 1;
     get_signup_select_options();
     $rusty->process_template();
     $rusty->exit;
   }
   
   # Make profile name, email and passphrase lowercase
-  
   $rusty->{params}->{profile_name} = lc($rusty->{params}->{profile_name});
   $rusty->{params}->{passphrase} = lc($rusty->{params}->{passphrase});
   $rusty->{params}->{email} = lc($rusty->{params}->{email});
+  $rusty->{params}->{confirmemail} = lc($rusty->{params}->{confirmemail});
+  
+  $rusty->{data}->{param_info} = $rusty->{param_info};
   
   # Check that all the data we've been given is right.
+  my $num_param_errors;
+  $num_param_errors = $rusty->validate_params();
   
-  my %errors;
-  
-  my $gender = $rusty->{params}->{gender};
-  if ($gender !~ /^(?:male|female)$/i) {
+  if ($rusty->{param_errors}->{dob_year} ||
+      $rusty->{param_errors}->{dob_month} ||
+      $rusty->{param_errors}->{dob_day}) {
     
-    $errors{"gender"} .=
-      "Please select your gender. <br />\n";
+    delete $rusty->{param_errors}->{dob_year};
+    delete $rusty->{param_errors}->{dob_month};
+    delete $rusty->{param_errors}->{dob_day};
+    $rusty->{param_errors}->{dob}->{error} = "select all fields";
+    $rusty->{param_errors}->{dob}->{title} = 'Date of Birth';
+    $num_param_errors++;
     
+  } else {
+    
+    require Time::DaysInMonth;
+    my $days_in_month = Time::DaysInMonth::days_in($rusty->{params}->{dob_year},
+                                                   $rusty->{params}->{dob_month});
+    unless ($rusty->{params}->{dob_day} <= $days_in_month) {
+      
+      $rusty->{param_errors}->{dob}->{error} = "select a valid date";
+      $rusty->{param_errors}->{dob}->{title} = 'Date of Birth';
+      $num_param_errors++;
+    }
   }
   
-  my $sexuality = $rusty->{params}->{sexuality};
-  if ($sexuality !~ m!^(?:straight|gay/lesbian|bisexual/curious)$!i) {
-    
-    $errors{"sexuality"} .=
-      "Please select your sexuality. <br />\n";
-    
-  }
-  
-  my $country_id = $rusty->{params}->{country_id};
-  if ($country_id =~ /^Select$/oi) {
-    
-    $errors{"country_id"} .=
-      "Please select your country. <br />\n";
-    
-  }
-  
-  my $city_id = $rusty->{params}->{city_id};
-  if ($city_id =~ /^Select$/oi) {
-    
-    $errors{"city_id"} .=
-      "Please select your city. <br />\n";
-    
-  }
-    
-  
-  my $real_name = $rusty->{params}->{real_name};
-  if (length($real_name) < 1) {
-
-    $errors{"real_name"} .=
-      "Please enter your name. <br />\n";
-  
-  }
-  
-  my $profile_name = $rusty->{params}->{profile_name};
-  if ( (length($profile_name) < 1)
-    || (length($profile_name) > 20) ) {
-    
-    $errors{"profile_name"} .=
-      "Profile name must be 1-20 characters long. <br />\n";
-    
-  }
-  if ($profile_name =~ /[^a-z0-9_]/oi) {
-    
-    $errors{"profile_name"} .=
-      "Profile name must only contain numbers, letters and underscores. <br />\n";
-    
-  }
-  
-  if (not exists $errors{"profile_name"}) {
+  if (not exists $rusty->{param_errors}->{profile_name}) {
     
     # Check that profile name isn't already in use.
-    $query = "SELECT user_id FROM `user` WHERE profile_name = ? LIMIT 1";
+    $query = "SELECT user_id FROM `user~profile` WHERE profile_name = ? LIMIT 1";
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($profile_name);
+    $sth->execute($rusty->{params}->{profile_name});
     (my $profile_exists) = $sth->fetchrow_array();
     if ($profile_exists > 0) {
       
-      $errors{"profile_name"} =
-        "'$profile_name' is already in use by another member. <br />";
+      $rusty->{param_errors}->{profile_name}->{error} =
+        "is already in use by another member";
+      $rusty->{param_errors}->{profile_name}->{title} =
+        $rusty->{param_info}->{profile_name}->{title};
+      $num_param_errors++;
       
     } else {
       
       # Check profile name against list of directories/aliases.
       #open DIRS, "../conf/directories.txt" or die "can't open file: $!";
-      #if (grep {/^$profile_name$/} <DIRS>) {
-      #  $errors{"profile_name"} =
-      #    "'$profile_name' is a reserved word and cannot be used as a profile name. <br />";
+      #if (grep {/^$rusty->{params}->{profile_name}$/} <DIRS>) {
+      #  $rusty->{param_errors}->{profile_name}->{error} =
+      #    "'$rusty->{params}->{profile_name}' is a reserved word and cannot be used as a profile name. <br />";
+      #$rusty->{param_errors}->{profile_name}->{title} =
+      #  $rusty->{params}->{profile_name}->{title};
+      #$num_param_errors++;
       #}
     }
   }
   
-  my $email = $rusty->{params}->{email};
-  
-  if (!Email::validate_email($email)) {
+  if (exists $rusty->{param_errors}->{email}) {
     
-    $errors{"email"} .=
-      "Please enter a valid email address. <br />\n";
+    delete $rusty->{param_errors}->{confirmemail};
     
+  } else {
+    
+    if ($rusty->{params}->{email} ne $rusty->{params}->{confirmemail}) {
+      
+      $rusty->{param_errors}->{email}->{error} =
+        "email addresses do not match";
+      $rusty->{param_errors}->{email}->{title} =
+        $rusty->{param_info}->{email}->{title};
+      $num_param_errors++;
+      
+    } elsif (!Email::validate_email($rusty->{params}->{email})) {
+      
+      $rusty->{param_errors}->{email}->{error} =
+        'is not a valid email address';
+      $rusty->{param_errors}->{email}->{title} =
+        $rusty->{param_info}->{email}->{title};
+      $num_param_errors++;
+    }
   }
-  if (not exists $errors{"email"}) {
+  
+  if (not exists $rusty->{param_errors}->{email}) {
     
     $query = <<ENDSQL
 SELECT email
@@ -179,37 +231,31 @@ LIMIT 1
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($email);
+    $sth->execute($rusty->{params}->{email});
     if ($sth->fetchrow_array()) {
-      $errors{"email"} .=
-        "The email address '$email' is already in use by another member. "
-      . "Please choose another. <br />\n";
+      
+      $rusty->{param_errors}->{email}->{error} =
+        'is already in use by another member - please choose another';
+      $rusty->{param_errors}->{email}->{title} =
+        $rusty->{param_info}->{email}->{title};
+      $num_param_errors++;
     }
     $sth->finish;
   }
   
-  my $password = $rusty->{params}->{password1};
-  my $passwordcheck = $rusty->{params}->{password2};
-  if ($password ne $passwordcheck) {
+  if ($rusty->{param_errors}->{password1}) {
     
-    $errors{"passwords"} .=
-      "The passwords you have entered do not match. <br />\n";
+    $rusty->{param_errors}->{passwords} = $rusty->{param_errors}->{password1};
+    delete $rusty->{param_errors}->{password1};
+    delete $rusty->{param_errors}->{password2};
     
-  } else {
+  } elsif ($rusty->{params}->{password1} ne $rusty->{params}->{password2}) {
     
-    if ( (length($password) < 6)
-      || (length($password) > 20) ) {
-      
-      $errors{"passwords"} .=
-        "Password must be 6-20 characters long. <br />\n";
-      
-    }
-    if ($password =~ /[^a-z0-9]/oi) {
-      
-      $errors{"passwords"} .=
-        "Password must only contain numbers and letters. <br />\n";
-      
-    }
+    $rusty->{param_errors}->{passwords}->{error} =
+      'passwords do not match';
+    $rusty->{param_errors}->{passwords}->{title} =
+      $rusty->{param_info}->{password1}->{title};
+    $num_param_errors++;
   }
   
   $query = <<ENDSQL
@@ -219,29 +265,27 @@ WHERE passphrase_id = ?
 ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
-  $sth->execute($passphrase_id);
+  $sth->execute($rusty->{params}->{passphrase_id});
   my $passphrase = $sth->fetchrow_array();
   $sth->finish;
   
   if (!$passphrase) {
     
-    warn "Passphrase id '$passphrase_id' expired.";
+    warn "Passphrase id '$rusty->{params}->{passphrase_id}' expired.";
     
-    $errors{"passphrase_id"} .=
-      "That passphrase has expired. Please enter the new passphrase. <br />\n";
+    $rusty->{param_errors}->{passphrase}->{error} =
+      'previous passphrase has expired - please enter the new passphrase';
+    $rusty->{param_errors}->{passphrase}->{title} =
+      $rusty->{param_info}->{passphrase}->{title};
+    $num_param_errors++;
     
-    $passphrase_id = generate_passphrase();
+    $rusty->{params}->{passphrase_id} = generate_passphrase();
     
-    $rusty->{params}->{passphrase} = "";
+    $rusty->{params}->{passphrase} = '';
     
   } else {
     
-    if ($rusty->{params}->{passphrase} eq "") {
-      
-      $errors{"passphrase"} .=
-        "Please enter the passphrase. <br />\n";
-      
-    } elsif ((keys %errors == 0) && ($rusty->{params}->{passphrase} ne $passphrase)) {
+    if (($num_param_errors == 0) && ($rusty->{params}->{passphrase} ne $passphrase)) {
       
       # Only if the form has no other errors, then check the passphrase.
       # If the passphrase does not match then generate a new passphrase.
@@ -249,37 +293,23 @@ ENDSQL
       warn "Passphrase '$passphrase' did not match user's attempt '".
            $rusty->{params}->{passphrase}."'.";
       
-      $errors{"passphrase"} .=
-        "Passphrase was not correct. "
-      . "Please try again with the new passphrase. <br />\n";
+      $rusty->{param_errors}->{passphrase}->{error} =
+        'passphrase was not correct - please enter the new passphrase';
+      $rusty->{param_errors}->{passphrase}->{title} =
+        $rusty->{param_info}->{passphrase}->{title};
+      $num_param_errors++;
       
-      $rusty->{params}->{passphrase} = "";
+      $rusty->{params}->{passphrase} = '';
       
       # Generate new password for this session
-      
-      generate_passphrase($passphrase_id);
-      
+      generate_passphrase($rusty->{params}->{passphrase_id});
     }
-    
   }
   
-  if (keys %errors > 0) {
+  if ($num_param_errors > 0) {
     
     # If errors in form, print signup form with errors flagged.
-    
-    #print signup_form(\%errors);
-    
-    $rusty->{data}->{gender} = $gender;
-    $rusty->{data}->{sexuality} = $sexuality;
-    $rusty->{data}->{country_id} = $country_id;
-    $rusty->{data}->{city_id} = $city_id;
-    $rusty->{data}->{real_name} = $real_name;
-    $rusty->{data}->{profile_name} = $profile_name;
-    $rusty->{data}->{email} = $email;
-    $rusty->{data}->{passphrase_id} = $passphrase_id;
-    
-    $rusty->{data}->{errors} = \%errors;
-    
+    $rusty->{data}->{errors} = $rusty->{param_errors};
     get_signup_select_options();
     $rusty->process_template;
     $rusty->exit;
@@ -287,54 +317,70 @@ ENDSQL
   } else {
     
     # If the form was filled out correctly;
-    
     # First, remove old passphrase session so it cannot be re-used.
-    
     $query = <<ENDSQL
 DELETE FROM `signup~passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($passphrase_id);
+    $sth->execute($rusty->{params}->{passphrase_id});
     $sth->finish;
     
-    # Then add this new user to the database.
-    
-    $real_name =~ s/'/\\'/og;
-    
     my $email_validation_code = $rusty->random_word();
-
+    
     $query = <<ENDSQL
 INSERT INTO `user`
-( profile_name, password, email, email_validation_code )
+( password, email, email_validation_code )
 VALUES
-( ?, ?, ?, ? )
+( ?, ?, ? )
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($profile_name, $password, $email, $email_validation_code);
+    $sth->execute($rusty->{params}->{password1},
+                  $rusty->{params}->{email},
+                  $email_validation_code);
     $sth->finish;
     
     # Get the user id of the user we just created
     my $user_id = $dbh->{mysql_insertid};
     
-    # Create some basic user info
-    
+    # Insert the profile_name into empty profile entry
     $query = <<ENDSQL
-INSERT INTO `user~info`
-( user_id, real_name, gender, sexuality, country_id, city_id )
+INSERT INTO `user~profile`
+( user_id, profile_name )
 VALUES
-( ?, ?, ?, ?, ?, ? )
+( ?, ? )
 ENDSQL
 ;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute($user_id,
+                  $rusty->{params}->{profile_name});
+    $sth->finish;
+    
+    # Create some basic user info
+    $query = <<ENDSQL
+INSERT INTO `user~info`
+( user_id, real_name, gender, sexuality, dob, country_id, subentity_id )
+VALUES
+( ?, ?, ?, ?, ?, ?, ? )
+ENDSQL
+;
+    my $dob = join '-', $rusty->{params}->{dob_year},
+                        $rusty->{params}->{dob_month},
+                        $rusty->{params}->{dob_day};
     
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($user_id, $real_name, $gender, $sexuality, $country_id, $city_id);
+    $sth->execute($user_id,
+                  $rusty->{params}->{real_name},
+                  $rusty->{params}->{gender},
+                  $rusty->{params}->{sexuality},
+                  $rusty->{params}->{dob},
+                  $rusty->{params}->{country_id},
+                  $rusty->{params}->{subentity_id});
     $sth->finish;
     
     # Create stats for user (when they joined)
-    
     $query = <<ENDSQL
 INSERT INTO `user~stats`
 ( user_id, joined )
@@ -350,18 +396,18 @@ ENDSQL
     require URI::Escape; # 'uri_escape';
     my $activation_link = "http://" . $rusty->CGI->server_name
       . "/email-validation.pl"
-      . "?email=" . URI::Escape::uri_escape($email)
-      . "&profile=$profile_name"
+      . "?email=" . URI::Escape::uri_escape($rusty->{params}->{email})
+      . "&profile=" . $rusty->{params}->{profile_name}
       . "&validation=$email_validation_code";
       
     my $textmessage = <<ENDEMAIL
-Hi $real_name,
-Welcome to X.com!
+Hi $rusty->{params}->{real_name},
+Welcome to BackpackingBuddies.com!
 Someone, hopefully you, signed up with this email address
 Here are your login details for future reference:
 
-    Username: $profile_name
-    Password: $password
+    Username: $rusty->{params}->{profile_name}
+    Password: $rusty->{params}->{password1}
 
 To activate your account and gain full access to the site, click here:
 $activation_link
@@ -370,20 +416,19 @@ If you want to remove yourself, you can do so here:
 [PAGE WHICH ASKS FOR USERNAME AND PASSWORD TO REMOVE
 USER WHICH ALSO LINKS TO PAGES WHICH SEND LOGIN DETAILS
 TO A USERNAME OR PASSWORD SPECIFIED (NOT NEEDED IN THIS
-CASE, BUT IS FOR ON THE SPOT REQUESTS]
+CASE, BUT IS FOR ON THE SPOT REQUESTS)]
 
 ENDEMAIL
 ;
     
     my $htmlmessage = Email::create_html_from_text($textmessage);
     
-    Email::send_email( To => [ "$real_name <$email>", ],
+    Email::send_email( To => [ "$rusty->{params}->{real_name} <$rusty->{params}->{email}>", ],
                        Subject => 'Activate your account',
                        TextMessage => $textmessage,
                        HtmlMessage => $htmlmessage );
     
     # Update site stats for number of signups per day
-    
     $query = <<ENDSQL
 INSERT INTO `site~stats`
 SET signups = 1,
@@ -413,17 +458,18 @@ ENDSQL
     $sth->finish;
     
     # Create test session cookie and send off to initiate login.
-    
     my $test_cookie = $rusty->CGI->cookie( -name    => "test",
                                            -value   => $session_id );
     
-    print $rusty->CGI->redirect( -url => "/login.pl?mode=signup_test",
+    require URI::Escape;
+    print $rusty->CGI->redirect( -url => "/login.pl?mode=signup_test"
+                                       . ($ref ? "&ref=" . URI::Escape::uri_escape($ref) : ''),
                                  -cookie => $test_cookie );
     
     $rusty->exit;
     
   }
-  
+
 }
 
 $rusty->exit;
@@ -441,7 +487,6 @@ sub generate_passphrase(@) {
     
     # If we were handed a passphrase id, we are
     # generating a new passphrase for this session
-    
     $query = <<ENDSQL
 UPDATE `signup~passphrase`
 SET passphrase = ?
@@ -458,7 +503,6 @@ ENDSQL
     # (in event of new signup or passphrase expiry).
     # So put generated passphrase with id into db
     # and, if successful, return the associated id.
-    
     $phrase_id = $ENV{'UNIQUE_ID'};
     
     $query = <<ENDSQL
@@ -495,11 +539,11 @@ sub get_signup_select_options() {
                                   ];
   
   $rusty->{data}->{countries} = [
-    { value => 'select', name => 'Please Select', },
     $rusty->get_ordered_lookup_list(
       table => "lookup~country",
       id    => "country_id",
       data  => "name",
+      order => "name",
                                    ),
                                 ];
   
@@ -510,14 +554,22 @@ sub get_signup_select_options() {
     }
   }
   
-  $rusty->{data}->{cities} = [
-    { value => 'select', name => 'Please Select', },
-    $rusty->get_ordered_lookup_list(
-      table => "lookup~country~uk_city",
-      id    => "city_id",
-      data  => "name",
-                                   ),
-                             ];
+  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'select') {
+    my $query = <<ENDSQL
+SELECT subentity_id, subentity_name
+FROM `lookup~country~subentity`
+WHERE country_id = ?
+ORDER BY subentity_name
+ENDSQL
+    ;
+    my $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($rusty->{params}->{country_id});
+    $rusty->{params}->{enable_subentities_list} = 1;
+    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name};
+    }
+    $sth->finish;
+  }
   
   return 1;
 }
