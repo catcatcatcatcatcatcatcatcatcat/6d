@@ -1,14 +1,27 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl -Td
 
 use strict;
 
 use lib '../../lib';
 
+
 use warnings qw( all );
 
 no warnings qw( uninitialized );
 
+
 use CarpeDiem;
+
+#use Math::TrulyRandom qw( truly_random_value );
+#use Math::Random qw( rand );
+# This successfuly gets around the problem of /dev/random providing
+# no entropy on our current VM setup!  Wahoo!
+if ($ENV{NO_ENTROPY}) {
+  eval {
+    require Math::Random::MT::Auto;
+    import Math::Random::MT::Auto qw( rand srand ), '/dev/urandom';
+  }
+}
 
 use rusty::Profiles;
 
@@ -19,6 +32,7 @@ $rusty = rusty::Profiles->new;
 $rusty->{params}->{profile_name} =~ s/\s//o;
 
 $rusty->{ttml} = "profile/view.ttml";
+
 
 
 if ($rusty->{params}->{from_search} && $rusty->{params}->{search_id}) {
@@ -54,14 +68,11 @@ ENDSQL
 
 
 
-my $profile_name = $rusty->getProfileNameFromUserId($rusty->{core}->{'user_id'})
-  if $rusty->{core}->{'user_id'};
-
 # If no profile name was specified,
 if (!$rusty->{params}->{'profile_name'}) {
   # If this is a logged in user, show them their own profile (if it exists).
-  if ($profile_name) {
-    $rusty->{params}->{'profile_name'} = $profile_name;
+  if ($rusty->{core}->{'profile_name'}) {
+    $rusty->{params}->{'profile_name'} = $rusty->{core}->{'profile_name'};
   } else {
     $rusty->process_template;
     $rusty->exit;
@@ -72,10 +83,10 @@ if (!$rusty->{params}->{'profile_name'}) {
 
 
 $query = <<ENDSQL
-SELECT u.user_id, up.profile_id, u.profile_name,
+SELECT up.user_id, up.profile_id, up.profile_name,
 ui.gender, ui.sexuality,
 (YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age,
-lco.name AS country, lci.name AS city,
+lco.name AS country, lcs.subentity_name AS subentity,
 us.joined, us.last_session_end, us.num_logins, us.mins_online, us.num_clicks,
 usess.updated AS online_now,
 up.height, up.weight, up.waist,
@@ -97,7 +108,6 @@ up.hide_empty_info, up.updated, up.created, up.total_visit_count,
 DATE_FORMAT(up.deleted_date, '%a %d/%m/%y %H:%i') AS deleted_date
 
 FROM `user~profile` up
-INNER JOIN `user` u ON up.user_id = u.user_id
 LEFT JOIN `user~stats` us ON up.user_id = us.user_id
 LEFT JOIN `user~session` usess ON up.user_id = usess.user_id
                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
@@ -114,9 +124,9 @@ LEFT JOIN `lookup~starsign` lst ON up.starsign_id = lst.starsign_id
 LEFT JOIN `lookup~thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
 LEFT JOIN `user~info` ui ON up.user_id = ui.user_id
 LEFT JOIN `lookup~country` lco ON ui.country_id = lco.country_id
-LEFT JOIN `lookup~country~uk_city` lci ON ui.city_id = lci.city_id
+LEFT JOIN `lookup~country~subentity` lcs ON ui.subentity_id = lcs.subentity_id
 
-WHERE u.profile_name = ?
+WHERE up.profile_name = ?
 LIMIT 1
 ENDSQL
 ;
@@ -128,18 +138,28 @@ $sth->finish;
 
 if (!$profile->{'profile_id'}) {
   
+  # If trying to view their own profile, take them to account setup
+  if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
+    print $rusty->CGI->redirect( -url => "/profile/account.pl" );
+    $rusty->exit;
+  }
+  
   # If profile simply does not exist!
   $rusty->{data} = $profile;
   $rusty->{data}->{profile_name} = $rusty->{params}->{profile_name};
-  $rusty->{data}->{title} = "Profile Not Found: $rusty->{data}->{profile_name}";
   $rusty->process_template;
   $rusty->exit;
   
 } elsif ($profile->{deleted_date}) {
   
+  # If trying to view their own profile, take them to account setup
+  if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
+    print $rusty->CGI->redirect( -url => "/profile/account.pl" );
+    $rusty->exit;
+  }
+  
   $rusty->{data} = $profile;
   $rusty->{data}->{profile_name} = $rusty->{params}->{profile_name};
-  $rusty->{data}->{title} = "Profile Deleted: $rusty->{data}->{profile_name}";
   $rusty->process_template;
   $rusty->exit;
   
@@ -170,10 +190,10 @@ if ($rusty->{core}->{'user_id'} > 0) {
   # If logged in user is viewing a profile, catch their tracks!
   if ($rusty->{core}->{'profile_id'} > 0) {
     # Are they looking at their own profile?
-    if ($rusty->{core}->{'profile_id'} != $profile->{'profile_id'}) {
-      $rusty->profileLogVisit($profile->{'profile_id'}, $rusty->{core}->{'profile_id'});
-    } else {
+    if ($rusty->{core}->{'profile_id'} == $profile->{'profile_id'}) {
       $profile->{own_profile} = 1;
+    } else {
+      $rusty->profileLogVisit($profile->{'profile_id'}, $rusty->{core}->{'profile_id'});
     }
   }
 } else {
@@ -183,9 +203,6 @@ if ($rusty->{core}->{'user_id'} > 0) {
 }
 
 $rusty->incrementVisitCount($profile->{'profile_id'}) unless $profile->{own_profile};
-
-$rusty->{data}->{title} = "$profile->{profile_name}'s Profile";
-
 
 # Sort out main profile photo and caption
 $profile->{'main_photo'} = $rusty->getMainPhoto($profile->{'profile_id'});
@@ -211,7 +228,7 @@ $profile->{friend} = $rusty->findFriendLink($rusty->{core}->{'profile_id'}, $pro
 $profile->{fave} = $rusty->findExistingFaveLink($rusty->{core}->{'profile_id'}, $profile->{'profile_id'});
 
 if ($profile->{linked_friends} = $rusty->getAllFriends($profile->{'profile_id'})) {
-  my $random_pick = int(rand(@{$profile->{linked_friends}}));
+  my $random_pick = int(rand(@{$profile->{linked_friends}}+0));
   my $random_photo = $rusty->getMainPhoto(${$profile->{linked_friends}}[$random_pick]->{requestee_profile_id});
   $profile->{random_friend}->{thumbnail} = $random_photo->{thumbnail};
   $profile->{random_friend}->{name} = ${$profile->{linked_friends}}[$random_pick]->{requestee_profile_name};
@@ -220,10 +237,9 @@ if ($profile->{linked_friends} = $rusty->getAllFriends($profile->{'profile_id'})
 
 if ($profile->{own_profile}) {
   $query = <<ENDSQL
-SELECT v.visit_id, v.visitor_id, u.profile_name
+SELECT v.visit_id, v.visitor_profile_id, up.profile_name
 FROM `user~profile~visit` v
-INNER JOIN `user~profile` up ON up.profile_id = v.visitor_id
-INNER JOIN `user` u ON u.user_id = up.user_id
+INNER JOIN `user~profile` up ON up.profile_id = v.profile_id
 WHERE v.profile_id = ?
 ORDER BY v.visit_id DESC
 LIMIT 10
@@ -241,17 +257,17 @@ ENDSQL
     $profile->{last_visitor}->{profile_name} = $visitors[0]->{profile_name};
     $profile->{last_visitor}->{main_photo} = $rusty->getMainPhoto($visitors[0]->{visitor_id});
     
-    # Delete all visits stored since the 10th oldest (last retrieved) to keep
-    # this database table nice and sparse!  We don't care after 10 per user..
-    $query = <<ENDSQL
-DELETE FROM `user~profile~visit`
-WHERE profile_id = ?
-  AND visit_id < ?
-ENDSQL
-;
-    $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($profile->{'profile_id'}, $visitors[$#visitors]->{visit_id});
-    $sth->finish;
+#    # Delete all visits stored since the 10th oldest (last retrieved) to keep
+#    # this database table nice and sparse!  We don't care after 10 per user..
+#    $query = <<ENDSQL
+#DELETE FROM `user~profile~visit`
+#WHERE profile_id = ?
+#  AND visit_id < ?
+#ENDSQL
+#;
+#    $sth = $rusty->DBH->prepare_cached($query);
+#    $sth->execute($profile->{'profile_id'}, $visitors[$#visitors]->{visit_id});
+#    $sth->finish;
     $profile->{visitors} = \@visitors;
   }
 }
