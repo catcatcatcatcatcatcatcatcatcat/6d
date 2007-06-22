@@ -1,6 +1,40 @@
 #!/usr/bin/perl -T
 # Script to call if you want to show a photo - 
 # takes photo id as a param and sends out the file info.. Lovely.
+
+
+
+
+
+
+
+
+
+#########################################################################
+#                                                                       #
+#                                                                       #
+#   This script is now decommissioned - it's nicer to have any images   #
+#                                                                       #
+#   requested as-is and cached cleverly by squid for many people's      #
+#                                                                       #
+#   requests rather than have this run every bloody time :)             #
+#                                                                       #
+#                                                                       #
+#########################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 use strict;
 
 use lib '../../lib';
@@ -48,7 +82,7 @@ my $fullsize = $rusty->{params}->{f};
 my $adminmode = $rusty->{params}->{a};
 my $thumbnail_nocrop = $rusty->{params}->{nc};
 
-my ($profile_id, $pornpass);
+my ($profile_id, $adultpass);
 
 if ($rusty->{core}->{'user_id'}) {
   
@@ -57,26 +91,25 @@ SELECT up.profile_id
 #       ui.user_id
 FROM `user~profile` up
 #LEFT JOIN `user~info` ui ON ui.user_id = up.user_id
-#                        AND ui.pornpass_expiry > NOW()
+#                        AND ui.adultpass_expiry > NOW()
 WHERE up.user_id = ?
 LIMIT 1
 ENDSQL
 ;
   $sth = $rusty->DBH->prepare_cached($query);
   $sth->execute($rusty->{core}->{'user_id'});
-  ($profile_id, $pornpass) = $sth->fetchrow_array;
+  ($profile_id, $adultpass) = $sth->fetchrow_array;
   $sth->finish;
 }
 
 $query = <<ENDSQL
-SELECT upp.profile_id, u.profile_name,
+SELECT upp.profile_id, up.profile_name,
        upp.resized_filename AS filename,
        upp.thumbnail_filename,
        upp.thumbnail_nocrop_filename,
        upp.deleted_date, upp.checked_date, upp.adult
 FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
-INNER JOIN `user` u ON u.user_id = up.user_id
 WHERE upp.photo_id = ?
 LIMIT 1
 ENDSQL
@@ -96,13 +129,12 @@ $sth->finish;
 #foreach (1..1000) {
 #  $rusty->benchmark->start('photo.pl-query-joined');
 #  $query = <<ENDSQL
-#SELECT upp.profile_id, u.profile_name,
+#SELECT upp.profile_id, up.profile_name,
 #       upp.resized_filename AS filename,
 #       upp.thumbnail_filename,
 #       upp.checked_date, upp.adult
 #FROM `user~profile~photo` upp
 #INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
-#INNER JOIN `user` u ON u.user_id = up.user_id
 #WHERE upp.photo_id = ?
 #LIMIT 1
 #ENDSQL
@@ -143,9 +175,9 @@ $sth->finish;
 #  my ($rusty->{core}->{'user_id'}) = $sth->fetchrow;
 #  $sth->finish;
 #  $query = <<ENDSQL
-#SELECT u.profile_name
-#FROM `user` u
-#WHERE u.user_id = ?
+#SELECT profile_name
+#FROM `user~profile`
+#WHERE user_id = ?
 #LIMIT 1
 #ENDSQL
 #;
@@ -194,7 +226,7 @@ if ($photo_info->{deleted_date}) {
     
   # If the current user has paid to see all photos or is viewing
   # one of their own photos in admin mode, let them see it!
-  } elsif ($pornpass
+  } elsif ($adultpass
       || ($adminmode && ($profile_id == $photo_info->{'profile_id'}))) {
     
     $filename = $photo_info->{filename};
