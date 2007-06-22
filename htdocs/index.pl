@@ -20,13 +20,13 @@ $dbh = $rusty->DBH;
 
 $rusty->{ttml} = "index.ttml";
 
-$rusty->{data}->{'title'} = "Welcome ".$ENV{'REMOTE_ADDR'};
-
-
 if ($rusty->{core}->{'user_id'}) {
   
   $rusty->populate_user_stats($rusty->{core}->{'user_id'});
 }
+
+$rusty->{data}->{'welcome'} = $rusty->{params}->{'welcome'};
+$rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
 
 $rusty->populate_site_stats();
 
