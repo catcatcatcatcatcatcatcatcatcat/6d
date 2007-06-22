@@ -9,5 +9,5 @@ use Exporter;
 );
 
 ## Mailing configuration ##
-our $SMTP = 'mailhost.zen.co.uk';
-our $FROM = 'Mailing script <zen46691@zen.co.uk>';
+our $SMTP = 'localhost'; #'mailhost.zen.co.uk';
+our $FROM = 'Mailing script <noreply@rustypea.com>';
