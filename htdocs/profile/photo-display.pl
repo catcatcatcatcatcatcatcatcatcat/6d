@@ -44,35 +44,61 @@ sub display_single_photo {
   $rusty->{data}->{adminmode} = $rusty->{params}->{a};
   
   my $query = <<ENDSQL
-SELECT upp.photo_id, upp.caption, upp.total_visit_count,
-       upp.uploaded_date, upp.profile_id, u.profile_name
+SELECT up.profile_name,
+       upp.profile_id, upp.photo_id,
+       upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
+       upp.kilobytes, upp.width, upp.height,
+       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
+       upp.caption,
+       DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
+       upp.assigned_to,
+       DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
+       upp.adult, upp.total_visit_count
 FROM `user~profile~photo` upp
-INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
-INNER JOIN `user` u ON u.user_id = up.user_id
+LEFT JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.photo_id = ?
+  AND upp.deleted_date IS NULL
 LIMIT 1
 ENDSQL
 ;
   $sth = $rusty->DBH->prepare_cached($query);
   $sth->execute($photo_id);
-  ($rusty->{data}->{photo}->{photo_id},
-   $rusty->{data}->{photo}->{caption},
-   $rusty->{data}->{photo}->{total_visit_count},
-   $rusty->{data}->{photo}->{uploaded},
-   $rusty->{data}->{photo}->{'profile_id'},
-   $rusty->{data}->{photo}->{profile_name}) = $sth->fetchrow_array;
+  $rusty->{data}->{photo} = $sth->fetchrow_hashref;
   $sth->finish;
+  
+  # If the photo id requested does not exist, go crazy!
+  if (!$rusty->{data}->{photo}->{photo_id}) {
+    warn "photo id requested simply does not exist (photo id: $photo_id)";
+    $rusty->{data}->{error} = "Photo not found";
+    $rusty->process_template;
+    $rusty->exit;
+  }
+  
+  
+  # Let's make sure that if admin mode was requested, we are
+  # looking at one of our own photos. If so, we give access regardless.
+  if ($rusty->{data}->{adminmode}) {
+    if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
+      warn "admin mode requested for photo that isn't theirs: "
+         . " profile id '$rusty->{core}->{profile_id}' and photo id '$photo_id'.";
+      delete $rusty->{data}->{adminmode};
+    }
+  }
+  
   
   if ($profile_id ne $rusty->{data}->{photo}->{'profile_id'}) {
     
     warn "photo id $photo_id requested for non-matching profile id $profile_id"
        . " instead of correct profile id $rusty->{data}->{photo}->{'profile_id'}";
     $rusty->{data}->{error} = "Profile id and photo id do not match";
+    $rusty->process_template;
+    $rusty->exit;
     
-  # As long as we aren't looking at our own photo or in admin mode (although
-  # in admin mode, we would only be looking at our own photos!), update visit count.
-  } elsif (!$rusty->{data}->{adminmode} &&
-           ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'})) {
+  }
+  
+  
+  # As long as we aren't looking at our own photo, update visit count.
+  if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
     
     $query = <<ENDSQL
 UPDATE `user~profile~photo` SET
