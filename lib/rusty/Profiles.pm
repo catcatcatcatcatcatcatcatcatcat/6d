@@ -36,7 +36,7 @@ sub new() {
   
   if ($self->{core}->{'user_id'}) {
     $self->{core}->{'profile_id'}   = $self->getProfileIdFromUserId($self->{core}->{'user_id'});
-    $self->{core}->{'profile_name'} = $self->getProfileNameFromProfileId($self->{core}->{'profile_id'});
+    $self->{core}->{'profile_name'} = $self->getProfileNameFromUserId($self->{core}->{'user_id'});
     $self->{core}->{'profile_info'} = $self->getProfileInfo($self->{core}->{'profile_id'});
   }
   
@@ -46,7 +46,17 @@ sub new() {
 
 
 
-sub _init() {
+#sub DESTROY() {
+#  my $self = shift;
+#  $self->init();
+#  # Bless into SUPER class so SUPER::DESTROY is called on it! :)
+#  bless $self, $ISA[0];
+#}
+
+# Make sure we start with fresh data since DESTROY 
+# doesn't seem to get called until it's too late (it
+# relies on garbage collection's timing.)
+sub init() {
   
   my $self = shift;
   
@@ -54,13 +64,9 @@ sub _init() {
   # are lost for between calls if mod_perl is in action..
   &_profile_info_DESTROY;
   
-  # Bless into SUPER class so rusty::DESTROY is called on it! :)
-  #bless $self, $ISA[0]; # This line is back from when it was the DESTROY method..
-  
-  # Call parent class' _init method..
-  $self->SUPER::_init();
+  # Call parent class' init method..
+  $self->SUPER::init();
 }
-
 
 
 
@@ -240,14 +246,12 @@ sub gramsToSt($) {
     
     my ($field, $value) = @_;
     
-    ($field =~ s/^(user_id|profile_id)$/up.$1/o)
-      || ($field =~ s/^(profile_name)$/u.$1/o)
-      || return; # Only allow certain fields!
+    # Only allow certain fields!
+    return unless $field =~ /^(user_id|profile_id|profile_name)$/o;
     
     my $query = <<ENDSQL
-SELECT u.profile_name, up.*
-FROM `user~profile` up
-INNER JOIN `user` u ON u.user_id = up.user_id
+SELECT *
+FROM `user~profile`
 WHERE $field = ?
 LIMIT 1
 ENDSQL
@@ -285,20 +289,20 @@ sub profileLogVisit($$) {
   
   my $self = shift;
   
-  my ($profile_id, $visitor_id) = @_;
+  my ($profile_id, $visitor_profile_id) = @_;
   
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
 SELECT time FROM `user~profile~visit`
 WHERE profile_id = ?
-AND visitor_id = ?
+AND visitor_profile_id = ?
 LIMIT 1
 ENDSQL
 ;
   
   my $sth = $dbh->prepare_cached($query);
-  $sth->execute($profile_id, $visitor_id);
+  $sth->execute($profile_id, $visitor_profile_id);
   my $visit_info = $sth->fetchrow_hashref;
   $sth->finish;
   
@@ -308,12 +312,12 @@ ENDSQL
 UPDATE `user~profile~visit`
 SET time = NOW()
 WHERE profile_id = ?
-AND visitor_id = ?
+AND visitor_profile_id = ?
 LIMIT 1
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($profile_id, $visitor_id);
+    $sth->execute($profile_id, $visitor_profile_id);
     $sth->finish;
     
   } else {
@@ -323,12 +327,12 @@ ENDSQL
     # and the visted profile's unique visit count.
     $query = <<ENDSQL
 INSERT INTO `user~profile~visit`
-(profile_id, visitor_id, time) VALUES
+(profile_id, visitor_profile_id, time) VALUES
 (?, ?, NOW())
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($profile_id, $visitor_id);
+    $sth->execute($profile_id, $visitor_profile_id);
     $sth->finish;
     
     $query = <<ENDSQL
@@ -339,7 +343,7 @@ WHERE up.profile_id = ?
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($visitor_id);
+    $sth->execute($visitor_profile_id);
     $sth->finish;
     
     $query = <<ENDSQL
@@ -364,7 +368,7 @@ ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
   $sth = $dbh->prepare_cached($query);
-  $sth->execute($visitor_id);
+  $sth->execute($visitor_profile_id);
 }
 
 
@@ -405,6 +409,82 @@ ENDSQL
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($visited_id);
   $sth->finish;
+}
+
+
+sub getRecentProfileVisitors($$) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $limit = shift;
+  $limit ||= 10;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT up.profile_name,
+ui.gender, ui.sexuality, ui.subentity_id, ui.country_id,
+(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age,
+  CONCAT_WS(' ',
+    IF(DATE(upv.time) = CURRENT_DATE(), '',
+      IF(DATE(upv.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
+        IF(DATE(upv.time) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK), DATE_FORMAT(upv.time, '%W, %e/%c, '),
+          DATE_FORMAT(upv.time, '%e/%c/%y')
+        )
+      )
+    ), DATE_FORMAT(upv.time, '%H:%i')
+  ) AS time,
+  up.main_photo_id,
+  upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
+FROM `user~profile~visit` upv
+INNER JOIN `user~profile` up ON up.profile_id = upv.visitor_profile_id
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+INNER JOIN `user~info` ui ON ui.user_id = up.user_id
+WHERE upv.profile_id = ?
+ORDER BY upv.time DESC
+LIMIT ?
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id, $limit);
+  my @visits = ();
+  my $visitor_stats = {};
+  while (my $visit_info = $sth->fetchrow_hashref) {
+    
+    $visitor_stats->{age_min} = $visit_info->{age}
+      if !$visitor_stats->{age_min} ||
+         ($visit_info->{age} < $visitor_stats->{age_min});
+    $visitor_stats->{age_max} = $visit_info->{age}
+      if !$visitor_stats->{age_max} ||
+         ($visit_info->{age} > $visitor_stats->{age_max});
+    $visitor_stats->{genders}->{$visit_info->{gender}}++;
+    $visitor_stats->{country_ids}->{$visit_info->{country_id}}++;
+    #$visitor_stats->{subentity_ids}->{$visit_info->{subentity_id}}++;
+    #$visitor_stats->{sexualities}->{$visit_info->{sexuality}}++;
+    $visitor_stats->{total}++;
+    
+    if ($self->{params}->{age_min} && $self->{params}->{age_min} ne 'any'
+        && $visit_info->{age} < $self->{params}->{age_min}) {
+    } elsif ($self->{params}->{age_max} && $self->{params}->{age_max} ne 'any'
+             && $visit_info->{age} > $self->{params}->{age_max}) {
+    } elsif ($self->{params}->{gender} && $self->{params}->{gender} ne 'any'
+             && $visit_info->{gender} ne $self->{params}->{gender}) {
+    } elsif ($self->{params}->{country_id} && $self->{params}->{country_id} ne 'any'
+             && $visit_info->{country_id} ne $self->{params}->{country_id}) {
+    } else {
+      push @visits, $visit_info;
+    }
+  }
+  $sth->finish;
+  
+  if (@visits && ($visitor_stats->{total} > $limit)) {
+    pop @visits;
+  }
+  
+  return @visits ? { visits => \@visits, visitor_stats => $visitor_stats }
+                 : { visitor_stats => $visitor_stats };
 }
 
 
