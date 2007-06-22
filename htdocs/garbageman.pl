@@ -178,7 +178,6 @@ if (($rows = $dbh->do($site_benchmarks_query)) ne '0E0') {
 
 
 $rusty->{ttml} = "garbageman.ttml";
-$rusty->{data}->{title} = 'Garbageman! He cleans things up.';
 
 $rusty->process_template;
 $rusty->exit;
