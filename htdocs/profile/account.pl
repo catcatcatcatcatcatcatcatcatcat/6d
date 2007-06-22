@@ -35,16 +35,16 @@ $rusty->{param_info} = {
   fave_thing          => { title => 'Thing', size => 30, maxlength => 100 },
   
   # lookups (TINYINT(3)):
-  starsign_id            => { title => 'Star sign', minnum => 0, maxnum => 255 },
-  relationship_status_id => { title => 'Relationship status', minnum => 0, maxnum => 255 },
-  smoker_id              => { title => 'Smoker', minnum => 0, maxnum => 255 },
-  drinker_id             => { title => 'Drinker', minnum => 0, maxnum => 255 },
-  drug_user_id           => { title => 'Drug user', minnum => 0, maxnum => 255 },
-  body_type              => { title => 'Body type', minnum => 0, maxnum => 255 },
-  body_hair              => { title => 'Body hair', minnum => 0, maxnum => 255 },
-  thought_type_id        => { title => 'Question', minnum => 1, maxnum => 255 },
-  eye_colour_id          => { title => 'Eye colour', minnum => 0, maxnum => 255 },
-  ethnic_origin_id       => { title => 'Ethnic origin', minnum => 0, maxnum => 255 },
+  starsign_id            => { title => 'Star sign', type => 'select', minnum => 0, maxnum => 255 },
+  relationship_status_id => { title => 'Relationship status', type => 'select', minnum => 0, maxnum => 255 },
+  smoker_id              => { title => 'Smoker', type => 'select', minnum => 0, maxnum => 255 },
+  drinker_id             => { title => 'Drinker', type => 'select', minnum => 0, maxnum => 255 },
+  drug_user_id           => { title => 'Drug user', type => 'select', minnum => 0, maxnum => 255 },
+  body_type              => { title => 'Body type', type => 'select', minnum => 0, maxnum => 255 },
+  body_hair              => { title => 'Body hair', type => 'select', minnum => 0, maxnum => 255 },
+  thought_type_id        => { title => 'Question', type => 'select', minnum => 1, maxnum => 255 },
+  eye_colour_id          => { title => 'Eye colour', type => 'select', minnum => 0, maxnum => 255 },
+  ethnic_origin_id       => { title => 'Ethnic origin', type => 'select', minnum => 0, maxnum => 255 },
   
   # integers (TINYINT(3) & SMALLINT(5)):
   height              => { title => 'Height', minnum => 0, maxnum => 255 },
@@ -66,11 +66,11 @@ $rusty->{param_info} = {
   thought_text        => { title => 'Final Thought', cols => 25, rows => 4, maxlength => 65535 },
   
   # select (ENUM('lbs','kg','st')):
-  weight_type         => { title => 'Units', regexp => '(lbs|kg|st)' },
+  weight_type         => { title => 'Units', type => 'select', regexp => '(lbs|kg|st)' },
   
   # boolean (TINYINY(1)) - but checkbox so vals are '1' or '':
-  email_alert         => { title => 'Email alerts', regexp => '1?' },
-  hide_empty_info     => { title => 'Hide empty info', regexp => '1?' },
+  email_alert         => { title => 'Email alerts', regexp => '^1?$' },
+  hide_empty_info     => { title => 'Hide empty info', regexp => '^1?$' },
   
   # hidden fields
   profile_id          => { minnum => 1, maxnum => 65535, allow_empty => 1 },
@@ -82,13 +82,15 @@ $rusty->{param_info} = {
 
 $rusty->{data}->{param_info} = $rusty->{param_info};
 
+my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
+
 
 
 
 # Grab existing profile info for this user if it exists
 
 unless ($rusty->{core}->{'user_id'} > 0) {
-  print $rusty->CGI->redirect( -url => "/login.pl" );
+  print $rusty->CGI->redirect( -url => "/login.pl?ref=/profile/account.pl" );
   $rusty->exit;
   # If user not logged in, redirect to original signup.
   # So we're assuming here that signup has logged them in..
@@ -98,10 +100,10 @@ unless ($rusty->{core}->{'user_id'} > 0) {
 }
 
 $query = <<ENDSQL
-SELECT ui.gender, u.profile_name
-FROM `user` u
-LEFT JOIN `user~info` ui ON ui.user_id = u.user_id
-WHERE u.user_id = ?
+SELECT ui.gender, up.profile_name
+FROM `user~profile` up
+LEFT JOIN `user~info` ui ON ui.user_id = up.user_id
+WHERE up.user_id = ?
 LIMIT 1
 ENDSQL
 ;
@@ -120,36 +122,36 @@ unless ($rusty->{params}->{'gender'} &&
 
 my $existing_profile = $rusty->{core}->{'profile_info'};
 
-$rusty->{data}->{title} = "Profiles Signup! Whoo!";
-
-my $param_errors = 0;
+my $num_param_errors = 0;
 
 if ($rusty->{params}->{'submitting'}) {
   
   # If this is 2nd call to signup (with 'submitting' set),
   # First, let's catch out the smart-ass monster-truckers..
   unless ($rusty->ensure_post()) {
-    $rusty->{data}->{'not_posted'} = "1";
+    $rusty->{data}->{not_posted} = 1;
     $rusty->process_template();
     $rusty->exit;
   }
   
   # Check that all the data we've been given is right.
-  $param_errors = $rusty->validate_params();
+  $num_param_errors = $rusty->validate_params();
   
   require Data::Validate::URI; # 'is_uri';
   $rusty->{params}->{website} =~ s!^http://!!oi;
   if (!Data::Validate::URI::is_http_uri('http://'.$rusty->{params}->{website})) {
-    $rusty->{param_errors}->{website} = "does not look like a valid URL!";
-    $param_errors++;
+    $rusty->{param_errors}->{website}->{error} = "does not look like a valid URL!";
+    $rusty->{param_errors}->{website}->{title} = $rusty->{params}->{website}->{title};
+    $num_param_errors++;
   }
   $rusty->{params}->{fave_website} =~ s!^http://!!oi;
   if (!Data::Validate::URI::is_http_uri('http://'.$rusty->{params}->{fave_website})) {
-    $rusty->{param_errors}->{fave_website} = "does not look like a valid URL!";
-    $param_errors++;
+    $rusty->{param_errors}->{fave_website}->{error} = "does not look like a valid URL!";
+    $rusty->{param_errors}->{fave_website}->{title} = $rusty->{params}->{fave_website}->{title};
+    $num_param_errors++;
   }
   
-  if ($param_errors > 0) {
+  if ($num_param_errors > 0) {
     
     # List errors in attempt to add/edit a profile
     $rusty->{data}->{errors} = $rusty->{param_errors};
@@ -183,7 +185,7 @@ if ($rusty->{params}->{'submitting'}) {
       
       $query = <<ENDSQL
 INSERT INTO `user~profile`
-(created, 
+(created, updated,
  email_alert, weight,
  hair, eye_colour_id,
  website, profession,
@@ -204,7 +206,7 @@ INSERT INTO `user~profile`
  thought_type_id, thought_text,
  hide_empty_info, user_id)
 VALUES
-(NOW(),
+(NOW(), NOW(),
  ?, ?,
  ?, ?,
  ?, ?,
@@ -248,7 +250,25 @@ ENDSQL
         $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
         $rusty->{params}->{hide_empty_info},  $rusty->{core}->{'user_id'}
       );
+
+      my $inserted_profile_id = $rusty->DBH->{'mysql_insert_id'};
+      if ($inserted_profile_id > 0) {
+	  $query = <<ENDSQL
+UPDATE `user` SET profile_id = ? WHERE user_id = ? LIMIT 1
+ENDSQL
+;
+	  my $sth_update_profile_id_in_user_table = $rusty->DBH->prepare_cached($query);
+	  $sth_update_profile_id_in_user_table->execute($inserted_profile_id, $rusty->{core}->{'user_id'});
+	  $sth_update_profile_id_in_user_table->finish;
+      }
       $sth->finish;
+      
+      if ($ref) {
+        # If we had somewhere that they were redirected here from, take them back there! :)
+        require URI::Escape;
+        print $rusty->CGI->redirect( -url => $ref );
+        $rusty->exit;
+      }
       
     } else {
       
