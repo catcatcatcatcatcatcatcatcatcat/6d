@@ -24,7 +24,7 @@ sub show_error_image();
 
 # Set autoflush and binary output for images
 
-$| = 1;
+#$| = 1;
 
 binmode STDOUT;
 
@@ -86,7 +86,7 @@ $obj->fonts([$font_dir.'Verdana.TTF',$font_dir.'Arial.TTF',
 
 my $img = $obj->ImagePassword();
 
-$img->Set(quality => 90, magick => "JPG");
+$img->Set(quality => 70, magick => "JPG");
 
 print "Content-type: image/jpeg\n\n";
 
@@ -104,7 +104,7 @@ if ($image) {
 
 sub show_error_image() {
 
-  my $error_image = "../images/passphrase-error.jpg";
+  my $error_image = "$ENV{DOCUMENT_ROOT}/../images/passphrase-error.jpg";
 
   if (open IMAGE, $error_image) {
 
