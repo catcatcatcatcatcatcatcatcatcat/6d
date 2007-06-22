@@ -1,4 +1,8 @@
 var ass;
+var intervalId;
+var intervalId2;
+var count;
+var orig_height;
 
 function OpenAssistant() {
   
@@ -31,10 +35,28 @@ function OpenAssistant() {
   // If that didn't work (we have no popup handle),
   // show the 'oops, popup blocked' message
   if (!ass) {
-    //alert('popups blocked!');
-    p = document.getElementById('popups_blocked_alert');
+    //p = document.getElementById('popups_blocked_alert');
+    p = document.getElementById('notification');
+    p_href = document.getElementById('notification_href');
     if (p) {
-      p.style.display = 'block';
+      //p.style.zIndex = 0;
+      p.style.overflow = 'hidden';
+      //bg_col_above = document.getElementById("NavMenuList").getElementsByTagName("ul").item(0).getElementsByTagName("li").item(0).getElementsByTagName("a").item(0);
+      orig_bg_col = p_href.style.backgroundColor;
+      orig_col = p_href.style.color;
+      p_href.style.backgroundColor = '#333'; //bg_col_above.style.backgroundColor;
+      p_href.style.color = '#333';
+      orig_height = 0;
+      p.style.marginTop = -20 + 'px';
+      cur_height = -20;
+      intervalId = window.setInterval('cur_height = cur_height + 1; if (cur_height > orig_height) { p_href.style.backgroundColor = orig_bg_col; p_href.style.color = orig_col; window.clearInterval(intervalId) }; p.style.marginTop = cur_height + \'px\'; ', 50)
+      count = 0;
+      intervalId2 = window.setInterval('count = count + 1; if (count > 12) { p_href.className = \'\'; window.clearInterval(intervalId2) } else if (count > 2) { if ((count % 2) == 1) { p_href.className = \'hover\' } else { p_href.className = \'\' } }; ', 500)
+      //p_href.style.backgroundColor = orig_bg_col;
+      //orig_height = 20;
+      //p.style.height = 0;// + 'px';
+      //cur_height = 0;
+      //intervalId = window.setInterval('cur_height = cur_height + 1; alert(cur_height); if (cur_height > orig_height) { window.clearInterval(intervalId) }; p.style.height = cur_height + \'px\'; ',50)
     }
   }
   return false;
@@ -48,7 +70,7 @@ function CloseAssistant() {
   // NB. Seems at the moment we never have a handle so are always
   // writing this popup over the existing one.. In IE & FF!
   if (!ass) {
-    //alert('i have no ass! seems i will never have an ass..');
+    //alert('i have no ass! it seems i will never have an ass..');
     ass = window.open('',
                       'ass',
                       'width=1,height=1,' +
@@ -58,7 +80,8 @@ function CloseAssistant() {
   // And then close it now we have a handle on it - people who already
   // had the window closed will see a flicker as a window opens and closes,
   // people who had it open should have it changed and closed instantly..
-  ass.close();
+  if (ass)
+    ass.close();
   
   return false;
 }
