@@ -1,11 +1,9 @@
 /* Navigation */ 
 
 body {
-    color: #000;
-    background: #fff url(/images/navigation/navbar-background.gif) repeat-x;
-    margin: 0; padding: 0;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 12px;
+  background: #fff url(/images/navigation/navbar-background.gif) repeat-x;
+  color: inherit;
+  margin: 0; padding: 0;
 }
 
 
@@ -14,70 +12,72 @@ but overlays the upgrade button in some browsers. Still
 looking for a good fix. 
 100% stretches the bar and creates a horizontal scroll. Suckage. */
 #NavMenuList {
-    color: #000; background-color: transparent;
-    font: 80% Arial, Geneva, Helvetica, sans-serif;
-    padding: 3px; margin-left: 40px;
-    
-    position: absolute;
-    left: 60px; top: 60px;
-    height: 40px; right: 100px;
-    width: 90%;
-    margin: 0; padding: 0;
-    display: inline; white-space: nowrap;
-    clear: both;
-    z-index: 3;
+  font: 80% Arial, Geneva, Helvetica, sans-serif;
+  /* padding: 3px; margin-left: 40px; */
+  
+  position: absolute;
+  left: 60px; top: 60px;
+  height: 40px; right: 100px;
+  width: 90%;
+  margin: 0; padding: 0;
+  display: inline; white-space: nowrap;
+  clear: both;
+  z-index: 3;
 }
 #NavMenuList li {
-    display: inline;
-    list-style: none; white-space: nowrap;
+  display: inline;
+  list-style: none; white-space: nowrap;
 }
 #NavMenuList a {
-    padding: 2px 10px 1px 10px;
-    width: auto; /*height: 16px;*/
-    color: #FFF; background-color: #036;
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
-    text-decoration: none;
-    float: left; display: block;
-    border-top: 1px solid #FFF;
+  padding: 2px 10px 1px 10px;
+  width: auto; /*height: 16px;*/
+  color: #FFF; background-color: #036;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+  text-decoration: none;
+  float: left; display: block;
+  border-top: 1px solid #FFF;
 }
-/* The following is the Tantek hack to make the above element
-   display properly in IE5 and others that have the box-model bug */
 #NavMenuList a {
-  height: 20px; /* 'incorrect' height for IE5 with box-model bug */
-  voice-family: "\"}\"";
-  voice-family:inherit;
-  height:16px; /* 'correct' height */
+  height:16px; /* 'correct' height (overridden in ie5.x css file */
 }
-html>body #NavMenuList a {
-  height:16px; /* be nice to opera 5 with 'correct' height again */
-}
-/* end of Tantek hack */
 #NavMenuList a:hover {
-    color: #000; background-color: #FFF;
+  color: #000; background-color: #FFF;
+}
+#NavMenuList li.Selected a {
+  color: #000; background-color: #FFF;
 }
 #NavMenuList .NavSubMenuList {
-    visibility: hidden;
-    left: 0; top: 20px;
-    position: absolute; height: 20px;
-    width: 100%; display: inline; white-space: nowrap;
-    margin: 0; padding: 0; border: 0px;
+  visibility: hidden;
+  left: 0; top: 20px;
+  position: absolute; height: 20px;
+  width: 100%; display: inline; white-space: nowrap;
+  margin: 0; padding: 0; border: 0px;
+}
+#NavMenuList .NavSubMenuList.Selected {
+  visibility: visible;
 }
 .NavSubMenuList li {
-    display: inline;
-    list-style: none;
+  display: inline;
+  list-style: none;
 }
 #NavMenuList .NavSubMenuList li a {
-    color: #FFF;
-    background-color: #69C;
-    float: left;
+  color: #FFF; background-color: #69C;
+  float: left;
+  z-index: 2;
 }
 #NavMenuList .NavSubMenuList li a:hover {
-    color: #000; background-color: #FFF;
+  color: #000; background-color: #FFF;
+}
+#NavMenuList .NavSubMenuList li.Selected a {
+  color: #000; background-color: #FFF;
 }
 #NavMenuListTitle {
-    margin-left: 40px;
-    text-decoration: underline;
-    display: none;
+  margin-left: 40px;
+  text-decoration: underline;
+  display: none;
+}
+#NavMenuList a span.navmenu-attention {
+  color: #F06; background-color: inherit;
 }
 
 
@@ -86,28 +86,28 @@ html>body #NavMenuList a {
 /* Footer */
 
 #FooterNav {
-    /*margin: 0px; padding: 0 100px 0 70px;*/
-    /*border: 1px solid #69C;*/
-    margin: 0; padding: 0; border: 0;
-    color: #FFF; background-color: #69C;
-    clear: both;
-    width: 100%; height: 20px;
+  /*margin: 0px; padding: 0 100px 0 70px;*/
+  /*border: 1px solid #69C;*/
+  margin: 0; padding: 0; border: 0;
+  color: #FFF; background-color: #69C;
+  clear: both;
+  width: 100%; height: 20px;
 }
 #FooterNav li {
-    color: #FFF; background-color: #69C;
-    display: inline;
-    list-style: none;
+  color: #FFF; background-color: #69C;
+  display: inline;
+  list-style: none;
 }
 #FooterNav a {
-    color: #FFF; background-color: transparent;
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
-    text-decoration: none;
-    padding: 3px 10px 1px 10px;
-    width: auto; height: 16px;
-    float: left;
+  color: #FFF; background-color: inherit;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+  text-decoration: none;
+  padding: 3px 10px 1px 10px;
+  width: auto; height: 16px;
+  float: left;
 }
 #FooterNav a:hover {
-    color: #000; background-color: #FFF;
+  color: #000; background-color: #FFF;
 }
 
 
@@ -116,108 +116,109 @@ html>body #NavMenuList a {
 /* Layout */
 
 #Content {
-    margin: 120px 30px 0 30px;
-    padding-bottom: 20px;
-    padding-top: 15px;
+  margin: 115px 30px 0 30px;
+  padding-bottom: 20px;
+  padding-top: 15px;
 }
-/* Fix IE5 Horizontal scroll */
-* html div#Content { width: 100%; w\idth: auto; }
+
+div#Content { width: auto; }
 
 #Userpic {
-    display: block;
-    position: absolute;
-    left: auto; right: 0; top: 0;
-    width: 101px; height: 100px;
-    color: #FFF; background-color: #FFF;
-    text-align: right;
-    z-index: 2;
+  display: block;
+  position: absolute;
+  left: auto; right: 0; top: 0;
+  width: 101px; height: 100px;
+  color: #FFF; background-color: inherit;
+  text-align: right;
+  z-index: 2;
 }
 #Userpic img {
-    display: inline;
-    width: 100px; height: 100px;
-    color: #000; background-color: #FFF;
-    border: 0;
+  display: inline;
+  width: 100px; height: 100px;
+  color: #000; background-color: #FFF;
+  border: 0;
 }
 
 
 #Logo {
-    position: absolute;
-    left: 0; top: 0;
-    height: 68px;
-    margin: 0; padding: 0;
-    color: #FFF; background-color:transparent;
+  position: absolute;
+  left: 0; top: 0;
+  height: 68px;
+  margin: 0; padding: 0;
 }
 #Logo img {
-    border: 0;
+  border: 0;
 }
 #LogoSubText {
-    position: absolute;
-    left: 100px; top: 50px;
-    height: 5px;
-    margin: 0; padding: 0;
-    color: #FFF; background-color:#69C;
+  position: absolute;
+  left: 100px; top: 50px;
+  height: 5px; border: 0;
+  margin: 0; padding: 0;
+  color: #FFF; background-color:#69C;
 }
 #LogoSubText img {
-    border: 0;
+  border: 0;
+  float: left;
 }
 
 #Greeting {
-    position: absolute;
-    left: auto; right: 112px; top: 15px;
-    width: auto; height: 20px;
-    text-align: right;
-    color: #FFF; background-color: transparent;
-    font: 12px Arial, Helvetica, sans-serif;
-    text-decoration: none;
+  position: absolute;
+  left: auto; right: 112px; top: 15px;
+  width: auto; height: 20px;
+  text-align: right;
+  color: #FFF; background-color: inherit;
+  font: 12px Arial, Helvetica, sans-serif;
+  text-decoration: none;
 }
 #Greeting a {
-    color: #FFF; background-color: transparent;
-    font-size:1.2em;
+  color: #FFF; background-color: inherit;
+  font-size:1.2em;
 }
 #Greeting #Logout {
-    font: 9px Arial, Geneva, Helvetica, sans-serif;
-    margin-left: 10px;
+  font: 9px Arial, Geneva, Helvetica, sans-serif;
+  margin-left: 10px;
 }
 
 #Setlang {
-    position: absolute;
-    left: auto; right: 105px; top: 0px;
-    width: auto; height: 20px;
-    margin: 0; padding: 0; border: 0;
-    text-align: right; white-space: nowrap;
+  position: absolute;
+  left: auto; right: 105px; top: 0px;
+  width: auto; height: 20px;
+  margin: 0; padding: 0; border: 0;
+  text-align: right; white-space: nowrap;
 }
 #Setlang a {
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
-    color: #FFF; background-color: #69C;
-    text-decoration: none;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+  color: #FFF; background-color: #69C;
+  text-decoration: none;
 }
 
 #LoginBox {
-    position: absolute;
-    left: auto; right: 120px; top: 4px;
-    width: auto; height: 20px;
-    text-align: right;
-    color: #FFF; background-color: transparent;
-    font: 12px Arial, Helvetica, sans-serif;
+  position: absolute;
+  left: auto; right: 120px; top: 4px;
+  width: auto; height: 20px;
+  text-align: right;
+  color: #FFF; background-color: inherit;
+  font: 12px Arial, Helvetica, sans-serif;
 }
 #LoginBox a {
-    color: #FFF;
+  color: #FFF; background-color: inherit;
 }
 #LoginBox #Login {
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
-    margin-left: 10px;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+  margin-left: 10px;
 }
 
 #NotLoggedInDiv {
-    position:absolute;
-    left: auto; right: 150px; top: 12px;
-    width: auto; height: 20px;
-    text-align: right;
-    color: #FFF; background-color: transparent;
-    font: 14px Arial, Helvetica, sans-serif;
+  position:absolute;
+  left: auto; right: 150px; top: 12px;
+  width: auto; height: 20px;
+  text-align: right;
+  color: #FFF; background-color: inherit;
+  font: 14px Arial, Helvetica, sans-serif;
 }
 #NotLoggedInDiv a {
-    color: #FFF; font-weight: normal;
+  color: #FFF;  background-color: inherit;
+  font-weight: normal;
 }
 
 
@@ -226,24 +227,61 @@ html>body #NavMenuList a {
 /* Forms */
 
 #Search {
-    clear: both; float: left;
-    position: absolute;
-    left: auto; right: 40px; top: 103px;
-    width: auto; height: 20px;
-    margin: 0; padding: 0; border: 0;
-    text-align: right;
-    white-space: nowrap; display: inline;
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
+  clear: both; float: left;
+  position: absolute;
+  left: auto; right: 40px; top: 103px;
+  width: auto; height: 20px;
+  margin: 0; padding: 0; border: 0;
+  text-align: right;
+  white-space: nowrap; display: inline;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
 }
 
 #breadcrumbs {
-    float: right;
-    position: absolute;
-    left: 10px; right: auto; top: 107px;
-    width: auto; height: 20px;
-    margin: 0; padding: 0; border: 0;
-    text-align: left;
-    white-space: nowrap; display: inline;
-    font: 11px Arial, Geneva, Helvetica, sans-serif;
+  left: 10px; top: 107px;
 }
 
+p#notification {
+  display: block;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+  color: #000; background-color: inherit;
+  background: url(/images/colourdots/dddddd.gif) repeat-x bottom left;
+  border-bottom: 1px solid #c1c1c1;
+  position: absolute;
+  left: 0; top: 100px;
+  width: 100%; height: 25px;
+  text-align: left; vertical-align: middle;
+  margin: 0; padding: 0;
+}
+p#notification a {
+  margin: 0;
+  padding: 5px 0 0 23px;
+  display: block;
+  color: #000;
+  background: #ffffe1 url(/images/icons/popup-blocked.gif) no-repeat 3px;
+  border-bottom: 1px solid #ddd;
+  width: auto; height: 19px;
+  text-decoration: none;
+  font-weight: normal;
+}
+p#notification a:hover, p#notification a.hover {
+  background: #4995ED url(/images/icons/popup-blocked-over.gif) no-repeat 3px;
+  color: inherit;
+  text-decoration: none;
+}
+
+p#notification a span#notification-close {
+  display: block;
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  background: url(/images/icons/popup-close.gif) no-repeat top left;
+  z-index:1000;
+}
+
+p#notification a:hover span#notification-close {
+  background-image: url(/images/icons/popup-close-over.gif);
+  z-index:1000;
+}
