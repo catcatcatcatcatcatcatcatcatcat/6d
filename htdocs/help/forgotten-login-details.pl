@@ -32,7 +32,6 @@ sub email_login_details();
 
 
 $rusty->{ttml} = "help/forgotten-login-details.ttml";
-$rusty->{data}->{title} = "Recover Username / Password";
 
 use vars qw($real_name $profile_name $password $email $popup);
 
@@ -58,7 +57,8 @@ if ($rusty->{params}->{'sent'}) {
 SELECT u.email, u.password, ui.real_name
 FROM `user` u
 INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-WHERE u.profile_name = ?
+INNER JOIN `user~profile` up ON up.user_id = u.user_id
+WHERE up.profile_name = ?
 LIMIT 1
 ENDSQL
 ;
@@ -94,9 +94,10 @@ ENDSQL
   # If the user has entered an email address
   
   $query = <<ENDSQL
-SELECT u.profile_name, u.password, ui.real_name
+SELECT up.profile_name, u.password, ui.real_name
 FROM `user` u
 INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+INNER JOIN `user~profile` up ON up.user_id = u.user_id
 WHERE u.email = ?
 LIMIT 1
 ENDSQL
