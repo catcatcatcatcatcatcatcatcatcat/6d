@@ -22,7 +22,6 @@ $dbh = $rusty->DBH;
 
 
 $rusty->{ttml} = "help/resend-activation.ttml";
-$rusty->{data}->{title} = "Resend Activation";
 
 if (!$rusty->{core}->{'user_id'}) {
   
@@ -43,9 +42,10 @@ if (!$rusty->{core}->{'user_id'}) {
   
   $query = <<ENDSQL
 SELECT u.email, u.email_validation_code, u.email_validated,
-       ui.real_name, u.profile_name
+       ui.real_name, up.profile_name
 FROM `user` u
 INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+INNER JOIN `user~profile` up ON up.user_id = u.user_id
 WHERE u.user_id = ?
 LIMIT 1
 ENDSQL
@@ -58,6 +58,7 @@ ENDSQL
   # Send out email to new user with link to validate email
   
   # Merge user info with existing data
+  $rusty->{data} ||= {};
   $rusty->{data} = { %{$rusty->{data}}, %$user_info };
   
   if ($rusty->{params}->{'send'}) {
