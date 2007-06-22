@@ -4,23 +4,12 @@ use Image::Magick;
 
 use strict;
 
-#use lib "../..";
-
 use warnings qw( all );
 
 no warnings qw( uninitialized );
 
-#use CarpeDiem;
+use CarpeDiem;
 
-#use rusty;
-
-# Register package global variables:
-
-#our @ISA = qw( rusty::Profiles );
-
-#sub new() {
-#  return SUPER::new();
-#}
 
 
 
@@ -176,7 +165,8 @@ sub getMainPhoto($) {
   # otherwise get earliest uploaded photo.
   
   my $query = <<ENDSQL
-SELECT upp.photo_id, up.main_photo_id,
+SELECT up.profile_name,
+       upp.photo_id, up.main_photo_id,
        upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
        upp.kilobytes, upp.width, upp.height,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
@@ -201,11 +191,14 @@ ENDSQL
   if (!$photo_info->{photo_id}) {
     
     # No photos at all? then give them mr-question-mark-face
-    $photo_info->{filename} = "";
-    $photo_info->{thumbnail} = "/profile/photo.pl";
-    $photo_info->{adult} = 0;
-    $photo_info->{checked_date} = 1;
-    
+    #$photo_info->{filename} = "";
+    #$photo_info->{thumbnail} = "/profile/photo.pl";
+    #$photo_info->{thumbnail} = "/photos/default.png";
+    #$photo_info->{adult} = 0;
+    # There is no filename so checked_date will not be
+    # checked anymore (logic changed)..
+    #$photo_info->{checked_date} = 1;
+            
     # This should be done via the photo admin but we'll do it
     # here just to be safe! - Set main_photo_id to NOTHING :)
     $query = <<ENDSQL
@@ -235,8 +228,11 @@ ENDSQL
     $sth->finish;
   }
   
-  $photo_info->{thumbnail} = "/profile/photo.pl?id=$photo_info->{photo_id}";
-  $photo_info->{filename} = "/profile/photo.pl?id=$photo_info->{photo_id}&f=1";
+  #$photo_info->{thumbnail} = "/profile/photo.pl?id=$photo_info->{photo_id}";
+  #$photo_info->{filename} = "/profile/photo.pl?id=$photo_info->{photo_id}&f=1";
+  #$photo_info->{thumbnail} = "/photos/$photo_info->{profile_name}/$photo_info->{thumbnail_filename}";
+  #$photo_info->{thumbnail_nocrop} = "/photos/$photo_info->{profile_name}/$photo_info->{thumbnail_nocrop_filename}";
+  #$photo_info->{filename} = "/photos/$photo_info->{profile_name}/$photo_info->{resized_filename}";
   
   return $photo_info;
 }
@@ -266,10 +262,30 @@ WHERE profile_id = ?
 ORDER BY uploaded_date ASC
 ENDSQL
 ;
+#SELECT up.profile_name,
+#       upp.photo_id,
+#       upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
+#       upp.kilobytes, upp.width, upp.height,
+#       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
+#       upp.caption,
+#       DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
+#       upp.assigned_to,
+#       DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
+#       upp.adult, upp.total_visit_count
+#FROM `user~profile~photo` upp
+#LEFT JOIN `user~profile` up ON up.main_photo_id = upp.photo_id
+#WHERE upp.profile_id = ?
+#  AND upp.deleted_date IS NULL
+#ORDER BY upp.uploaded_date ASC
+
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id);
   my @photos = ();
   while (my $photo_info = $sth->fetchrow_hashref) {
+    
+    #$photo_info->{thumbnail} = "/photos/$photo_info->{profile_name}/$photo_info->{thumbnail_filename}";
+    #$photo_info->{thumbnail_nocrop} = "/photos/$photo_info->{profile_name}/$photo_info->{thumbnail_nocrop_filename}";
+    #$photo_info->{filename} = "/photos/$photo_info->{profile_name}/$photo_info->{resized_filename}";
     push @photos, $photo_info;
   }
   $sth->finish;
