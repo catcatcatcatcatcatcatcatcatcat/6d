@@ -15,7 +15,6 @@ use rusty::Profiles;
 our $rusty = rusty::Profiles->new;
 
 $rusty->{ttml} = "help/enabling-javascript.ttml";
-$rusty->{data}->{title} = "Enabling Javascript";
 
 $rusty->process_template;
 $rusty->exit;
