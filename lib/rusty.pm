@@ -10,15 +10,28 @@ use warnings qw(all);
 no  warnings qw(uninitialized);
 
 
-use vars qw( *LOG *BENCHMARK $document_root $site_files_root );
+use vars qw( *LOG *BENCHMARK $site_files_root $DATABASE_VERSION);
 
-use CarpeDiem;
+use CarpeDiem; # qw(carpout); # fatalsToBrowser); # set_progname);# set_message );
+
+#use Math::TrulyRandom qw( truly_random_value );
+#use Math::Random qw( rand );
+# This successfuly gets around the problem of /dev/random providing
+# no entropy on our current VM setup!  Wahoo!
+if ($ENV{NO_ENTROPY}) {
+  eval {
+    require Math::Random::MT::Auto;
+    import Math::Random::MT::Auto qw( rand srand ), '/dev/urandom';
+  }
+}
+
+require File::Spec; #qw( rel2abs );
+
+require Cwd; #qw( fast_abs_path );
+
+
 
 BEGIN {
-  
-  require File::Spec;# qw( rel2abs );
-  require Cwd;# qw( fast_abs_path );
-  #require CarpeDiem; # qw(carpout); # fatalsToBrowser); # set_progname);# set_message );
   
   use IO::Handle;
   
@@ -29,28 +42,33 @@ BEGIN {
   # and error logs we write to are relative to the site path..
   # First make sure we blindly untaint the nasty taintedness :)
   
-  if ($ENV{DOCUMENT_ROOT} && $ENV{DOCUMENT_ROOT} =~ /(.+)/o) {
-    $document_root = $1;
-    chdir($document_root);
-  }
+  #if ($ENV{DOCUMENT_ROOT} && $ENV{DOCUMENT_ROOT} =~ m!(.+)/?!o) {
+  #  $document_root = $1;
+  #  #chdir($document_root); # Let's not chdir as we're running 
+  #                          # testing AND production now on the same server..
+  #}
   
   if (exists($ENV{'GATEWAY_INTERFACE'})) {
     # Get the path (without '../') to two dirs below doc root
     # (where we keep our 'log' and user 'photos' directories).
-    $site_files_root = Cwd::fast_abs_path(File::Spec->rel2abs( "../../", $document_root));
+    $site_files_root = Cwd::fast_abs_path(File::Spec->rel2abs("../../", $ENV{DOCUMENT_ROOT}));
+    
     # Untaint (blindly) to keep -T happy and remove trailing '/' while we're here..
     $site_files_root = $1 if $site_files_root =~ m!^(.+)/?$!;
-    my $log_dir = "$site_files_root/logs/";
     
-    open LOG, ">>$log_dir/6D.error.log"
+    my $log_dir = "$site_files_root/logs";
+    
+    open LOG, ">>$log_dir/error_log"
       || print "Content-type: text/html\n\n"
          && die "Unable to open script error log: $!";
     
+    warn "logging all errors to $log_dir/error_log";
+    
     CarpeDiem::carpout(\*LOG);
     
-    open BENCHMARK, ">>$log_dir/6D.benchmark.log"
-      || print "Content-type: text/html\n\n"
-         && die "Unable to open script benchmark log: $!";
+    #open BENCHMARK, ">>$log_dir/benchmark_log"
+    #  || print "Content-type: text/html\n\n"
+    #     && die "Unable to open script benchmark log: $!";
   }
   
   #
@@ -78,9 +96,9 @@ BEGIN {
 # certain objects seemed to have been killed
 # by the time it got to destroying - sadly!
 # (Destroy only gets called when the object's
-# reference count gets to 0 - duuuh).
+#  reference count gets to 0 - duuuh).
 # (because now we have to explicitly call
-# '$rusty->exit;' to make things happen..)
+#  '$rusty->exit;' to make things happen..)
 # Also, overriding EXIT to call exit via this
 # doesn't manage to retain the objects either :(
 # CRAP!  Have to stick with $rusty->exit; - so ugly.
@@ -102,7 +120,9 @@ sub exit(@) {
 
 
 $rusty::MAX_FILE_SIZE = 1.5 * (1024 * 1024); # 1.5MB in bytes
-$rusty::PHOTO_UPLOAD_DIRECTORY = "$site_files_root/photos/";
+#$rusty::PHOTO_UPLOAD_DIRECTORY = "$site_files_root/photos/";
+$rusty::PHOTO_UPLOAD_DIRECTORY = Cwd::fast_abs_path(File::Spec->rel2abs("../../photos", $ENV{DOCUMENT_ROOT}));
+$rusty::PHOTO_UPLOAD_DIRECTORY = $1 if $rusty::PHOTO_UPLOAD_DIRECTORY =~ m!^(.+)/?$!;
 sub max_file_size() { return $rusty::MAX_FILE_SIZE; }
 sub photo_upload_directory() { return $rusty::PHOTO_UPLOAD_DIRECTORY; }
 
@@ -122,13 +142,13 @@ sub new() {
   # This called method used to be the originating class' DESTROY.
   # Perl's garbage collection waits too long to call DESTROY normally
   # (leading to new scripts being called before the data has been
-  # destroyed and therefore ending up using data from previous call).
+  #  destroyed and therefore ending up using data from previous call).
   # We added it to our exit() which worked but if any script died abnormally,
   # it will not be called and the data will be left stale until DESTROY was
-  # called by the garbage collection (a second or tow later).. SO, in a very
+  # called by the garbage collection (a second or two later).. SO, in a very
   # bizarre twist, to ensure data we begin with is fresh, the DESTROY
-  # is renamed to _init() and will be called up here in new() instead.
-  $self->_init();
+  # is renamed to init() and will be called up here in new() instead.
+  $self->init();
   
   # Set up the container for the core data for this object -
   # this tie (code below this sub) ensures values are set once
@@ -143,68 +163,7 @@ sub new() {
   $self->benchmark->start('total');
   $self->benchmark->start('birth');
   
-  # Create new CGI object
-  
-  #use CGI qw( url self_url param Vars cookie header upload );
-  require CGI;
-  
-  # Have the script running under mod_perl and mod_cgi
-  $self->{CGI} = $ENV{MOD_PERL} ? CGI->new(shift @_) : CGI->new();
-  
-  #use Apache2::RequestUtil;
-  #require Apache2::RequestUtil;
-  # Get the mod_perl global request object
-  # (requires PerlOptions +GlobalRequest)
-  #if ($self->{Request} = Apache2::RequestUtil->request) {
-  #if ($self->{Request} = shift @_) {
-    #warn "global request object! :) - $self->{Request}\n";
-    # Create CGI object from this...
-  #  $self->{CGI} = CGI->new($self->{Request});
-  #} else {
-    #warn "no global request object! :(\n";
-    # Just make a CGI object - for normal scripts..
-  #  $self->{CGI} = CGI->new;
-  #}
-  
-  # Set the default charset!
-  $self->CGI->charset('UTF-8');
-  
-  # Fetch the entire parameter list as a hash:
-  #%{$self->{params}} = $self->CGI->Vars();
-  # When using this, the thing you must watch out for are multivalued CGI parameters.
-  # Because a hash cannot distinguish between scalar and list context,
-  # multivalued parameters will be returned as a packed string,
-  # separated by the "\0" (null) character.
-  # You must split this packed string in order to get at the individual values.
-  # i.e. @foo = split("\0",$params->{'foo'});
-  #
-  # Get all params as array ref of the paranms:
-  #%{$self->{params}} = map { $_ => [$self->CGI->param($_)] } $self->CGI->param;
-  # Get all params as the first element we find in any multivalued params.. :)
-  %{$self->{params}} = map { $_ => scalar($self->CGI->param($_)) } $self->CGI->param;
-  
-  # TODO: Perform a check on a field we set to see how a browser is coping with
-  # our utf-8 encoding.. (just need to add the field and decide what to do if not!)
-  #if (defined($self->{params}->{utf8_check})
-  #    && $self->{params}->{utf8_check} =~
-  #        m/^(
-  #            [\x09\x0A\x0D\x20-\x7E]            # ASCII
-  #          | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
-  #          |  \xE0[\xA0-\xBF][\x80-\xBF]        # excluding overlongs
-  #          | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
-  #          |  \xED[\x80-\x9F][\x80-\xBF]        # excluding surrogates
-  #          |  \xF0[\x90-\xBF][\x80-\xBF]{2}     # planes 1-3
-  #          | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
-  #          |  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
-  #        )*$/x) {
-  #  warn "browser not sending back correctly utf-8 encoded form data test field we set";
-  #}
-  
-  # Now we also want to make sure that our utf-8 encoded form data is stored as perl's internal utf8.
-  foreach (%{$self->{params}}) {
-    utf8::decode($self->{params}->{$_}) unless utf8::is_utf8($self->{params}->{$_});
-  }
-  
+  $self->{params} = $self->get_utf8_params();
   
   # Don't need to connect to DB anymore - it will happen on the first call to DBH()!
   # # Create new DB handle
@@ -280,42 +239,40 @@ sub new() {
   # We are now using CGI with '-oldstyle_urls' so the '&'
   # is used by default..  This is good because nobody uses the
   # new style ';' anyway.  Even though it is probably better..
-  # Fucking oldstyle_urls flag only makes a difference on the
+  # F*cking oldstyle_urls flag only makes a difference on the
   # first run in mod_perl - not sure how to get around this so
   # i'm leaving the regex in for now..
   # This also doesn't work that well if getting a url that has
-  # been tranformed by aserver rewrite.. tends to get the real
+  # been transformed by a server rewrite.. tends to get the real
   # url requested before transformation but append the query string
   # received after the transformation.. weird!  it almost messes up
   # the profiles thing but i've fixed that and i'm going to leave it
   # all as is! :)
   #warn "self: " . $self_url;
   $self->{core}->{'self_url'} = $self_url;
+  require URI::Escape;
+  $self->{core}->{'self_url_escaped'} = URI::Escape::uri_escape($self_url);
+  
+  $self->{core}->{server_name} = $ENV{SERVER_NAME};
+  $self->{core}->{mod_perl_api_version} = $ENV{MOD_PERL_API_VERSION};
+  $self->{core}->{perl_version} = $1 if $] =~ /(^\d+\.\d)/; # 1dp.
+  $self->{core}->{server_software} = "Apache 2"; #$ENV{SERVER_SOFTWARE};
+  $self->{core}->{mysql_version} = $DATABASE_VERSION;
   
   # If user has clicked on first tier menu item (link provided for non
   # javascript-enabled users), then set this in the core to open the sub-menu.
   $self->{core}->{'emi'} = $self->{params}->{'emi'}; # emi = expand_menu_item
   $self->{core}->{'esmi'} = $self->{params}->{'esmi'}; # esmi = expand_sub_menu_item
   
-  # Let's set up some global links..
-  #$self->{core}->{nav_links}->{core} = [ { text=>'home', link=>'/' } ];
-  #if ($self->{core}->{'user_id'}) {
-  #  push @{$self->{core}->{nav_links}->{core}}, (
-  #    { text=>'my account', link=>'/account.not_written_yet' },
-  #    { text=>'log out',    link=>'/logout.pl' }
-  #    );
-  #} else {
-  #  push @{$self->{core}->{nav_links}->{core}}, (
-  #    { text=>'sign up', link=>'/signup.pl' },
-  #    { text=>'log in',  link=>'/login.pl' }
-  #    );
-  #}
-  
   $self->benchmark->stop('birth');
+  
+  # Use this for testing text-only mode (dev)
+  #$self->{core}->{no_nav_links} = 1; 
   
   return $self;
   
 }
+
 
 
 ##############################
@@ -342,9 +299,8 @@ package rusty;
 
 
 
-sub CGI() { return $_[0]->{CGI}; }
-sub benchmark() { return $_[0]->{benchmark}; }
 
+sub benchmark() { return $_[0]->{benchmark}; }
 
 
 
@@ -396,16 +352,16 @@ sub benchmark() { return $_[0]->{benchmark}; }
     # that takes up the time.  Without it, if the connection to db dies,
     # it will have to perform a duff query before it realises that the
     # connection is dead and will then reconnect on next request.
-    # So we are saving 10ms from 99.9% of requests and 1% when the db
-    # has just been restarted, will get a dead page and have to hit refresh!
+    # So we would be saving 6ms from 99.9% of requests BUT the other 0.1%,
+    # when the db has just been restarted will get a dead page & have to hit refresh!
     # Without Apache::DBI, it takes 30-45ms per request (35ms for connecting)
     # so the ping is saving a hell of a lot of time really :) Let's leave
     # the 6ms loss there.. it's not thaaaat long and it is only a ping..
-    #$_DBH = _db_connect() unless defined $_DBH; # Save the 6ms ping
-    #$_DBH = _db_connect(); # Do the ping and detect dead db immediately.
+    #$_DBH = db_connect() unless defined $_DBH; # Save the 6ms ping
+    #$_DBH = db_connect(); # Do the ping and detect dead db immediately.
     # Now we are undefining the DB handle on every DESTROY so it will only
     # do the following on every new request - much better than all the time!
-    $_DBH = _db_connect() unless defined $_DBH;
+    $_DBH = db_connect() unless defined $_DBH;
     
     return $_DBH;
   }
@@ -423,7 +379,7 @@ sub benchmark() { return $_[0]->{benchmark}; }
              . ";host=" . $conf::db_conf::DBHOST
              . ";port=" . $conf::db_conf::DBPORT;
     
-    sub _db_connect() {
+    sub db_connect() {
       #use Apache::DBI ();
       require DBI;
       #warn "getting database connection";
@@ -445,6 +401,9 @@ sub benchmark() { return $_[0]->{benchmark}; }
         #$_dbh->{'mysql_enable_utf8'} = 1; # But for now our patched version allows this!
         ##################################
         
+        # Set up some info about our database (SQL_DBMS_VER)
+        $DATABASE_VERSION = $1 if $_dbh->get_info(18) =~ /([\d\.]+)/; 
+        
         return $_dbh;
       } else {
         print CGI::redirect( -url => '/errors/database-dead.html' );
@@ -455,12 +414,99 @@ sub benchmark() { return $_[0]->{benchmark}; }
 }
 
 
-sub _init {
-  my $self = shift;
-  &_user_info_DESTROY;
-  &_DBH_destroy;
+
+{
+  my $_CGI;
+  
+  sub CGI() {
+    $_CGI = new_cgi() unless defined $_CGI;
+    return $_CGI;
+  }
+  
+  sub _CGI_destroy() { undef $_CGI; }
+  
+  sub new_cgi {
+    
+    # Create new CGI object
+    require CGI;
+    
+    # Have the script running under mod_perl and mod_cgi
+    my $cgi = $ENV{MOD_PERL} ? CGI::new(shift @_) : CGI::new();
+    
+    # Set the default charset!
+    $cgi->charset('UTF-8');
+    
+    return $cgi;
+    
+  }
 }
 
+
+
+
+
+#sub DESTROY() {
+#  my $self = shift;
+#  $self->init();
+#}
+
+# Make sure we start with fresh data since DESTROY 
+# doesn't seem to get called until it's too late (it
+# relies on garbage collection's timing.)
+sub init {
+  
+  my $self = shift;
+  
+  &_user_info_DESTROY;
+  &_DBH_destroy;
+  &_CGI_destroy;
+}
+
+
+sub get_utf8_params {
+  
+  my $cgi = &CGI;
+  
+  my %params;
+  
+  # Fetch the entire parameter list as a hash:
+  #%params = $cgi->Vars();
+  # When using this, the thing you must watch out for are multivalued CGI parameters.
+  # Because a hash cannot distinguish between scalar and list context,
+  # multivalued parameters will be returned as a packed string,
+  # separated by the "\0" (null) character.
+  # You must split this packed string in order to get at the individual values.
+  # i.e. @foo = split("\0",$params->{'foo'});
+  #
+  # Get all params as array ref of the paranms:
+  #%params = map { $_ => [$cgi->param($_)] } $_CGI->param;
+  # Get all params as the first element we find in any multivalued params.. :)
+  %params = map { $_ => scalar($cgi->param($_)) } $cgi->param;
+  
+  # SUGGESTED FROM BOOK: Perform check on a field we set to see how a browser is coping
+  # with our utf-8 encoding.. (just need to add the field and decide what to do if not!)
+  #if (defined($params{utf8_check})
+  #    && $params{utf8_check} =~
+  #        m/^(
+  #            [\x09\x0A\x0D\x20-\x7E]            # ASCII
+  #          | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
+  #          |  \xE0[\xA0-\xBF][\x80-\xBF]        # excluding overlongs
+  #          | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
+  #          |  \xED[\x80-\x9F][\x80-\xBF]        # excluding surrogates
+  #          |  \xF0[\x90-\xBF][\x80-\xBF]{2}     # planes 1-3
+  #          | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
+  #          |  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
+  #        )*$/x) {
+  #  warn "browser not sending back correctly utf-8 encoded form data test field we set";
+  #}
+  
+  # Now we also want to make sure that our utf-8 encoded form data is stored as perl's internal utf8.
+  foreach (%params) {
+    utf8::decode($params{$_}) unless utf8::is_utf8($params{$_});
+  }
+  
+  return \%params;
+}
 
 # Closure for params data ('params') and ttml data ('data')
 # to ensure encapsulation (people can't edit the info unless
@@ -532,11 +578,14 @@ sub _init {
     my $filename = $self->{ttml};
     
     my %header_opts;
-    if ($opts->{nocache}) {
-      %header_opts = ( -expires       => 'now',
-                       -pragma        => 'no-cache',
-                       -cache_control => 'no-cache' );
-    }
+    #if ($opts->{nocache}) {
+      %header_opts = ( -expires       => '-10y', # 'Expires' in the past
+           -last_modified => sprintf("%s, %s %s %s %s GMT", (split(/\s+/, gmtime))[0,2,1,4,3]), # Always modified
+                       -cache_control => 'no-store, no-cache, must-revalidate, '
+                                       . 'post-check=0, pre-check=0', # HTTP/1.1
+           -pragma        => 'no-cache', # HTTP/1.0
+           );
+    #}
     if ($opts->{refresh}) {
        $header_opts{-refresh} = $opts->{refresh};
     }
@@ -546,7 +595,7 @@ sub _init {
     print $self->CGI->header(%header_opts) unless $opts->{noheader};
     
     if (defined $self->benchmark) {
-      #$self->benchmark->stop('total');
+      #$self->benchmark->stop('total'); || 
       $self->benchmark->start('template');
     }
     $self->update_page_clicks() unless $opts->{nopageclick};
@@ -555,10 +604,17 @@ sub _init {
     
     foreach (%$data) { _dfs_on_anything($_) } # Set utf8 flag where appropriate (see below)
     
+    # If we have a referring page set, also set a uri escaped version
+    # so we can use it in urls as well as hidden form fields! :)
+    if ($self->{core}->{'ref'}) {
+      require URI::Escape;
+      $self->{core}->{'ref_escaped'} = URI::Escape::uri_escape($self->{core}->{'ref'});
+    }
+    
     # Make sure we haven't declared a 'core' data entry..
     if ($data->{core}) {
       $data->{oldcore} = $data->{core};
-      warn '$data->{core} should not be allowed! renamed to "oldcore"';
+      warn '$data->{core} should not be allowed! renamed to $data->{oldcore}';
     }
     # Take our core values and add them to the data under 'core'.
     # 'core' values are things set up by default and constant to every
@@ -660,7 +716,13 @@ sub _init {
     # God bless mod_perl! :)
     require Template;
     
-    my %CONFIG = ( INCLUDE_PATH => "../ttml/",
+    my $ttml_dir = Cwd::fast_abs_path(File::Spec->rel2abs("../ttml/", $ENV{DOCUMENT_ROOT}));
+    $ttml_dir = $1 if $ttml_dir =~ m!^(.+)/?$!;
+    #warn "ttml dir: $ttml_dir";
+    my $ttml_cache_dir = "/tmp/ttmlcache";
+    #warn "ttml_cache dir: $ttml_cache_dir";
+    
+    my %CONFIG = ( INCLUDE_PATH => $ttml_dir,
                    #PRE_PROCESS => 'header.ttml',
                    #POST_PROCESS => 'footer.ttml'
                    # collapse all whitespace before a template directive into a single space
@@ -668,12 +730,18 @@ sub _init {
                    #PRE_CHOMP => 1, #delete all whitespace before a template directive
                    #DEBUG => 'parser',
                    EVAL_PERL => 1,
-                   COMPILE_DIR => '../ttmlcache/ttml/',
+                   COMPILE_DIR => $ttml_cache_dir,
                    COMPILE_EXT => '.ttc',
                   );
     
-    return Template->new(\%CONFIG)
-      || die Template->error(), "\n";
+    my $tt = Template->new(\%CONFIG)
+      || die Template->error, "\n";
+    # The above check for errors on new template object didn't work
+    # when we had a template file perm error so below we do a primitive
+    # manual check and throw a wobbly if we need to!
+    die "Something's wrong with our template object!\nERROR1: $Template::ERROR\nERROR2: $tt"
+      if ref($tt) ne 'Template';
+    return $tt;
   }
 }
 
@@ -696,7 +764,7 @@ sub _init {
     }
     
     require File::Spec;
-    $caller = File::Spec->abs2rel( $caller, $document_root);
+    $caller = File::Spec->abs2rel($caller, $ENV{DOCUMENT_ROOT});
     if (defined $self->benchmark) {
       unless ($self->{template_processed}) {
         $self->benchmark->stop('total');
@@ -708,25 +776,30 @@ sub _init {
       #     . " [ $benchmarks ]";
       #}
       if ($self->{core}->{benchmark}) {
-        print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
+        #print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
       } else {
-        print BENCHMARK "$caller:\n" . $self->benchmark->reports . "=====\n";
+        #print BENCHMARK "$caller:\n" . $self->benchmark->reports . "=====\n";
       }
-      BENCHMARK->autoflush(1);
-      $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
-                                           $self->benchmark->result('template') );
+      #BENCHMARK->autoflush(1);
+      if ($self->{template_processed}) {
+    $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
+                       $self->benchmark->result('template') );
+      } else {
+    $self->_write_db_benchmark( $caller, $self->benchmark->result('total') );
+    
+      }
     } elsif ($self->{template_processed}) {
       if ($self->{core}->{benchmark}) {
-        print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
-        BENCHMARK->autoflush(1);
+        #print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
+        #BENCHMARK->autoflush(1);
         $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
                                              $self->benchmark->result('template') );
       } else {
         warn "oooooooooooooh fuckers!!\n";
       }
     } elsif ($self->{core}->{benchmark}) {
-      print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
-      BENCHMARK->autoflush(1);
+      #print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
+      #BENCHMARK->autoflush(1);
       $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
                                            $self->benchmark->result('template') );
     } else {
@@ -884,17 +957,17 @@ ENDSQL
       
       # Get the visitor id of the visitor we just created.
       my $visitor_id = $dbh->{mysql_insertid};
-      
+
       # Create stats for visitor (when they first visited).
       $query = <<ENDSQL
 INSERT INTO `visitor~stats`
-( visitor_id, first_visit )
+( visitor_id, user_agent, first_visit )
 VALUES
-( ?, NOW() )
+( ?, ?, NOW() )
 ENDSQL
 ;
       $sth = $dbh->prepare_cached($query);
-      $sth->execute($visitor_id);
+      $sth->execute($visitor_id, $ENV{HTTP_USER_AGENT});
       $sth->finish;
       
       # Create this session for them..
@@ -1153,7 +1226,7 @@ sub random_word() {
   #      Picking a Random Line from a File)
   
   # UPDATE - Added mod_perl clauses for this code:
-  # Fuck that - store it in memory!  Memory is cheap
+  # Fark that - store it in memory!  Memory is cheap
   # but time is precious..  Let's be fast damn it!
   # Especially given the yummy persistence we have.
   
@@ -1162,14 +1235,16 @@ sub random_word() {
   my $self = shift;
   
   unless (@rusty::ADJECTIVES) {
-    open ADJECTIVES, "../lib/words/adjectives.txt" or warn $! and return;
+    open ADJECTIVES, "$ENV{DOCUMENT_ROOT}/../lib/words/adjectives.txt" or warn $! and return;
     @rusty::ADJECTIVES = <ADJECTIVES> if $ENV{MOD_PERL};
     close ADJECTIVES;
   }
   
   my $adjective;
   if ($ENV{MOD_PERL}) {
-    $adjective = $rusty::ADJECTIVES[int(rand(@rusty::ADJECTIVES))];
+    $adjective = $rusty::ADJECTIVES[int(rand(@rusty::ADJECTIVES+0))];
+    #warn "found adjective: $adjective from list of " . (@rusty::ADJECTIVES+0) . " adjectives.";
+    #warn "rand is:" . int(rand(@rusty::ADJECTIVES+0));
   } else {
     # NB. $. is the same as $INPUT_LINE_NUMBER
     rand($.) < 1 && ($adjective = $_) while <ADJECTIVES>;
@@ -1177,18 +1252,24 @@ sub random_word() {
   chomp($adjective);
   
   unless (@rusty::NOUNS) {
-    open NOUNS, "../lib/words/nouns.txt" or warn $! and return;
+    open NOUNS, "$ENV{DOCUMENT_ROOT}/../lib/words/nouns.txt" or warn $! and return;
     @rusty::NOUNS = <NOUNS> if $ENV{MOD_PERL};
     close NOUNS;
   }
   
   my $noun;
   if ($ENV{MOD_PERL}) {
-    $noun = $rusty::NOUNS[int(rand(@rusty::NOUNS))];
+    $noun = $rusty::NOUNS[int(rand(@rusty::NOUNS+0))];
+    #warn "found noun: $noun from list of " . (@rusty::NOUNS+0) . " nouns.";
+    #warn "rand is:" . int(rand(@rusty::NOUNS+0));
   } else {
     rand($.) < 1 && ($noun = $_) while <NOUNS>;
   }
   chomp($noun);
+  
+  #if (int(rand(1234)) + int(rand(2345)) == 0) {
+  #  warn "randomness is not working! :(";
+  #}
   
   return lc($adjective.$noun);
 
@@ -1277,13 +1358,13 @@ sub validate_params($) {
     
     if ($param_info->{minlength} > 0 && length($param) < $param_info->{minlength}) {
       
-      $self->{param_errors}->{$param_name} = (length($param) == 0) ?
+      $self->{param_errors}->{$param_name}->{error} = (length($param) == 0) ?
         "must be filled in" :
         "must be at least $param_info->{minlength} characters";
         
     } elsif ($param_info->{maxlength} > 0 && length($param) > $param_info->{maxlength}) {
       
-      $self->{param_errors}->{$param_name} =
+      $self->{param_errors}->{$param_name}->{error} =
         "must be less than $param_info->{minlength} characters";
         
     } elsif ($param_info->{minnum} =~ /^[+-]?\d+$/o || $param_info->{maxnum} =~ /^[+-]?\d+$/o) {
@@ -1291,43 +1372,60 @@ sub validate_params($) {
       # see if param is numeric
       if ($param !~ /^[+-]?\d+$/) {
         
-        $self->{param_errors}->{$param_name} =
-          "must be an integer number (eg. -1, 0, 1, 100)";
-      } else {
+        $self->{param_errors}->{$param_name}->{error} =
+          "must be a number (eg. -1, 0, 1, 100)";
         
+      } else {
         if ($param < $param_info->{minnum}) {
           
-          $self->{param_errors}->{$param_name} =
+          $self->{param_errors}->{$param_name}->{error} =
             "must be greater than or equal to $param_info->{minnum}";
             
         } elsif ($param > $param_info->{maxnum}) {
           
-          $self->{param_errors}->{$param_name} =
+          $self->{param_errors}->{$param_name}->{error} =
             "must be less than or equal to $param_info->{maxnum}";
             
         }
       }
-    } else {
+    } elsif ($param_info->{regexp} || $param_info->{notregexp}) {
       
-      my $regexp = $param_info->{regexp};
+      my $regexp = ($param_info->{regexp} || $param_info->{notregexp});
       $regexp =~ s!/!\\/!og; # make '/'s safe!
       
       # if regexp given, match on whole line
-      if ($regexp && $param !~ /^$regexp$/) {
+      if ( ($param_info->{regexp} && $param !~ /$regexp/) ||
+           ($param_info->{notregexp} && $param =~ /$regexp/) ){
         
         if ($param =~ /^\s*$/o) {
           
-          $self->{param_errors}->{$param_name} =
+          $self->{param_errors}->{$param_name}->{error} =
             "must be filled in";
         } else {
           
-          $self->{param_errors}->{$param_name} =
+          $self->{param_errors}->{$param_name}->{error} =
             "contains disallowed characters";
         }
       }
     }
+    
+    # If we found an error and the param was an option list,
+    # give the user a sensible error message for that param.
+    if ($self->{param_errors}->{$param_name} &&
+        $param_info->{type} eq 'select') {
+      
+      $self->{param_errors}->{$param_name}->{error} =
+        "must have a value selected";
+    }
+    
+    # If any errors were found above, fill up the title of the param
+    # so we have a nice pretty name for it in the user's error message.
+    if (exists($self->{param_errors}->{$param_name})) {
+      
+      $self->{param_errors}->{$param_name}->{title} = $param_info->{title};
+    }
   }
-
+  
   return scalar keys %{$self->{param_errors}};
 
 }
