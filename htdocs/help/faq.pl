@@ -15,7 +15,6 @@ use rusty::Profiles;
 our $rusty = rusty::Profiles->new;
 
 $rusty->{ttml} = "help/faq.ttml";
-$rusty->{data}->{title} = "Frequently Asked Questions";
 
 $rusty->process_template;
 $rusty->exit;
