@@ -84,7 +84,7 @@ sub stamp {
     # Get one level lower than the doc root..
     my $codebase;
     ($codebase = $ENV{DOCUMENT_ROOT}) =~ s/[^\\\/]+[\\\/]?$//o unless $codebase;
-    $caller =~ s/^$codebase//o;
+    $caller =~ s/^\Q$codebase\E//o;
     $line = sprintf("%04i", $line);
     return "[$time] $type \@ $line \@ $caller:\t";
 }
@@ -195,7 +195,7 @@ sub carpout {
     my($in) = @_;
     my($no) = fileno(to_filehandle($in));
     realdie("Invalid filehandle $in\n") unless defined $no;
-
+    
     open(SAVEERR, ">&STDERR");
     open(STDERR, ">&$no") or
   ( print SAVEERR "Unable to redirect STDERR: $!\n" and exit(1) );
