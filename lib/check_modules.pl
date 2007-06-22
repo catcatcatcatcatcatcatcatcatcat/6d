@@ -26,6 +26,10 @@ HTML::FromText
 Data::Validate::URI
 Data::Validate::Email
 
+Time::DaysInMonth
+
+Math::Random::MT::Auto
+
 );
 
 foreach (@packages) {
