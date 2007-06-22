@@ -15,7 +15,6 @@ use rusty::Profiles;
 our $rusty = rusty::Profiles->new;
 
 $rusty->{ttml} = "help/disabling-popup-blockers.ttml";
-$rusty->{data}->{title} = "Disabling Pop-up Blockers";
 
 $rusty->process_template;
 $rusty->exit;
