@@ -27,8 +27,6 @@ sub populate_previous_search($);
 our $RESULTS_PER_PAGE = 12;
 our $MAX_RESULTS = 1000;
 
-$rusty->{data}->{title} = "Search Profiles";
-
 if ($rusty->{params}->{'nomatches'}) {
   $rusty->{data} = $rusty->{params}; #dirty but it works for now..
   $rusty->{data}->{'nomatches'} = 1;
@@ -45,30 +43,30 @@ if ($rusty->{params}->{'nomatches'}) {
 
 
 $rusty->{param_info} = {
-  city_id                => { title => "City",
-                             regexp => '(?:any|\\d+)' },
+  country_id             => { title => "Country" },
+  subentity_id           => { title => "City" },
   gender                 => { title => "Gender",
-                             regexp => '(?:any|male|female)' },
+                             regexp => '^(?:any|male|female)$' },
   sexuality              => { title => "Sexuality",
-                             regexp => '(?:any|straight|gay/lesbian|bisexual/curious)' },
-  age_range              => { title => "Age range",
-                             regexp => '(?:any|1820|2124|2530|3140|41plus)' },
+                             regexp => '^(?:any|straight|gay/lesbian|bisexual/curious)$' },
+  #age_range              => { title => "Age range",
+  #                           regexp => '^(?:any|1820|2124|2530|3140|41plus)$' },
   age_min                => { title => "Minimum age",
-                             regexp => '\\d*' },
+                             regexp => '^(?:any|\\d+)$' },
   age_max                => { title => "Maximum age",
-                             regexp => '\\d*' },
+                             regexp => '^(?:any|\\d+)$' },
   relationship_status_id => { title => "Relationship Status",
-                             regexp => '(?:any|\\d+)' },
+                             regexp => '^(?:any|\\d+)$' },
   profile_name           => { title => "Profile Name",
-                             regexp => '\\^?[a-zA-Z0-9_\\*\\?]*\\$?', maxlength => 20 },
+                             regexp => '^\\^?[a-zA-Z0-9_\\*\\?]*\\$?$', maxlength => 20 },
   profile_name_search    => { title => "Search Type",
-                             regexp => '(?:partial|full|start|end)' },
+                             regexp => '^(?:partial|full|start|end)$' },
   onlyphotos             => { title => "Only Profiles with Photos",
-                             regexp => '1?' },
+                             regexp => '^1?$' },
   onlyadult              => { title => "Only Adult Profiles",
-                             regexp => '1?' },
+                             regexp => '^1?$' },
   offset                 => { title => "Page Offset",
-                             regexp => '\\d*' }
+                             regexp => '^\\d*$' }
 };
 
 
@@ -105,13 +103,46 @@ if ($rusty->{params}->{'mode'} eq 'search') {
     
   }
   
-  # No errors in data - now perform the search.
+  # User could be requesting that we fill up their cities list (no JS/AJAX)
+  if ($rusty->{params}->{reloadareas}) {
+    $rusty->{data} = $rusty->{params};
+    populate_common_data();
+    $rusty->{ttml} = "profile/search.ttml";
+    $rusty->process_template;
+    $rusty->exit;
+    
+  # Or re-allow them to select their countries list (still no JS/AJAX)
+  } elsif ($rusty->{params}->{changecountry}) {
+    $rusty->{data} = $rusty->{params};
+    populate_common_data();
+    delete $rusty->{params}->{enable_subentities_list};
+    delete $rusty->{params}->{subentity_id};
+    delete $rusty->{params}->{subentities};
+    $rusty->{ttml} = "profile/search.ttml";
+    $rusty->process_template;
+    $rusty->exit;
+  }
   
-  my $cities =
+  
+  
+  # No errors in data and search requested - so perform the search.
+  
+  my $countries =
     $rusty->get_lookup_hash(
-      table => "lookup~country~uk_city",
-      id    => "city_id",
+      table => "lookup~country",
+      id    => "country_id",
       data  => "name" );
+  
+  my $subentities = {};
+  if ($rusty->{params}->{country_id} =~ /^\w{2}$/ ) {
+    $subentities =
+      $rusty->get_lookup_hash(
+        table => "lookup~country~subentity",
+        id    => "subentity_id",
+        data  => "subentity_name",
+        where => "country_id = '".$rusty->{params}->{country_id}."'" );
+    $subentities->{OTHER} = 'Other';
+  }
   
   my $relationship_statuses =
     $rusty->get_lookup_hash(
@@ -122,9 +153,8 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   $query = <<ENDSQL
 SELECT up.profile_id
-FROM `user` u
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+FROM `user~profile` up
+INNER JOIN `user~info` ui ON ui.user_id = up.user_id
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 ENDSQL
@@ -133,12 +163,20 @@ ENDSQL
   my @bind_vars = ();
   my @search_params = ();
   
-  if ($rusty->{params}->{city_id} ne "any") {
-    $query .= " AND ui.city_id = ? ";
-    push @bind_vars, $rusty->{params}->{city_id};
-    push @search_params, ucfirst($cities->{$rusty->{params}->{city_id}});
+  if ($rusty->{params}->{subentity_id} && $rusty->{params}->{subentity_id} ne "any") {
+    $query .= " AND ui.subentity_id = ? ";
+    push @bind_vars, $rusty->{params}->{subentity_id};
+    push @search_params, ucfirst($subentities->{$rusty->{params}->{subentity_id}});
   } else {
-    delete $rusty->{params}->{city_id};
+    delete $rusty->{params}->{subentity_id};
+  }
+  
+  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne "any") {
+    $query .= " AND ui.country_id = ? ";
+    push @bind_vars, $rusty->{params}->{country_id};
+    push @search_params, ucfirst($countries->{$rusty->{params}->{country_id}});
+  } else {
+    delete $rusty->{params}->{country_id};
   }
   
   if ($rusty->{params}->{gender} ne "any") {
@@ -157,26 +195,70 @@ ENDSQL
     delete $rusty->{params}->{sexuality};
   }
   
-  if ($rusty->{params}->{age_range} ne "any") {
-    if ($rusty->{params}->{age_range} eq "41plus") {
-      $rusty->{params}->{age_min} = 41;
-      $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-              . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 41 ";
-      push @search_params, "41+";
-    } else {
-      $rusty->{params}->{age_min} = substr($rusty->{params}->{age_range}, 0, 2);
-      $rusty->{params}->{age_min} = 18 # Make sure nobody can be rude!
-        if $rusty->{params}->{age_min} < 18;
-      $rusty->{params}->{age_max} = substr($rusty->{params}->{age_range}, 2);
-      $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-              . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
-      $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-              . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
-      
-      push @bind_vars, ($rusty->{params}->{age_min}, $rusty->{params}->{age_max});
-      push @search_params, $rusty->{params}->{age_min}."-".$rusty->{params}->{age_max};
-    }
+  #if ($rusty->{params}->{age_range} ne "any") {
+    #if ($rusty->{params}->{age_range} eq "41plus") {
+    #  $rusty->{params}->{age_min} = 41;
+    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 41 ";
+    #  push @search_params, "41+";
+    #} else {
+    #  $rusty->{params}->{age_min} = substr($rusty->{params}->{age_range}, 0, 2);
+    #  $rusty->{params}->{age_min} = 18 # Make sure nobody can be rude!
+    #    if $rusty->{params}->{age_min} < 18;
+    #  $rusty->{params}->{age_max} = substr($rusty->{params}->{age_range}, 2);
+    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
+    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
+    #  
+    #  push @bind_vars, ($rusty->{params}->{age_min}, $rusty->{params}->{age_max});
+    #  push @search_params, $rusty->{params}->{age_min}."-".$rusty->{params}->{age_max};
+    #}
+  #}
+  if ($rusty->{params}->{age_min} eq "any" &&
+      $rusty->{params}->{age_max} eq "any") {
+    
+    undef $rusty->{params}->{age_min};
+    undef $rusty->{params}->{age_max};
+    
+    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 16 ";
+            
+  } elsif ($rusty->{params}->{age_min} eq "any") {
+    
+    undef $rusty->{params}->{age_min};
+    
+    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 16 "
+            . " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
+    
+    push @bind_vars, $rusty->{params}->{age_max};
+    push @search_params, "<".$rusty->{params}->{age_max};
+    
+  } elsif ($rusty->{params}->{age_max} eq "any") {
+    
+    undef $rusty->{params}->{age_max};
+    
+    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
+    
+    push @bind_vars, $rusty->{params}->{age_min};
+    push @search_params, $rusty->{params}->{age_min}."+";
+    
+  } else {
+    
+    $rusty->{params}->{age_min} = 16 # Make sure nobody can be rude!
+      if $rusty->{params}->{age_min} < 16;
+    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
+    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
+            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
+    
+    push @bind_vars, ($rusty->{params}->{age_min}, $rusty->{params}->{age_max});
+    push @search_params, $rusty->{params}->{age_min}."-".$rusty->{params}->{age_max};
   }
+
   
   if ($rusty->{params}->{relationship_status_id} ne "any") {
     $query .= " AND up.relationship_status_id = ? ";
@@ -222,7 +304,7 @@ ENDSQL
       push @search_params, "matching \"$rusty->{params}->{profile_name}\"";
     }
     
-    $query .= " AND u.profile_name LIKE \"$profile_name_sql\" ";
+    $query .= " AND up.profile_name LIKE \"$profile_name_sql\" ";
   } else {
     delete $rusty->{params}->{profile_name};
   }
@@ -247,7 +329,7 @@ ENDSQL
 ;
   $query .= "LIMIT " . ($MAX_RESULTS + 1);
   
-  #warn "query:\n$query\n";
+  #warn "query:\n$query\n\nvars:\n".join(', ',@bind_vars);
   $sth = $rusty->DBH->prepare($query);
   $sth->execute(@bind_vars);
   my $count = 0;
@@ -270,7 +352,8 @@ SET user_id = ?,
     sexuality = ?,
     age_min = ?,
     age_max = ?,
-    city_id = ?,
+    country_id = ?,
+    subentity_id = ?,
     profile_name = ?,
     onlyphotos = ?,
     onlyadult = ?,
@@ -288,7 +371,8 @@ ENDSQL
     $rusty->{params}->{sexuality},
     $rusty->{params}->{age_min},
     $rusty->{params}->{age_max},
-    $rusty->{params}->{city_id},
+    $rusty->{params}->{country_id},
+    $rusty->{params}->{subentity_id},
     $rusty->{params}->{profile_name},
     $rusty->{params}->{onlyphotos},
     $rusty->{params}->{onlyadult},
@@ -377,7 +461,7 @@ ENDSQL
     #print $rusty->CGI->redirect( -url => $url );
     print $rusty->CGI->redirect( -url => '/profile/search.pl?nomatches=1' );
   } else {
-    print $rusty->CGI->redirect( -url    => $rusty->CGI->url() . "?mode=results&search_id=$search_id" );
+    print $rusty->CGI->redirect( -url    => $rusty->CGI->url( -relative => 1 ) . "?mode=results&search_id=$search_id" );
   }
   $rusty->exit;
   
@@ -388,7 +472,6 @@ ENDSQL
   # want a subset of results from a user's search .
   
   $rusty->{ttml} = "profile/search-results.ttml";
-  $rusty->{data}->{title} = "Search Profiles - Results";
   
   $query = <<ENDSQL
 SELECT created, search_id,
@@ -477,7 +560,8 @@ ENDSQL
        . " (almost certainly not got cookies enabled)";
   }
   
-  $rusty->{data}->{search_title} = "Search Results: " . $search_cache->{search_string};
+  $rusty->{data}->{search_string} = $search_cache->{search_string};
+  $rusty->{data}->{search_string} ||= "All Profiles";
   $rusty->{data}->{num_results} =
     $search_cache->{num_results} > $MAX_RESULTS ?
       "over $MAX_RESULTS" : "$search_cache->{num_results}";
@@ -522,11 +606,10 @@ ENDSQL
   my @desired_profile_ids = splice(@profile_ids, $rusty->{params}->{offset}, $page_limit);
   
   $query = <<ENDSQL
-SELECT DISTINCT(u.profile_name), up.profile_id, ui.gender, ui.sexuality,
+SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality,
 (YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age
-FROM `user` u
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+FROM `user~profile` up
+INNER JOIN `user~info` ui ON ui.user_id = up.user_id
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 AND up.profile_id = ?
@@ -582,14 +665,12 @@ ENDSQL
 #  # Perform a default search for non-users
 #  # (return random set of 10 users with photos).
 #  $rusty->{ttml} = "profile/search-results.ttml";
-#  $rusty->{data}->{title} = "Search Profiles - Random Selection";
 #  $rusty->{data}->{random_selection} = 1;
 #  $query = <<ENDSQL
-#SELECT DISTINCT(u.profile_name), up.profile_id, ui.gender, ui.sexuality,
+#SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality,
 #(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age
-#FROM `user` u
-#INNER JOIN `user~profile` up ON up.user_id = u.user_id
-#INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+#FROM `user~profile`
+#INNER JOIN `user~info` ui ON ui.user_id = up.user_id
 #AND up.main_photo_id != 0
 #ORDER BY RAND() LIMIT 10
 #ENDSQL
@@ -604,12 +685,11 @@ ENDSQL
 #  $sth->finish;
 #  $rusty->process_template;
 #  $rusty->exit;
-  
+
 } else {
   
   # Initial call to page - just get lookups and show search form.
   
-  populate_common_data();
   if ($rusty->{core}->{'user_id'} || $rusty->{core}->{'visitor_id'}) {
     
     $rusty->{data}->{search_prefs} = retrieve_search_prefs();
@@ -628,6 +708,8 @@ ENDSQL
     }
   }
   
+  populate_common_data();
+  
   if ($rusty->{data}->{search_prefs}->{remember_previous_search}) {
     $rusty->{data}->{remember} = 1;
   } else {
@@ -645,11 +727,38 @@ ENDSQL
 
 sub populate_common_data() {
   
-  $rusty->{data}->{cities} =
-    [$rusty->get_ordered_lookup_list(
-      table => "lookup~country~uk_city",
-      id    => "city_id",
-      data  => "name" )];
+  $rusty->{data}->{countries} = [
+    $rusty->get_ordered_lookup_list(
+      table => "lookup~country",
+      id    => "country_id",
+      data  => "name",
+      order => "name",
+                                   ),
+                                ];
+  
+  # Truncate long country names
+  foreach (@{$rusty->{data}->{countries}}) {
+    if (length($_->{name}) > 30) {
+      $_->{name} = substr($_->{name},0,27) . ' ...';
+    }
+  }
+  
+  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'any') {
+    my $query = <<ENDSQL
+SELECT subentity_id, subentity_name
+FROM `lookup~country~subentity`
+WHERE country_id = ?
+ORDER BY subentity_name
+ENDSQL
+    ;
+    my $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($rusty->{params}->{country_id});
+    $rusty->{params}->{enable_subentities_list} = 1;
+    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name};
+    }
+    $sth->finish;
+  }
   
   $rusty->{data}->{relationship_statuses} =
     [$rusty->get_ordered_lookup_list(
@@ -709,7 +818,7 @@ sub populate_previous_search($) {
   my $query = <<ENDSQL
 SELECT search_id, created,
        gender, sexuality, age_min, age_max,
-       city_id, profile_name, onlyphotos, onlyadult,
+       country_id, subentity_id, profile_name, onlyphotos, onlyadult,
        relationship_status_id
 FROM `user~profile~search~cache`
 WHERE search_id = ?
@@ -729,14 +838,18 @@ ENDSQL
   $rusty->{data}->{age_max} = $previous_search->{age_max};
   # Try to recreate the age_range field (if it was used originally)
   # This is a quick hack and should be passed around properly! Or taken out..
-  $rusty->{data}->{age_range} = ($previous_search->{age_min} ? $previous_search->{age_min} : '18')
-                              . ($previous_search->{age_max} ? $previous_search->{age_max} : 'plus');
-  $rusty->{data}->{city_id} = $previous_search->{city_id};
+  #$rusty->{data}->{age_range} = ($previous_search->{age_min} ? $previous_search->{age_min} : '18')
+  #                            . ($previous_search->{age_max} ? $previous_search->{age_max} : 'plus');
+  $rusty->{data}->{country_id} = $previous_search->{country_id};
+  $rusty->{data}->{subentity_id} = $previous_search->{subentity_id};
   $rusty->{data}->{profile_name} = $previous_search->{profile_name};
   $rusty->{data}->{onlyphotos} = $previous_search->{onlyphotos};
   $rusty->{data}->{onlyadult} = $previous_search->{onlyadult};
   $rusty->{data}->{relationship_status_id} = $previous_search->{relationship_status_id};
   $rusty->{data}->{previous_search} = $previous_search;
   
+  if ($rusty->{data}->{subentity_id}) {
+    $rusty->{params}->{enable_subentities_list} = 1;
+  }
 }
 
