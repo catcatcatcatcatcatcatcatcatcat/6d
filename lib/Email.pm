@@ -24,32 +24,30 @@ sub send_email(@) {
   use vars qw( $SMTP $FROM );
   use conf::mail_conf qw( $SMTP $FROM );
   
+  my $config = { @_ };
+  
   #$mailcfg{smtp} = [qw(mailhost.zen.co.uk smtp.myrealbox.com localhost)];
   #$mailcfg{from} = 'Mailing script <zen46691@zen.co.uk>';
   #$mailcfg{Sender} = 'Mailing scripty <zen46691@zen.co.uk>';
   my %mail;
-  $mail{smtp} = $SMTP;
-  $mail{from} = $FROM;
+  $mail{smtp} = $config->{SMTP} || $SMTP;
+  $mail{from} = $config->{From} || $FROM;
   #$mail{Date} = Mail::Sendmail::time_to_date( time() - 86400 );
   #$mail{'X-Mailer'} = "Mail::Sendmail version $Mail::Sendmail::VERSION";
   #$mail{'X-custom'} = 'My custom additionnal header';
   
   
-  my $config = { @_ };
-  
   if ((defined $config->{HtmlMessage}) and (defined $config->{TextMessage})) {
     
     # Set multipart html & text message body
-    
-    
     
     my $boundary = "====" . time() . "====";
     
     $mail{'Content-Type'} = "multipart/alternative; boundary=\"$boundary\"";
     
-    my $plain = MIME::QuotedPrint::encode_qp $config->{TextMessage};
+    my $plain = MIME::QuotedPrint::encode_qp($config->{TextMessage});
     
-    my $html = MIME::QuotedPrint::encode_qp $config->{HtmlMessage};
+    my $html = MIME::QuotedPrint::encode_qp($config->{HtmlMessage});
     
     $boundary = '--'.$boundary;
     
@@ -95,7 +93,7 @@ END_OF_BODY
   # Cc will appear in the header. (Bcc will not)
   foreach (keys %$config) {
     #print STDERR "key: $_\n";
-    if (/To|Cc|Bcc/i) {
+    if (/To|Cc|Bcc|Reply-To/i) {
       if (ref($config->{$_}) ne 'ARRAY') {
         croak "You must pass send_email() an array reference "
             . "for the '$_' field! Please thank you very much.";
@@ -106,7 +104,7 @@ END_OF_BODY
     }
   }
   
-  foreach (@{$config->{To}}) {
+  foreach (@{$config->{'To'}}, @{$config->{'Cc'}}, @{$config->{'Bcc'}}, @{$config->{'Reply-To'}}) {
     my $email = $_;
     $email =~ s/^.+<(\S+)>$/$1/;
     if (!&validate_email($email)) {
