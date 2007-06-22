@@ -10,21 +10,27 @@ no warnings qw(uninitialized);
 
 use CarpeDiem;
 
-use rusty;
+use rusty::Profiles;
 
-my $rusty = rusty->new;
+my $rusty = rusty::Profiles->new;
 
 my ($dbh, $query, $sth);
 
 $dbh = $rusty->DBH;
- 
 
+$rusty->{data}->{new_messages_count} =
+  $rusty->getNewMessagesCount($rusty->{core}->{'profile_id'});
+
+$rusty->{data}->{friends_online} =
+  $rusty->getOnlineFriendProfileNames($rusty->{core}->{'profile_id'});
+
+$rusty->{data}->{faves_online} =
+  $rusty->getOnlineFaveProfileNames($rusty->{core}->{'profile_id'});
+
+$rusty->{data}->{recent_visits} =
+  $rusty->getRecentProfileVisitors($rusty->{core}->{'profile_id'}, 10);
 
 $rusty->{ttml} = "assistant.ttml";
-$rusty->{data}->{session_cookie} = $rusty->session_cookie;
-$rusty->{data}->{word1} = $rusty->random_word();
-$rusty->{data}->{word2} = $rusty->random_word();
-
 
 
 if ($rusty->{params}->{firstopen}) {
@@ -36,8 +42,8 @@ if ($rusty->{params}->{firstopen}) {
                             nocache => 1,
                             nopageclick => 1 );
 } else {
-  # Out refreshes every 120, gaydar 160 & faceparty 120.
-  # Faceparty refreshes using javascript (YUK!)
+  # Others refresh every 120 (x2), 160.
+  # One refreshes using javascript (YUK!)
   # I do 60 just to get instant messaging responses feeling
   # faster for users! Hee hee. Maybe someone will notice.
   # Probably the overloaded server. Agh well. Can be changed.
