@@ -7,11 +7,21 @@ use strict;
 use lib "..";
 
 
-
 use warnings qw( all );
 
 no warnings qw( uninitialized );
 
+
+#use Math::TrulyRandom qw( truly_random_value );
+#use Math::Random qw( rand );
+# This successfuly gets around the problem of /dev/random providing
+# no entropy on our current VM setup!  Wahoo!
+if ($ENV{NO_ENTROPY}) {
+  eval {
+    require Math::Random::MT::Auto;
+    import Math::Random::MT::Auto qw( rand srand ), '/dev/urandom';
+  }
+}
 
 ##############################################
 # ImagePwd module written by Julian Lishev
@@ -53,7 +63,6 @@ BEGIN
   $VERSION = "1.16";
   @ISA = qw( Exporter );
   @EXPORT = qw(  );
-  srand();
  }
 
 sub new
@@ -171,7 +180,7 @@ sub ImagePassword
  $obj->password($str);
  my $i_x = 0;
  my @pnts = ();
-
+ 
  $cy = rand(20) + $height/2;
  $cx = rand(10);
  my $a_cx = $cx * $len;
