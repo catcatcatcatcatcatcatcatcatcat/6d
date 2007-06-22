@@ -4,12 +4,13 @@
 /*************************************************************************/
 
 body, tr, td {
-  font-size: 70%;
+  /*font-size: 75%;*/
+  font-size: 12px;
 }
 
 body, select, option {
   font-family: Verdana, Arial, Helvetica, sans-serif;
-  color:       black;
+  color: black; background-color: inherit;
   font-weight: normal;
   line-height: 1.4em;
   /* line-height: 18px; */
@@ -28,11 +29,16 @@ body {
 
 
 
+fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
 /* form */
 input.text, select, textarea {
-  background-color: #f2f6fA;
+  color: #555; background-color: #fff;
   border: 1px inset #d6d3d6;
-  color: #555;
   /* background:inherit; - for 'flat' elements */
 }
 
@@ -43,19 +49,33 @@ p {
 }
 
 
-h1, h2, h3, h4, h5 { font-family: Arial, Helvetica, sans-serif; padding: 0; color: #000; }
-h1 { font-size: 1.8em; font-weight: normal; margin: 10px 0 10px 0;
-     /* line-height: 24px; padding-bottom:10px; border-bottom: 1px solid #d5d9d5 */ }
+h1, h2, h3, h4, h5 {
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  color: #000; background-color: inherit;
+}
+
+h1 { 
+  font-size: 1.8em;
+  font-weight: normal;
+  margin: 10px 0;
+  padding: 0;
+  /* line-height: 24px; padding-bottom:10px; border-bottom: 1px solid #d5d9d5 */
+}
 h2 { font-size: 1.4em; font-weight: bold; margin: 6px 0 6px 0; }
 h3 { font-size: 1.2em; font-weight: bold; margin: 3px 0 3px  0; }
 h4 { font-size: 1.1em; font-weight: bold; }
-h5 { font-size: 0.8em; font-weight: normal; color: #444; }
+h5 {
+  font-size: 0.8em;
+  font-weight: normal; 
+  color: #444;
+  background-color: inherit;
+}
 
 
 h1 {
     font-weight: bold;
-    color: #036; background-color: transparent;
-    margin: 0 0 0.5em 0; padding: 0;
+    color: #036; background-color: inherit;
 }
 h1 a {
     font-weight: normal;
@@ -63,18 +83,18 @@ h1 a {
 }
 h2 {
     font-weight: normal;
-    color: #036; background-color: transparent;
+    color: #036; background-color: inherit;
     margin: 0.3em 0 0.1em 0; padding: 0;
 }
 h3 {
-    color: #024; background-color: transparent;
+    color: #024; background-color: inherit;
     font-style: italic;
-    margin: 0.2em 0 0.2em 0; padding: 0;
+    margin: 1.0em 0 0.2em 0; padding: 0;
 }
 hr {
     border: 0;
     width: 80%;
-    color: #369; background-color: #369;
+    color: #369; background-color: #47A;
     height: 2px;
 }
 
@@ -85,39 +105,28 @@ li {     margin: 8px; padding: 0; /* font-size: 1.1em; */ }
 /* li.smaller { font-size: 1.0em; } */
 
 
+th { text-align: left; }
+
+
 a:link, a:visited, a:hover, a:active { font-weight: bold; text-decoration: none; }
 a:link {
-    color: #00C; background-color: transparent;
+    color: #00C; background-color: inherit;
 }
 a:visited {
-    color: #306; background-color: transparent;
+    color: #306; background-color: inherit;
 }
 a:active {
-    color:#F60; background-color: transparent;
+    color: #F60; background-color: inherit;
 }
 a:hover   { text-decoration: underline; }
 a img { border: 0px; }
 
 
-li.home { list-style-image: url(/images/icons/icon_home.gif); }
-li.music { list-style-image: url(/images/icons/icon_music.gif); }
-li.films { list-style-image: url(/images/icons/icon_movies.gif); }
-li.signup { list-style-image: url(/images/icons/icon_signup.gif); }
-li.photogallery { list-style-image: url(/images/icons/icon_photogallery.gif); }
-li.clubs { list-style-image: url(/images/icons/icon_clubs.gif); }
-li.shopping { list-style-image: url(/images/icons/icon_shopping.gif); }
-li.restaurants { list-style-image: url(/images/icons/icon_restaurants.gif); }
-li.personals { list-style-image: url(/images/icons/icon_personals.gif); }
-li.messageboard { list-style-image: url(/images/icons/icon_messageboard.gif); }
-li.info { list-style-image: url(/images/icons/icon_info.gif); }
-li.competitions { list-style-image: url(/images/icons/icon_nav_star.gif); }
-li.inbox { list-style-image: url(/images/icons/icon_mail_sm.gif); }
-li.inboxnew { list-style-image: url(/images/icons/icon_mail_new_sm.gif); }
-li.interviews { list-style-image: url(/images/icons/icon_info.gif); }
-
-.input { color: black; }
-.input-error { color: red; }
-.err { color: red; font-weight: bold; }
+.input { color: black; background-color: inherit; }
+.input-error { color: red; background-color: inherit; }
+.err { color: red; background-color: inherit; font-weight: bold; }
+ul.err li { margin: 0; padding: 0; }
+.success { color: green; background-color: inherit; }
 
 .lighter { font-weight: lighter; }
 .bold { font-weight: bold; }
@@ -131,44 +140,77 @@ li.interviews { list-style-image: url(/images/icons/icon_info.gif); }
 table.hovertable {
   padding:         10px;
   margin:          2%;
-  width:           98%;
+  width:            auto;
   border-collapse: collapse;
   border-width:    0;
   empty-cells:     show;
 }
 
+table.hovertable#compact, table.hovertable#ultracompact {
+  padding:         0;
+}
+table.hovertable#ultracompact {
+  font-size: 0.96em;
+  /*border: 1px solid #FBFBFB;*/
+}
 
 table.hovertable th {
-  background:     #999;
   vertical-align: middle;
-  color:          white;
+  /*color: white; background-color: #999;
   font-size:      1.1em;
   font-weight:    bold;
-  text-align:     left;
-  padding:        8px 0px 8px 16px;
-  border-width:   0;
-  border-bottom:  1px solid #EAE7D4;
+  text-align:     left;*/
+  /*padding:        8px 0px 8px 16px;*/
+  padding: 2px 5px;
+  border-width:   0 0 1px 0;
+  /*border-style:   solid;
+  border-color:   #EAE7D4;*/
+}
+
+table.hovertable#compact th {
+  padding: 2px 5px;
+}
+table.hovertable#ultracompact th {
+  padding: 1px 10px;
+  border: 0;
+  font-size: 1.0em;
 }
 
 table.hovertable tr.buffered {
   border-top:  solid 20px white;
 }
 
-table.hovertable tr.main th {
-  background:     #666;
-}
-
 table.hovertable td {
-  text-align:    left;
+  /*text-align:    left;
   padding:       8px 28px 8px 16px;
-  border-width:  0;
-  border-bottom: 1px dashed #F1EFE3;
+  border-width:   0 0 1px 0;
+  border-style:   dashed;
+  border-color:   #F1EFE3;*/
 }
 
-table.hovertable td.buy { background-color: #FAFAFA; }
+table.hovertable#compact td {
+  padding:       2px;
+}
+table.hovertable#ultracompact td {
+  padding:       2px 12px;
+  white-space:   normal;
+  border-bottom: 0;
+}
+table.hovertable#ultracompact td.bulleted {
+  padding:       2px 12px 2px 22px;
+  white-space:   normal;
+  background: #FFF url(/images/icons/red_arrow_bullet.gif) no-repeat 12px 50%;
+}
+table.hovertable a, table.hovertable a:visited, table.hovertable a:hover {
+  /*color: #000;
+  text-decoration: none;*/
+  /*white-space:nowrap;*/
+}
 
-table.hovertable tr:hover { background-color: #F1EFE3; }
-table.hovertable tr:hover td.buy { background-color: #EBEADE; }
+
+table.hovertable tr:hover { background-color: #DDF; color: inherit; }
+table.hovertable tr:hover.nohoverchange { background-color: inherit; color: inherit; }
+table.hovertable tr:hover td.nohoverchange { background-color: inherit; color: inherit; }
 
 /*
    For STUPID IE. - doesn't use hover on all elements
@@ -177,10 +219,14 @@ table.hovertable tr:hover td.buy { background-color: #EBEADE; }
    & tr or td elements that are in the hovertable:
    <table class="hovertable">
      <tr onmouseover="this.className='hover'" onmouseout="this.className=''">
+  OR EVEN BETTER (so as not to clobber existing class names:
+  <tr onmouseover="this.className+=' hover'"
+      onmouseout="this.className=this.className.substring(0,this.className.lastIndexOf(' hover'))"
+  AND REMEMBER, IN OUR HEADER ROWS (th)
+  <tr id="nohoverchange"><th>...</th></tr>
 */
-table.hovertable tr.hover { background-color: #F1EFE3; }
-table.hovertable tr.hover td.buy { background-color: #EBEADE; }
-
+table.hovertable tr.hover { background-color: #DDF; color: inherit; }
+table.hovertable tr.hover td.nohoverchange { background-color: inherit; color: inherit; }
 
 
 /*************************/
@@ -196,7 +242,7 @@ div.img {
 
 div.error {
   border: 1px solid red;
-  background-color: #fff7fb;
+  background-color: #fff7fb; color: inherit;
   margin: 5px;
   padding: 5px;
 }
@@ -250,28 +296,25 @@ div.space-line {
 
 /* decent browsers will obey this */
 select:hover, input.text:hover, textarea:hover {
-  background-color: #fff7fb;
+  background-color: #fff7fb; color: #000;
   border: 1px inset #ff3399;
-  color: #000;
 }
 
 /* and this will be what the javascript uses to style stupid IE */
 /* have given up styling the selects/options onfocus/onclick in IE! */
 /* select.focus, */
 input.text-focus, textarea.focus {
-  background-color: #fff7fb;
+  background-color: #fff7fb; color: #000;
   border: 1px inset #ff3399;
-  color: #000;
 }
 
 /* ########################################################## */
 
 input.button {
         border: 1px;
-        color: #fff;
+        color: #fff; background-color: #C92B44;
         padding: 2px;
         font-weight: bold;
-        background-color: #C92B44;
 }
 
 
@@ -288,99 +331,300 @@ li.spaced {
 
 
 div.content {
-	position:relative;
-	width:auto;
-	min-width:120px;
+  position:relative;
+  width:auto;
+  min-width:120px;
         /* margin:20px 20px 0px 190px; */
-	margin:20px 240px -10px 190px;
-	/* border:1px solid #d6d3d6;
-	background-color:#e1e8e8;
-	padding:10px; */
-	z-index:3;
-	height: 100%;
+  margin:20px 240px -10px 190px;
+  /* border:1px solid #d6d3d6;
+  background-color:#e1e8e8; color: inherit;
+  padding:10px; */
+  z-index:3;
+  height: 100%;
 }
 
 #left {
-	position:absolute;
-	width:148px;
-	top:100px;
-	left:10px;
-	z-index:2;
+  position:absolute;
+  width:148px;
+  top:100px;
+  left:10px;
+  z-index:2;
 }
 
 div.leftbox {
-	width: 100%;
-	border: 1px solid #d6d3d6;
-	background-color: #eeeeee;
-	padding: 10px;
-	margin-bottom: 10px;
+  width: 100%;
+  border: 1px solid #d6d3d6;
+  background-color: #eeeeee; color: inherit;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
 div.leftbuttonbox {
-	background: none;
-	border: none;
+  background: none;
+  border: none;
 }
 
 #right {
-	position:absolute;
-	width:200px;
-	top:100px;
-	z-index:1;
-	right:30px;
-	voice-family: "\"}\"";
-	voice-family:inherit;
-	right:10px;
+  position:absolute;
+  width:200px;
+  top:100px;
+  z-index:1;
+  right:10px; /* 'correct' height (overridden in ie5.x css file */
 }
-
-/* html>body #right {right: 30px;} */
 
 
 div.rightbox {
-	width: 100%;
-	border: 1px solid #d6d3d6;
-	background-color:#e1e8e8;
-	padding: 10px;
-	margin-bottom: 10px;
+  width: 100%;
+  border: 1px solid #d6d3d6;
+  background-color:#e1e8e8; color: inherit;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
 img {
-	border: 0;
-	z-index: 5;
+  border: 0;
+  z-index: 5;
 }
 
 img.rightfloat {
-	position: relative;
-	float: right;
-	margin-left: 10px;
-	z-index: 5;
+  position: relative;
+  float: right;
+  margin-left: 10px;
+  z-index: 5;
 }
 
 img.leftfloat {
-	position: relative;
-	float: left;
-	margin-right: 10px;
-	z-index: 5;
+  position: relative;
+  float: left;
+  margin-right: 10px;
+  z-index: 5;
 }
 
 img.rightmain {
-	background-color: white;
-	float: right;
-	padding:6px;
-	margin-left: 10px;
-	border-left: 1px solid #d6d3d6;
-	border-bottom: 1px solid #d6d3d6;
-	border: 1px solid #d6d3d6;
+  background-color: white; color: inherit;
+  float: right;
+  padding:6px;
+  margin-left: 10px;
+  border: 1px solid #d6d3d6;
 }
 
 img.leftmain {
-	background-color: white;
-	float: left;
-	padding:6px;
-	margin-right: 10px;
-	border-left: 1px solid #d6d3d6;
+  background-color: white; color: inherit;
+  float: left;
+  padding:6px;
+  margin-right: 10px;
+  border-left: 1px solid #d6d3d6;
 }
 
 a.nohl {
-	text-decoration: none;
-	color: #009999;
+  text-decoration: none;
+  color: #009999; background-color: inherit;
+}
+
+a.minilink {
+  display: block;
+  font-weight: normal;
+  background: url(/images/arrow-up.gif) no-repeat left;
+  padding-left: 15px;
+  font-size: 0.75em;
+}
+
+span.mandatory {
+  color: red; background-color: inherit;
+}
+
+
+.error-box {
+  display: block;
+  text-align: center;
+  width: 90%;
+  border: 1px solid red;
+  margin-bottom: 20px;
+}
+.error-box-title {
+  display: block;
+  width: 100%;
+  background-color: red; color: white;
+  font-weight: bold;
+}
+
+.smalltext {
+    font-size: smaller;
+}
+table .stats-meter {
+    width: 130px;
+    border: 1px solid #cbcbcb;
+    border-collapse: collapse;
+}
+
+.stats-meter td {
+    background: url(/images/stats_back.gif) repeat-x bottom;
+    border: 1px solid #cbcbcb;
+    border-collapse: collapse;
+    padding: 0.1em 0.2em 0em 0.2em;
+    font-weight: bold;
+}
+
+
+#Content {
+  margin: 30px 30px 0 30px;
+  padding-bottom: 20px;
+  padding-top: 15px;
+}
+
+#breadcrumbs {
+  float: right;
+  position: absolute;
+  left: 10px; top: 10px;
+  width: auto; height: 20px;
+  margin: 0; padding: 0; border: 0;
+  text-align: left;
+  white-space: nowrap; display: inline;
+  font: 11px Arial, Geneva, Helvetica, sans-serif;
+}
+
+
+
+
+/* profiles css - moved into main style css now.. */
+
+ul.opt { display: inline; list-style: none inside; padding:0; margin:0; }
+
+li.opt {
+  display: inline;
+  list-style: none inside;
+  border-width: 0 1px 0 0;
+  border-style: solid;
+  border-color: #d6d3d6;
+  font-size:0.8em;
+  margin: 0;
+  padding-left:0px; padding-right:3px;
+  /*padding-left:3px; padding-right:0px; *//* IE RULE - NEED TO HACK IT OR USE SEP. FILE!*/
+}
+li.opt2 {
+  display: inline;
+  list-style: none inside;
+  border: none;
+  font-size:0.8em;
+  margin: 0;
+  padding-left:0px; padding-right:0px;
+  /*padding-left:3px; padding-right:0px; *//* IE RULE - NEED TO HACK IT OR USE SEP. FILE!*/
+}
+li.opt a, li.opt2 a {
+  font-weight:normal;
+}
+
+/* what the hell are all these for?? */
+td.pad { padding:4px; }
+td.pad-error { padding:4px;font-weight:bold;color:red;background-color:inherit; }
+td.pad20 { padding:4px;width:20% }
+td.pad20-error { padding:4px;font-weight:bold;color:red;background-color:inherit;width:20% }
+td.padb { padding:4px;color:gray;background-color:inherit; }
+td.pad2 { padding:4px 4px 4px 12px; }
+td.pad2-error { padding:4px 4px 4px 12px;font-weight:bold;color:red;background-color:inherit; }
+td.pad220 { padding:4px 4px 4px 12px;width:20%; }
+td.pad220-error { padding:4px 4px 4px 12px;font-weight:bold;color:red;background-color:inherit;width:20%; }
+td.pad2b { padding:4px 4px 4px 12px;color:gray;background-color:inherit; }
+p.title { padding-left:16px;color:gray;background-color:inherit;margin-bottom:4px;margin-top:12px; }
+p.data { padding-left:16px; }
+
+/* used by messaging and friends management */
+th { text-align:left; }
+td { vertical-align:top; }
+td.new { font-weight:bold; }
+td.messageaction { text-align:center; }
+a.del { font-size:1.1em;color:red;background-color:inherit;font-weight:bold; }
+
+
+/* --Inline thumbnails------------------- */
+.thumbnail-info-container {
+  /*margin-right:10px;*/
+  margin-bottom: 10px;
+  width: 115px;
+  text-align: left;
+  /*border: 1px dashed orange;*/
+}
+.thumbnail-info-container a {
+  font-weight: normal;
+  color: #333; background-color: inherit;
+  font-size: 0.85em; 
+}
+.thumbnail-info-container p {
+  text-align: right;
+  margin: 0;
+  padding: 0 5px 0 0;
+  max-width: 115px;
+  line-height:1.1em;
+}
+.thumbnail-info-container span.extra {
+  font-weight: normal;
+  color: #999; background-color: inherit;
+  font-size: 0.75em;
+}
+.thumbnail-container {
+  width: 115px; height: 119px; /* IE has forced me to increase height by 4px */
+  position: relative;
+  /*border: 1px dashed blue;*/
+  vertical-align: middle;
+  text-align: center;
+}
+div.thumbnail-shadow {
+  padding: 7px 9px 8px 6px;
+  background-repeat: no-repeat;
+  margin: 0 auto; /* centre horizontally by default - usually overriden
+         on page to achieve vertical&horizontal centering */
+  /*background-image:url('/images/thumbnail-shadow/firstattempt/bg.png');*/
+  /*width:100px; height:100px;*/ /* Will need to hack this for IE5 */
+  /*border: 1px dashed green;*/
+}
+a.thumbnail-shadow {
+  /* IE fix for the link that loses the nice handy cursor once
+     we've applied our PNG background alpha transparency fix */
+  cursor: pointer; /* IE will not like this if it's in Quirks mode */
+  /* cursor: hand; *//* Only IE understands this one.. Others drop it! */
+  /* how do we force the title attribute to be a tooltip in here? */
+}
+div.ie-link-focus-fix {
+  position: relative;
+}
+div.thumbnail-shadow img {
+  /*width:140px;
+  height:140px;*/
+  /*border: 1px dashed red;*/
+}
+div.thumbnail-extra-info {
+  display:none;
+}
+a.thumbnail-status, a:hover.thumbnail-status {
+  font-size:10px;
+  text-decoration:none;
+  font-weight:bold;
+  /*height:14px;width:16px;*/
+  vertical-align:top;
+  color:#990; background-color:inherit;
+  /*background-color: #FFD;*/
+  border:1px solid #DD6;
+  /* Make this block display without messing things up.. somehow
+    force it to be a certain size or just use an image */
+}
+/* --/Inline thumbnails------------------ */
+
+div.linkboxes {
+  border: 2px solid #FFF3F3;
+  background-color: #FFE9E9;
+  width: 50%;
+  margin: 3px;
+  font-size: 0.9em;
+}
+
+a div.linkboxes {
+  font-weight: normal;
+  cursor: pointer; /* IE will not like this if it's in Quirks mode */
+  /* cursor: hand; *//* Only IE understands this one.. Others drop it! */
+}
+
+a:hover div.linkboxes {
+  text-decoration: none;
+  border: 2px solid #F55;
+  background-color: #FCC;
 }
