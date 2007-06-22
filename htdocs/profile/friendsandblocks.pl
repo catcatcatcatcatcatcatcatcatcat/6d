@@ -18,7 +18,9 @@ $rusty = rusty::Profiles->new;
 
 
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->CGI->redirect( -url => "/login.pl" );
+  require URI::Escape;
+  print $rusty->CGI->redirect( -url => "/login.pl?ref="
+                                     . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
   print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
@@ -26,11 +28,15 @@ if (!$rusty->{core}->{'user_id'}) {
 }
 
 if (!$rusty->{core}->{'profile_id'} && !$rusty->{params}->{prev_action}) {
+  
   # If we have no profile & we're not redirected from this (prev_action set)
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                     . "?mode=list&prev_action="
-                                     . $rusty->{params}->{mode}
-                                     . "&success=0&reason=noprofile" );
+  require URI::Escape;
+  print $rusty->CGI->redirect( -url => "/profile/account.pl?ref="
+                                     . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
+  #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  #                                   . "?mode=list&prev_action="
+  #                                   . $rusty->{params}->{mode}
+  #                                   . "&success=0&reason=noprofile" );
   $rusty->exit;
 }
 
@@ -170,7 +176,7 @@ sub addfriend {
   my $existing_block_link = $rusty->findBlockLink($rusty->{core}->{'profile_id'},
                                                   $rusty->{data}->{friend_profile_id});
   
-  # If there is a block link on this profile, we can't add them as a friend!
+  # If there is a blsock link on this profile, we can't add them as a friend!
   if ($existing_block_link->{block_link_id}) {
     
     print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
@@ -182,8 +188,10 @@ sub addfriend {
   # If the request was made to actually create the friend link, then do it!
   if ($rusty->{params}->{send} == 1) {
     
-    unless ($rusty->requestFriendLink($rusty->{core}->{'profile_id'},
-                                      $rusty->{data}->{friend_profile_id})) {
+    $rusty->{data}->{friend_link_id} = $rusty->requestFriendLink($rusty->{core}->{'profile_id'},
+                                                                 $rusty->{data}->{friend_profile_id});
+    
+    unless ($rusty->{data}->{friend_link_id}) {
       
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfriend"
@@ -195,7 +203,7 @@ sub addfriend {
     
     my $subject = "friend link request from $rusty->{core}->{profile_name}";
     
-  	my $message = <<ENDMSG
+    my $message = <<ENDMSG
 $rusty->{core}->{profile_name} has requested that your profiles be linked because you are friends.
 If you agree, a link to $rusty->{core}->{profile_name}'s profile will appear on your profile, and vice versa.
 
@@ -223,23 +231,27 @@ ENDMSG
 So, if you have heard of $rusty->{core}->{profile_name}, click on "Accept".
 If you suspect they're the aforementioned stalker, click on "Reject".
 
-Either way, they'll get a message telling them what your decision was.
+This message will remain "Unread" until you respond using the buttons below.
+
 ENDMSG
 ;
     
-    my $success = $rusty->sendMessage( from    => $rusty->{core}->{'profile_id'},
-                                       to      => $rusty->{data}->{friend_profile_id},
-                                       subject => $subject,
-                                       body    => $message,
-                                       special => "LINKEDFRIEND" );
+    my $msg_id = $rusty->sendMessage( from    => $rusty->{core}->{'profile_id'},
+                                      to      => $rusty->{data}->{friend_profile_id},
+                                      subject => $subject,
+                                      body    => $message,
+                                      flag => "LINKEDFRIEND" );
     
-    unless ($success) {
+    unless ($msg_id) {
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0" );
       $rusty->exit;
     }
+    
+    # Add this message id to the friend link record!
+    $rusty->addMsgIdToFriendLink($rusty->{data}->{friend_link_id}, $msg_id);
     
     print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
@@ -322,6 +334,12 @@ sub delfriend {
   
   my $success = $rusty->deleteFriendLink($existing_friend_link->{friend_link_id});
   
+  # Now delete the invitation message if it is still undecided
+  if ($existing_friend_link->{status} !~ /^(?:un)?read$/o) {
+    $rusty->deleteMessage( recipient_profile_id => $rusty->{core}->{'profile_id'},
+                           message_ids => [ $existing_friend_link->{message_id} ] );
+  }
+    
   print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=delfriend"
                                      . $rusty->{data}->{query_string_params}
@@ -331,11 +349,35 @@ sub delfriend {
 
 sub respond {
   
-  my $existing_friend_link = $rusty->getFriendLink($rusty->{params}->{friend_link_id});
+  my $existing_friend_link;
+  if ($rusty->{params}->{friend_link_id}) {
+    
+    $existing_friend_link = $rusty->getFriendLink($rusty->{params}->{friend_link_id});
+    
+  } elsif ($rusty->{params}->{friend_profile_name}) {
+    
+    # If we weren't furnished with a friend_link_id, find it out from the requester's
+    # profile name (we get this from the message requests)
+    $rusty->{data}->{requester_profile_name} = $rusty->{params}->{friend_profile_name};
+    $rusty->{data}->{requester_profile_id} =
+      $rusty->getProfileIdFromProfileName($rusty->{params}->{friend_profile_name});
+    
+    $existing_friend_link = $rusty->findFriendLink($rusty->{data}->{requester_profile_id},
+                                                   $rusty->{core}->{'profile_id'});
+  } else {
+    
+    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+                                       . "?mode=list&prev_action=respond"
+                                       . $rusty->{data}->{query_string_params}
+                                       . "&success=0&reason=notenoughinfo" );
+    $rusty->exit;
+  }
   
   # If we couldn't find a link with that id or it's not one meant for us, go oops now.
+  # Also if it's not respondable to-able (this should never happen) - (not read status)
   if (!$existing_friend_link->{friend_link_id} ||
-      ($existing_friend_link->{requestee_profile_id} != $rusty->{core}->{'profile_id'})) {
+      ($existing_friend_link->{requestee_profile_id} != $rusty->{core}->{'profile_id'}) ||
+      $existing_friend_link->{status} ne "read") {
     
     print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=respond"
@@ -343,15 +385,6 @@ sub respond {
                                        . "&success=0&reason=nopendingfriendlinkfound" );
     $rusty->exit;
     
-  # Go oops now if it's not respondable to-able (this should never happen)
-  } elsif ($existing_friend_link->{status} ne "read") {
-    
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=list&prev_action=respond"
-                                       . $rusty->{data}->{query_string_params}
-                                       . "&success=0&reason=nopendingfriendlinkfound" );
-    $rusty->exit;
-  
   # Say oops politely if the invite has been deleted while
   # they were reading the message (shouldn't happen that much!)
   } elsif ($existing_friend_link->{deleted_date}) {
@@ -364,74 +397,83 @@ sub respond {
     
   }
   
-  $rusty->{data}->{requester_profile_name} =
-    $rusty->getProfileNameFromProfileId($existing_friend_link->{requester_profile_id});
+  if (!$rusty->{data}->{requester_profile_name}) {
+    
+    $rusty->{data}->{requester_profile_name} =
+      $rusty->getProfileNameFromProfileId($existing_friend_link->{requester_profile_id});
+  }
   
-  if (($rusty->{params}->{reponse} eq 'accept') ||
-      ($rusty->{params}->{reponse} eq 'acceptandreciprocate')) {
+  if (($rusty->{params}->{response} eq 'accept') ||
+      ($rusty->{params}->{response} eq 'acceptandreciprocate')) {
     
     $rusty->acceptFriendLink($existing_friend_link->{friend_link_id});
     
-    $rusty->deleteMessage( from    => $rusty->{data}->{friend_profile_id},
-                           to      => $rusty->{core}->{'profile_id'},
-                           special => "LINKEDFRIEND" );
-    
     my $subject = "friend link request response";
     
-    my $message = "$rusty->{data}->{profile_name} has accepted your request to link your profiles as friends.\n";
+    my $message = "$rusty->{core}->{profile_name} has accepted your request to link your profiles as friends.\n";
     
-    $rusty->sendMessage( from           => $rusty->{core}->{'profile_id'},
-                         to             => $rusty->{data}->{friend_profile_id},
-                         subject        => $subject,
-                         body           => $message,
-                         sender_deleted => 1 );
+    $rusty->sendMessage( from               => $rusty->{core}->{'profile_id'},
+                         to                 => $existing_friend_link->{requester_profile_id},
+                         subject            => $subject,
+                         body               => $message,
+                         sender_hidden_from => 1,
+                         flag               => 'LINKEDFRIENDRESPONSE' );
     
-    if ($rusty->{params}->{reponse} eq 'acceptandreciprocate') {
+    if ($rusty->{params}->{response} eq 'acceptandreciprocate') {
       
       # Add new reciprocal link unless a valid or pending friend link already exists.
       $rusty->addReciprocalFriendLink($rusty->{core}->{'profile_id'},
                                       $existing_friend_link->{requester_profile_id})
         unless $rusty->findPendingOrExistingFriendLink($rusty->{core}->{'profile_id'},
                                              $existing_friend_link->{requester_profile_id});
-        
+      
     }
     
-  } elsif (($rusty->{params}->{reponse} eq 'reject') ||
-           ($rusty->{params}->{reponse} eq 'rejectandblock')) {
+  } elsif (($rusty->{params}->{response} eq 'reject') ||
+           ($rusty->{params}->{response} eq 'rejectandblock')) {
     
     $rusty->rejectFriendLink($existing_friend_link->{friend_link_id});
     
-    $rusty->deleteMessage( from    => $rusty->{data}->{friend_profile_id},
-                           to      => $rusty->{core}->{'profile_id'},
-                           special => "LINKEDFRIEND" );
-    
     my $subject = "friend link request response";
     
-    my $message = "$rusty->{data}->{profile_name} has rejected your request to link your profiles as friends.\n";
+    my $message = "$rusty->{core}->{profile_name} has rejected your request to link your profiles as friends.\n";
     
-    $rusty->sendMessage( from           => $rusty->{core}->{'profile_id'},
-                         to             => $rusty->{data}->{friend_profile_id},
-                         subject        => $subject,
-                         body           => $message,
-                         sender_deleted => 1 );
+    $rusty->sendMessage( from               => $rusty->{core}->{'profile_id'},
+                         to                 => $existing_friend_link->{requester_profile_id},
+                         subject            => $subject,
+                         body               => $message,
+                         sender_hidden_from => 1,
+                         flag               => 'LINKEDFRIENDRESPONSE' );
     
-    if ($rusty->{params}->{reponse} eq 'rejectandblock') {
+    if ($rusty->{params}->{response} eq 'rejectandblock') {
       
       # Add a block on this person unless a valid block already exists.
       $rusty->addBlockLink($rusty->{core}->{'profile_id'},
                            $existing_friend_link->{requester_profile_id})
         unless ($rusty->findBlockLink($rusty->{core}->{'profile_id'},
                                       $existing_friend_link->{requester_profile_id}));
-        
+      
     }
     
+  } else {
+    
+    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+                                       . "?mode=list&prev_action=respond"
+                                       . $rusty->{data}->{query_string_params}
+                                       . "&success=0&reason=invalidresponse" );
+    $rusty->exit;
   }
+  
+  # Take message that was this request and mark it as read if we were given it..
+  $rusty->markMessageReadFlags( recipient_profile_id => $rusty->{core}->{'profile_id'},
+                                message_ids => [ $existing_friend_link->{message_id} ]);
+
   
   print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=respond"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=1&response="
-                                     . $rusty->{params}->{reponse} );
+                                     . $rusty->{params}->{response} );
 }
 
 
