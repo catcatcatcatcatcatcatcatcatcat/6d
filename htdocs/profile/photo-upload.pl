@@ -28,17 +28,17 @@ use constant THUMB_WIDTH => 100;
 use constant THUMB_HEIGHT => 100;
 
 
+
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->CGI->redirect( -url => "/login.pl" );
+  print $rusty->CGI->redirect( -url => "/login.pl?ref=/profile/photo-upload.pl" );
   $rusty->exit;
 }
 
 $query = <<ENDSQL
-SELECT u.user_id, u.profile_name, up.profile_id,
-       up.updated, up.main_photo_id
-FROM `user` u
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
-WHERE u.user_id = ?
+SELECT user_id, profile_name, profile_id,
+       updated, main_photo_id
+FROM `user~profile`
+WHERE user_id = ?
 LIMIT 1
 ENDSQL
 ;
@@ -56,12 +56,15 @@ if (!$rusty->{core}->{profile_info}->{'updated'}) {
   $rusty->exit;
 }
 
+$rusty->{data}->{num_photos} = $rusty->getPhotoCount($rusty->{core}->{profile_id});
+
 $rusty->{ttml} = "profile/photo-upload.ttml";
 
-$rusty->{title} = "Upload a Photo";
 
-
-
+if ($rusty->{data}->{num_photos} >= 50) {
+  $rusty->process_template;
+  $rusty->exit;
+}
 
 unless ($rusty->{params}->{upload} == 1) {
   $rusty->{data}->{error} = $rusty->{params}->{error};
@@ -275,6 +278,7 @@ if ($photo->{uploaded_file} !~ /\.([^\.]+)$/) {
 
 
 
+
 # Create new filename
 $photo->{local_filename} = $profile->{profile_name} . "~"
                          . sprintf("%04d_%02d_%02d\@%02d-%02d-%02d",
@@ -310,7 +314,9 @@ $photo->{local_thumb_nocrop_filepath} = $rusty->photo_upload_directory . "/"
                                
 
 
+
 rename( $upload_tmp, $photo->{local_filepath} );
+
 
 
 
