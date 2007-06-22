@@ -2,17 +2,13 @@ package rusty::Profiles::FriendsAndBlocks;
 
 use strict;
 
-#use lib "../..";
-
 use warnings qw( all );
 
 no warnings qw( uninitialized );
 
-#use CarpeDiem;
 
-#use rusty;
 
-#our @ISA = qw( rusty::Profiles );
+
 
 sub getAllFriends($) {
   
@@ -25,15 +21,16 @@ sub getAllFriends($) {
   my $query = <<ENDSQL
 SELECT upf.friend_link_id,
        upf.requestee_profile_id AS profile_id,
-       u.profile_name,
+       up.profile_name,
        up.main_photo_id,
        upf.status,
        DATE_FORMAT(upf.requested_date, '%d/%m/%y %H:%i') AS requested_date,
        DATE_FORMAT(upf.read_date, '%d/%m/%y %H:%i') AS read_date,
-       DATE_FORMAT(upf.decided_date, '%d/%m/%y %H:%i') AS decided_date
+       DATE_FORMAT(upf.decided_date, '%d/%m/%y %H:%i') AS decided_date,
+       upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
 FROM `user~profile~friend_link` upf
 INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
-INNER JOIN `user` u ON u.user_id = up.user_id
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.requester_profile_id = ?
   AND upf.deleted_date IS NULL
   AND upf.status != 'rejected'
@@ -44,6 +41,82 @@ ENDSQL
   my @friends = ();
   while (my $friend_info = $sth->fetchrow_hashref) {
     push @friends, $friend_info;
+  }
+  $sth->finish;
+  
+  return @friends ? \@friends : undef;
+}
+
+
+sub getAllFriendsWithStatus($) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT upf.friend_link_id,
+       upf.requestee_profile_id AS profile_id,
+       up.profile_name,
+       up.main_photo_id,
+       upf.status,
+       DATE_FORMAT(upf.requested_date, '%d/%m/%y %H:%i') AS requested_date,
+       DATE_FORMAT(upf.read_date, '%d/%m/%y %H:%i') AS read_date,
+       DATE_FORMAT(upf.decided_date, '%d/%m/%y %H:%i') AS decided_date,
+       upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult,
+       usess.updated AS online_now
+FROM `user~profile~friend_link` upf
+INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
+LEFT JOIN `user~session` usess ON up.user_id = usess.user_id
+                              AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                              AND usess.created IS NOT NULL
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+WHERE upf.requester_profile_id = ?
+  AND upf.deleted_date IS NULL
+  AND upf.status != 'rejected'
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id);
+  my @friends = ();
+  while (my $friend_info = $sth->fetchrow_hashref) {
+    push @friends, $friend_info;
+  }
+  $sth->finish;
+  
+  return @friends ? \@friends : undef;
+}
+
+
+# Gets list of friends' profile names who are confirmed
+# (have accepted) and are currently online.
+sub getOnlineFriendProfileNames($) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT up.profile_name
+FROM `user~profile~friend_link` upf
+INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
+INNER JOIN `user~session` usess ON up.user_id = usess.user_id
+                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                               AND usess.created IS NOT NULL
+WHERE upf.requester_profile_id = ?
+  AND upf.deleted_date IS NULL
+  AND upf.status = 'accepted'
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id);
+  my @friends = ();
+  while (my ($friend) = $sth->fetchrow_array) {
+    push @friends, $friend;
   }
   $sth->finish;
   
@@ -64,7 +137,8 @@ SELECT friend_link_id, requester_profile_id, requestee_profile_id, status,
        DATE_FORMAT(requested_date, '%d/%m/%y %H:%i') AS requested_date,
        DATE_FORMAT(read_date, '%d/%m/%y %H:%i') AS read_date,
        DATE_FORMAT(decided_date, '%d/%m/%y %H:%i') AS decided_date,
-       DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date
+       DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date,
+       message_id
 FROM `user~profile~friend_link`
 WHERE friend_link_id = ?
 LIMIT 1
@@ -92,7 +166,8 @@ SELECT friend_link_id, requester_profile_id, requestee_profile_id, status,
        DATE_FORMAT(requested_date, '%d/%m/%y %H:%i') AS requested_date,
        DATE_FORMAT(read_date, '%d/%m/%y %H:%i') AS read_date,
        DATE_FORMAT(decided_date, '%d/%m/%y %H:%i') AS decided_date,
-       DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date
+       DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date,
+       message_id
 FROM `user~profile~friend_link`
 WHERE requester_profile_id = ?
   AND requestee_profile_id = ?
@@ -171,6 +246,29 @@ ENDSQL
 }
 
 
+sub addMsgIdToFriendLink($$) {
+  
+  my $self = shift;
+  
+  my ($friend_link_id, $message_id) = @_;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+UPDATE `user~profile~friend_link`
+SET message_id = ?
+WHERE friend_link_id = ?
+LIMIT 1
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  my $rows = $sth->execute($message_id, $friend_link_id);
+  $sth->finish;
+  
+  return ($rows eq '0E0' ? 0 : 1);
+}
+
+
 sub readFriendLink($) {
   
   my $self = shift;
@@ -181,7 +279,8 @@ sub readFriendLink($) {
   
   my $query = <<ENDSQL
 UPDATE `user~profile~friend_link`
-SET read_date = NOW()
+SET status = 'read',
+    read_date = NOW()
 WHERE friend_link_id = ?
 LIMIT 1
 ENDSQL
@@ -287,6 +386,15 @@ ENDSQL
 }
 
 
+
+
+
+
+
+
+
+
+
 sub getAllFaves($) {
   
   my $self = shift;
@@ -297,11 +405,12 @@ sub getAllFaves($) {
   
   my $query = <<ENDSQL
 SELECT upf.fave_link_id, upf.fave_profile_id AS profile_id,
-       u.profile_name, up.main_photo_id,
-       DATE_FORMAT(upf.added_date, '%d/%m/%y %H:%i') AS added_date
+       up.profile_name, up.main_photo_id,
+       DATE_FORMAT(upf.added_date, '%d/%m/%y %H:%i') AS added_date,
+       upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
 FROM `user~profile~fave_link` upf
 INNER JOIN `user~profile` up ON upf.fave_profile_id = up.profile_id
-INNER JOIN `user` u ON u.user_id = up.user_id
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.profile_id = ?
   AND upf.removed_date IS NULL
 ENDSQL
@@ -315,6 +424,38 @@ ENDSQL
   $sth->finish;
   
   return @faves ? \@faves : undef;
+}
+
+
+# Gets list of faves' profile names who are currently online.
+sub getOnlineFaveProfileNames($) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT up.profile_name
+FROM `user~profile~fave_link` upf
+INNER JOIN `user~profile` up ON upf.fave_profile_id = up.profile_id
+INNER JOIN `user~session` usess ON up.user_id = usess.user_id
+                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                               AND usess.created IS NOT NULL
+WHERE upf.profile_id = ?
+  AND upf.removed_date IS NULL
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id);
+  my @friends = ();
+  while (my ($friend) = $sth->fetchrow_array) {
+    push @friends, $friend;
+  }
+  $sth->finish;
+  
+  return @friends ? \@friends : undef;
 }
 
 
@@ -401,6 +542,8 @@ ENDSQL
 
 
 
+
+
 sub getAllBlocks($) {
   
   my $self = shift;
@@ -411,11 +554,12 @@ sub getAllBlocks($) {
   
   my $query = <<ENDSQL
 SELECT upb.block_link_id, upb.blockee_profile_id AS profile_id,
-       u.profile_name, up.main_photo_id,
-       DATE_FORMAT(upb.blocked_date, '%d/%m/%y %H:%i') AS blocked_date
+       up.profile_name, up.main_photo_id,
+       DATE_FORMAT(upb.blocked_date, '%d/%m/%y %H:%i') AS blocked_date,
+       upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
 FROM `user~profile~block_link` upb
 INNER JOIN `user~profile` up ON upb.blockee_profile_id = up.profile_id
-INNER JOIN `user` u ON u.user_id = up.user_id
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upb.blocker_profile_id = ?
   AND upb.unblocked_date IS NULL
 ENDSQL
@@ -501,6 +645,13 @@ ENDSQL
   
   return ($rows eq '0E0' ? 0 : 1);
 }
+
+
+
+
+
+
+
 
 
 sub getProfileDisplayPrefs($) {
