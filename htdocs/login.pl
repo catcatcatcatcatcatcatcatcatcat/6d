@@ -26,7 +26,8 @@ if ($rusty->{core}->{'user_id'}) {
   # This user is already logged on and trying to access the login page.
   # Send them back! (No other site does this, it may be a bad idea -
   # the others all log you in again.. Hmmm? Hmmm. Hmmm!)
-  print $rusty->CGI->redirect( -url => ($ref || '/') );
+  $ref ||= $rusty->{params}->{login} == 1 ? '/?login=1' : '/';
+  print $rusty->CGI->redirect( -url => $ref );
   $rusty->exit;
 }
 
@@ -71,10 +72,11 @@ if ($mode eq 'login') {
   
   # Then make sure the login info given checks out..
   $query = <<ENDSQL
-SELECT user_id
-FROM `user`
-WHERE profile_name = ?
-  AND password = ?
+SELECT up.user_id
+FROM `user~profile` up
+INNER JOIN `user` u ON u.user_id = up.user_id
+WHERE up.profile_name = ?
+  AND u.password = ?
 LIMIT 1
 ENDSQL
 ;
@@ -240,7 +242,7 @@ ENDSQL
     $ref = URI::Escape::uri_escape($ref);
   }
   # Call self with test parameter and test cookie (plus remember me cookie, if set)
-  print $rusty->CGI->redirect( -url    => $rusty->CGI->url() .
+  print $rusty->CGI->redirect( -url    => $rusty->CGI->url( -relative => 1 ) .
                                           "?mode=test" .
                                           ($ref ? "&ref=$ref" : ''),
                                -cookie => $rusty->{cookies} );
@@ -382,15 +384,27 @@ ENDSQL
     # With URL to send user back to, add the login=1 parameter to the
     # query string if it exists or add it as a query string if not - we
     # could do this ourselves but using URI::QueryParam is safer and easier! :)
-    if ($ref) {
+    
+    # And finally, if this is the login directly after successful signup,
+    # display a special welcome page with link to ref.
+    
+    if ($mode eq 'signup_test') {
+      
+      $ref = "/?welcome=1&ref=" . URI::Escape::uri_escape($rusty->{params}->{ref});
+      
+    } elsif ($ref) {
+      
       require URI;
       require URI::QueryParam;
       my $uri = URI->new($rusty->{params}->{ref});
       $uri->query_param_append('login','1');
       $ref = $uri->as_string;
+      
     } else {
+      
       $ref = '/?login=1';
     }
+
     
     print $rusty->CGI->redirect( -url => $ref,
                                  -cookie => [ $test_cookie_delete,
@@ -410,6 +424,28 @@ ENDSQL
     $rusty->{data}->{'redirected'} = 1;
   }
   
+  $rusty->{data}->{genders} = [
+    { value => "select", name => "Please Select", },
+    { value => "male", name => "Male", },
+    { value => "female",  name => "Female", },
+                              ];
+  
+  $rusty->{data}->{countries} = [
+    { value => 'select', name => 'Please Select', },
+    $rusty->get_ordered_lookup_list(
+      table => "lookup~country",
+      id    => "country_id",
+      data  => "name",
+                                   ),
+                                ];
+  
+  # Truncate long country names
+  foreach (@{$rusty->{data}->{countries}}) {
+    if (length($_->{name}) > 30) {
+      $_->{name} = substr($_->{name},0,27) . ' ...';
+    }
+  }
+  
   $rusty->process_template();
   $rusty->exit;
   
@@ -426,7 +462,7 @@ ENDSQL
 #  
 #  #print $rusty->CGI->header;
 #  #die "Invalid query string '".$ENV{'QUERY_STRING'}."'";
-#  print $rusty->CGI->redirect( -url => $rusty->CGI->url() );
+#  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 ) );
 #  $rusty->exit;
 #
 #}
