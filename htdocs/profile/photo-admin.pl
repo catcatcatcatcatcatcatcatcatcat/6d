@@ -59,6 +59,12 @@ sub list {
   $rusty->{data}->{photos} = $rusty->getAllPhotos($rusty->{core}->{'profile_id'})
     if $rusty->{core}->{'profile_id'};
   
+  #my $total_kilobytes = 0;
+  #foreach (my $photo_info = @{$rusty->{data}->{photos}}) {
+  #  $total_kilobytes += $photo_info->{kilobytes};
+  #}
+  #$rusty->{data}->{total_kilobytes} = $total_kilobytes;
+  
   # Catch processing errors that redirect back to list..
   $rusty->{data}->{prev_action} = $rusty->{params}->{prev_action};
   $rusty->{data}->{success} = $rusty->{params}->{success};
