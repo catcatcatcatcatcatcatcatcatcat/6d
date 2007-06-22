@@ -25,7 +25,6 @@ sub email_support();
 
 
 $rusty->{ttml} = "help/contact-us.ttml";
-$rusty->{data}->{title} = "Contact Us";
 
 $email = $rusty->{data}->{email} = lc($rusty->{params}->{email});
 $confirmemail = $rusty->{data}->{confirmemail} = lc($rusty->{params}->{confirmemail});
