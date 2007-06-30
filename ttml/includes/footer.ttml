@@ -2,9 +2,43 @@
 
 
 
-<!-- /Content -->
 
-[% UNLESS core.no_nav_links %][% INCLUDE includes/navigation.ttml %][% END %]
+</div>  <!-- /Content -->
+
+[% UNLESS core.no_nav_links %]
+  [% INCLUDE includes/navigation.ttml %]
+[% END %]
+
+
+[% IF breadcrumbs && breadcrumbs.size > 0 %]
+<div id="breadcrumbs">
+  <a href="/" title="Home Page">Home</a>
+  [% FOREACH crumb = breadcrumbs %]
+> [% crumb %]
+  [% END %]
+</div>
+[% END %]
+
+
+[% IF core.open_assistant && core.user_id && !core.email_validated && !notification %]
+  [% notification = BLOCK %]
+  id="notification_href"
+  href="/help/resend-activation.pl">Your account has not yet been activated.&nbsp;
+    Certain features are restricted.&nbsp;
+    To request another activation email, please click here.
+  [% END %]
+[% END %]
+
+
+[% IF notification %]
+  <p id="notification">
+    <a [% notification %]
+    <span id="notification-close" onclick="document.getElementById('notification').style.display='none'; return false;"></span>
+    </a>
+  </p>
+[% END %]
+
+
 
 [% PERL %]
     if (defined $stash->get('benchmark')) {
@@ -30,6 +64,86 @@
               border:2px dashed #F2EEEE; background-color:#FAF8F8;color:#401"
        title="benchmark before processing template (which can be the biggest lag!)"
   >[% core.benchmark %]</pre>
+[% END %]
+
+[% UNLESS core.no_nav_links %]
+
+<!--
+  <a href="http://validator.w3.org/check?uri=http://[% core.server_name %]"><img
+       src="/images/icons/technologylinks/valid-xhtml10.png"
+       alt="Valid XHTML 1.0 Transitional" height="31" width="88" /></a>
+  <a href="http://validator.w3.org/check?uri=http://[% core.server_name %]"><img
+       src="/images/icons/technologylinks/valid-xhtml11.png"
+       alt="Valid XHTML 1.1" height="31" width="88" /></a>
+  <a href="http://perl.apache.org"><img
+       src="/images/icons/technologylinks/mod_perl.gif"
+       alt="Using Mod Perl" height="30" width="90" /></a>
+  <a href="http://jigsaw.w3.org/css-validator/validator?uri=http://[% core.server_name %]"><img
+       src="/images/icons/technologylinks/vcss.png" 
+       alt="Valid CSS!" height="31" width="88" /></a>
+-->
+
+<div style="margin-top: 10px; text-align: center; ">
+<a href="http://validator.w3.org/check?url=[% core.self_url_escaped | html %]"
+   title="Valid XHTML 1.1"><img 
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/valid_xhtml11.gif"
+     alt="Valid XHTML 1.1" /></a>
+<a href="http://jigsaw.w3.org/css-validator/validator?uri=[% core.self_url_escaped %]"
+   title="Valid CSS 2.1"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/valid_css.gif"
+     alt="Valid CSS 2.1" /></a>
+<a href="http://perl.apache.org/"
+   title="Powered by mod_perl [% core.mod_perl_api_version %]"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/pwrd_modperl.gif"
+     alt="Powered by mod_perl [% core.mod_perl_api_version %]" /></a>
+<a href="http://www.perl.org/"
+   title="Powered by Perl [% core.perl_version %]"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/pwrd_perl.gif"
+     alt="Powered by Perl [% core.perl_version %]" /></a>
+<a href="http://www.apache.org/"
+   title="Powered by [% core.server_software %]"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/pwrd_apache.gif"
+     alt="Powered by [% core.server_software %]" /></a>
+<a href="http://www.mysql.com/"
+   title="Powered by MySQL [% core.mysql_version %]"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/pwrd_mysql.gif"
+     alt="Powered by MySQL [% core.mysql_version %]" /></a>
+<a href="http://www.unicode.org/"
+   title="Database and pages encoded using Unicode UTF-8"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/utf-8.png"
+     alt="Database and pages encoded using Unicode UTF-8" /></a>
+<!--
+<a href="http://www.w3.org/WAI/WCAG1AAA-Conformance"
+   title="W3C Level Triple-A Conformance to Web Content Accessibility Guidelines 1.0"><img
+     style="margin: 5px; "
+     src="/images/icons/technologylinks/valid_wai-aaa.gif" 
+     alt="W3C Level Triple-A Conformance to Web Content Accessibility Guidelines 1.0" /></a>
+-->
+</div>
+
+<p style="font-style:italic; color: #444; font-size:0.8em; text-align: center; line-height:1.3em; ">
+  Something not working as expected?
+  <a style="font-weight: normal; "
+     href="mailto:i_brokeded_it@backpackingbuddies.com?subject=Ref:[% core.profile_name %]%20+%20[% core.self_url_escaped %]">Tell us!</a>
+  &nbsp;Thought of a new feature or improvement?
+  <a style="font-weight: normal; "
+     href="mailto:i_gots_an_idea@backpackingbuddies.com?subject=Ref:[% core.profile_name %]%20+%20[% core.self_url_escaped %]">Get in touch!</a>
+  <br />
+  <span style="color:#AAA">Doorways: 
+  <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
+  <a style="color:#AAA; font-weight: normal; " href="/intro/hostels/">Hostels</a> | 
+  <a style="color:#AAA; font-weight: normal; " href="/intro/friends/">Friends</a> | 
+  <a style="color:#AAA; font-weight: normal; " href="/intro/travels/">Travels</a>
+  </span>
+</p>
+
 [% END %]
 
   </body>
