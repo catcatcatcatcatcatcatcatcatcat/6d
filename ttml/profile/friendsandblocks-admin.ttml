@@ -1,24 +1,32 @@
-[% SET css = [ "/css/profile.css" ] %]
 [% SET js = [ "/js/tipMessage.js" ] %]
+[% title = 'Manage Friends/Blocks' %]
 [% INCLUDE includes/header.ttml %]
+
 [%
 IF search_id;
   breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
-  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
   IF from_profile;
-    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&search_id=$search_id\">$from_profile</a>");
+    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&amp;search_id=$search_id\">$from_profile</a>");
   END;
 ELSIF from_profile;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
 END;
-breadcrumbs.push("Manage Friends/Blocks");
+breadcrumbs.push("$title")
 %]
+
+
+[% IF core.profile_id;
+     PROCESS 'profile/includes/admin-navigation.ttml';
+     display_navigation('friendsandblocks-admin');
+   END %]
+
 
 <div id="TipLayer" style="visibility:hidden;position:absolute;z-index:1000;top:-100;"></div>
 
 [% IF prev_action %]
   [% IF success == 1 %]
-  <span class="msg">
+  <p class="success">
     [% IF prev_action == "addfriend" %]Your friend link request has been sent successfully
     [% ELSIF prev_action == "delfriend" %]Your friend link has been deleted successfully
     [% ELSIF prev_action == "addfave" %]Your favourite link has been added successfully
@@ -29,8 +37,9 @@ breadcrumbs.push("Manage Friends/Blocks");
     [% ELSIF prev_action == "updateprefs" %]Your preferences have been updated successfully
     [% ELSE %]Your previous action was completed successfully
     [% END %]
+  </p>
   [% ELSE %]
-  <span class="err">
+  <p class="err">
     [% IF prev_action == "addfriend" %]Your friend link request could not be sent
     [% ELSIF prev_action == "delfriend" %]Your friend link could not be deleted
     [% ELSIF prev_action == "addfave" %]Your favourite link could not be added
@@ -58,16 +67,17 @@ breadcrumbs.push("Manage Friends/Blocks");
     [% ELSIF reason == "faveblocked" %]The profile is blocked - please remove this link first
     [% ELSIF reason == "blockisfriend" %]The profile is a friend - please remove this link first
     [% ELSIF reason == "blockisfave" %]The profile is a favourite - please remove this link first
+    [% ELSIF reason == "invalidresponse" %]The response given is not a valid response
+    [% ELSIF reason == "notenoughinfo" %]Not enough information was given to determine thie link
     [% ELSE %]An unknown error occured
     [% END %]
-    .<br />Please try again.<br /><br />
+  </p>
   [% END %]
-  </span>
 [% END %]
 
 
 [% IF prev_action == "respond" %]
-  <span class="msg">
+  <p class="success">
   [% IF (response == "accept") || (response == "acceptandreciprocate") %]
     A happy message has been sent to <strong>[% requester_profile_name %]</strong>
     to inform them of your acceptance! :)<br />
@@ -75,7 +85,7 @@ breadcrumbs.push("Manage Friends/Blocks");
       The happy bunny has also been added to your friends!<br />
     [% ELSE %]
       Don't you want to
-      <a href="/profile/friendsandblocks.pl?mode=addfriend&friend_profile_id=[% requester_profile_id %]">
+      <a href="/profile/friendsandblocks.pl?mode=addfriend&amp;friend_profile_id=[% requester_profile_id %]">
         add them as a friend</a> too?
     [% END %]
   [$ ELSIF (response == "reject") || (response == "rejectandblock") %]
@@ -86,16 +96,18 @@ breadcrumbs.push("Manage Friends/Blocks");
       You won't see any more messages from them!<br />
     [% END %]
   [% END %]
-  </span>
+  </p>
 [% END %]
 
-<h2 style="clear:left;">Manage my Friends and Blocks</h2>
+<h1 style="clear:left;">Manage my Friends and Blocks</h1>
 
 
 [% UNLESS core.profile_id %]
   <p class="err">You need to
-    <a href="account.pl">create a profile</a>
-    before you can play with your friends, favourites and blocks. :)
+    <a href="/profile/account.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]">Create your Profile</a>
+    before you can play with your friends, favourites and blocks.<br />
+    Don't worry - once you've created you profile, we'll take you
+    straight back to this page and perform the action you originally requested.  :)
   </p>
   [% INCLUDE includes/footer.ttml %]
   [% RETURN %]
@@ -112,26 +124,44 @@ breadcrumbs.push("Manage Friends/Blocks");
      profile, or on &quot;delete&quot; to unlink your profiles.</p>
   <ol>
   [% FOREACH link = friend_links %]
+    [% real_photo_link = "/photos/${link.profile_name}/${link.thumbnail_filename}" %]
+    [% IF link.adult && !adult_pass;
+         photo_link = "/photos/adult.png";
+       ELSIF link.photo_id && !link.checked_date && !adult_pass;
+         photo_link = "/photos/pending.png";
+       ELSIF !link.photo_id;
+         photo_link = "/photos/default.png";
+       ELSE;
+         photo_link = real_photo_link;
+      END %]
     <li>
+      <img src="/images/icons/message/[% IF link.status == "unread"
+            %]closed[%
+         ELSE
+            %]opened[% END %]_message_special.gif"
+           alt="Friend link [% link.status %]" />
       <a href="/[% link.profile_name %]" title="[%
             IF link.status == "unread"
                %]friend link request sent to [% link.profile_name %]: [% link.requested_date %] (unread)[%
             ELSIF link.status == "read"
                %]friend link request read by [% link.profile_name %]: [% link.read_date %][% 
             ELSIF (link.status == "accepted") OR (link.status == "reciprocal")
-               %]friend [% link.profile_name %] added: [% link.decision_date %][%
+               %]friend [% link.profile_name %] added: [% link.decided_date %][%
             END %]"
-      onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
-      onMouseOut="htm()"
-      >[% link.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfriend&friend_profile_id=[% link.profile_id %][% query_string_params %]"
+      onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
+      onmouseout="htm()"
+      >[% link.profile_name %][% IF link.status == "unread"
+            %] (unread)[%
+         ELSIF link.status == "read"
+            %] (read/pending)[% END %]</a>
+      <a href="/profile/friendsandblocks.pl?mode=delfriend&amp;friend_profile_id=[% link.profile_id %][% query_string_params | html %]"
          title="delete friend [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_friend.gif"
-                                                                 alt="delete friend [% link.profile_name %]"></a>
-    </li>
+                                                                 alt="delete friend [% link.profile_name %]" /></a>
     </li>
   [% END %]
   </ol>
   <form action="/profile/friendsandblocks.pl" method="post">
+  <fieldset>
     <input type="hidden" name="mode" value="updateprefs" />
     <input type="hidden" name="updateparam" value="showfriends" />
     [% IF from_profile %]
@@ -141,11 +171,12 @@ breadcrumbs.push("Manage Friends/Blocks");
       [% END %]
     [% END %]
     Show friends on profile: <input type="checkbox" name="showfriends" value="1"[% IF display_prefs.showfriends %] checked="checked" [% END %]
-      onclick="this.form.submit()" /><noscript><input type="submit" value="Update" /></noscript>
+      onclick="this.form.submit()" /><noscript><fieldset><input type="submit" value="Update" /></fieldset></noscript>
+  </fieldset>
   </form>
 [% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
+  <form action="/profile/friendsandblocks.pl" method="post" style="margin:5px 0; ">
+  <fieldset>
     <input type="hidden" name="mode" value="addfriend" />
     [% IF from_profile %]
       <input type="hidden" name="from_profile" value="[% from_profile %]" />
@@ -153,11 +184,11 @@ breadcrumbs.push("Manage Friends/Blocks");
         <input type="hidden" name="search_id" value="[% search_id %]" />
       [% END %]
     [% END %]
-    <img src="/images/icons/friendsandblocks/add_friend.gif">
-    Add friend: <input type="textbox" name="friend_profile_name" value="[% friend_profile_name %]">
+    <img src="/images/icons/friendsandblocks/add_friend.gif" alt="add friend" />
+    Add friend: <input type="text" class="text" name="friend_profile_name" value="[% friend_profile_name %]" />
     <input type="submit" value="Add" />
+  </fieldset>
   </form>
-</p>
 
 <p>&nbsp;</p>
 
@@ -170,19 +201,30 @@ breadcrumbs.push("Manage Friends/Blocks");
      profile, or on &quot;delete&quot; to delete them from your favourites.</p>
   <ol>
   [% FOREACH link = fave_links %]
+    [% real_photo_link = "/photos/${link.profile_name}/${link.thumbnail_filename}" %]
+    [% IF link.adult && !adult_pass;
+         photo_link = "/photos/adult.png";
+       ELSIF link.photo_id && !link.checked_date && !adult_pass;
+         photo_link = "/photos/pending.png";
+       ELSIF !link.photo_id;
+         photo_link = "/photos/default.png";
+       ELSE;
+         photo_link = real_photo_link;
+      END %]
     <li>
       <a href="/[% link.profile_name %]"
          title="favourite [% link.profile_name %] added: [% link.added_date %]"
-         onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
-         onMouseOut="htm()"
+         onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
+         onmouseout="htm()"
       >[% link.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfave&fave_profile_id=[% link.profile_id %][% query_string_params %]"
+      <a href="/profile/friendsandblocks.pl?mode=delfave&amp;fave_profile_id=[% link.profile_id %][% query_string_params | html %]"
          title="delete favourite [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_fave.gif"
-                                                                 alt="delete favourite [% link.profile_name %]"></a>
+                                                                 alt="delete favourite [% link.profile_name %]" /></a>
     </li>
   [% END %]
   </ol>
   <form action="/profile/friendsandblocks.pl" method="post">
+  <fieldset>
     <input type="hidden" name="mode" value="updateprefs" />
     <input type="hidden" name="updateparam" value="showfaves" />
     [% IF from_profile %]
@@ -192,17 +234,18 @@ breadcrumbs.push("Manage Friends/Blocks");
       [% END %]
     [% END %]
     Show friends on profile: <input type="checkbox" name="showfaves" value="1"[% IF display_prefs.showfaves %] checked="checked" [% END %]
-      onclick="this.form.submit()" /><noscript><input type="submit" value="Update" /></noscript>
+      onclick="this.form.submit()" /><noscript><fieldset><input type="submit" value="Update" /></fieldset></noscript>
+  </fieldset>
   </form>
 [% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
+  <form action="/profile/friendsandblocks.pl" method="post" style="margin:5px 0; ">
+  <fieldset>
     <input type="hidden" name="mode" value="addfave" />
-    <img src="/images/icons/friendsandblocks/add_fave.gif">
-    Add favourite: <input type="textbox" name="fave_profile_name" value="[% fave_profile_name %]">
-    <input type="submit" value="Add"/>
+    <img src="/images/icons/friendsandblocks/add_fave.gif" alt="add fave" />
+    Add favourite: <input type="text" class="text" name="fave_profile_name" value="[% fave_profile_name %]" />
+    <input type="submit" value="Add" />
+  </fieldset>
   </form>
-</p>
 
 <p>&nbsp;</p>
 
@@ -219,21 +262,31 @@ breadcrumbs.push("Manage Friends/Blocks");
      profile, or on &quot;unblock&quot; to unblock their profile.</p>
   <ol>
   [% FOREACH block = block_links %]
+    [% real_photo_link = "/photos/${block.profile_name}/${block.thumbnail_filename}" %]
+    [% IF block.adult && !adult_pass;
+         photo_link = "/photos/adult.png";
+       ELSIF block.photo_id && !block.checked_date && !adult_pass;
+         photo_link = "/photos/pending.png";
+       ELSIF !block.photo_id;
+         photo_link = "/photos/default.png";
+       ELSE;
+         photo_link = real_photo_link;
+      END %]
     <li>
       <a href="/[% block.profile_name %]"
          title="[% block.profile_name %] blocked: [% block.blocked_date %]"
-         onMouseOver="stmu_test('/profile/photo.pl?id=[% link.main_photo_id %]', this.title, '0', '0', '0', '0', '0')"
-         onMouseOut="htm()"
+         onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
+         onmouseout="htm()"
       >[% block.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=unblock&block_profile_id=[% block.profile_id %][% query_string_params %]"
+      <a href="/profile/friendsandblocks.pl?mode=unblock&amp;block_profile_id=[% block.profile_id %][% query_string_params | html %]"
          title="unblock [% block.profile_name %]"><img src="/images/icons/friendsandblocks/unblock.gif"
-                                                                 alt="unblock [% link.profile_name %]"></a>
+                                                                 alt="unblock [% link.profile_name %]" /></a>
     </li>
   [% END %]
   </ol>
 [% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
+  <form action="/profile/friendsandblocks.pl" method="post" style="margin:5px 0; ">
+  <fieldset>
     <input type="hidden" name="mode" value="block" />
     [% IF from_profile %]
       <input type="hidden" name="from_profile" value="[% from_profile %]" />
@@ -241,10 +294,10 @@ breadcrumbs.push("Manage Friends/Blocks");
         <input type="hidden" name="search_id" value="[% search_id %]" />
       [% END %]
     [% END %]
-    <img src="/images/icons/friendsandblocks/block.gif">
-    Add block: <input type="textbox" name="block_profile_name" value="[% block_profile_name %]">
-    <input type="submit" value="Add"/>
+    <img src="/images/icons/friendsandblocks/block.gif" alt="add block" />
+    Add block: <input type="text" class="text" name="block_profile_name" value="[% block_profile_name %]" />
+    <input type="submit" value="Add" />
+  </fieldset>
   </form>
-</p>
 
 [% INCLUDE includes/footer.ttml %]
