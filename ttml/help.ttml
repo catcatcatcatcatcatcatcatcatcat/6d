@@ -1,5 +1,6 @@
+[% title = 'Help' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push('Help') %]
+[% breadcrumbs.push("$title") %]
 
 <h1>Help</h1>
 
