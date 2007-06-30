@@ -1,9 +1,15 @@
-[% SET css = [ "/css/profile.css" ] %]
 [% SET js = [ "/js/form.js" ] %]
+[% title = 'My Account' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push('My Account') %]
+[% breadcrumbs.push("$title") %]
 
-<h2 class="smaller" style="padding-top:0">My Profile</h2>
+[% IF core.profile_id;
+     PROCESS 'profile/includes/admin-navigation.ttml';
+     display_navigation('account');
+   END %]
+
+
+<h1>My Profile</h1>
 
 [% IF core.profile_info.deleted_date %]
 <p class="err">
@@ -16,46 +22,50 @@ we could have people messing around and creating loads!  Put a time-limit on it 
 them of this when they press the delete button?  They might just sign up again..) Hmm!
 </p>
 [% ELSIF core.profile_id %]
-<p style="clear:both">Your profile can be found at
+<p>Your profile can be found at
 <a href="/profile/view.pl?profile_name=[% profile_name %]">
-http://www.website.com/[% profile_name %]</a><br/>
-Use the links above to upload/manage your photos and change your account details.
+[% core.server_name %]/[% profile_name %]</a>
 </p>
 [% ELSE %]
-<p style="clear:both">Create your profile, [% profile_name %].</p>
-<p style="clear:both">Please enter your details below to activate your profile.</p>
-<p style="font-size:1.1em">Remember to upload a photo of yourself when you're done!</p>
+<h2>Create your profile, <strong>[% profile_name %]</strong></h2>
+[% IF core.ref %]
+<p style="margin-top:0; "> &nbsp; &nbsp; &nbsp; &nbsp; 
+    ..and then we'll take you back to wherever it was you wanted to go in the first place.
+</p>
 [% END %]
+<p>Please enter your details below to activate your profile 
+and remember to upload a photo of yourself when you've finished!</p>
+[% END %]
+
 
 [% IF not_posted %]
 <h2>Request method was not POST</h2>
 <p class="err">You must use the form normally -
     sorry, this is just for security reasons..</p>
-[% ELSIF errors.size && errors.size > 0 %]
-<p style="color:red;font-weight:bold">[% errors.size %]
+[% ELSIF errors && errors.size > 0 %]
+<p class="err">[% errors.size %]
   small problem[% IF errors.size && errors.size > 1 %]s[% END %]
-  occurred while processing your profile:
-</p>
-<ul>
-[% FOREACH field = errors.keys %]
-<li style="border:none;font-weight:bold">
-  [% param_info.$field.title %] &nbsp; 
-  <span style="color:red;font-weight:normal">[% errors.$field %]</span>
-</li>
-[%+ END %]
+  occurred while processing your profile:<br />
+<ul class="err">
+  [% FOREACH field = errors.keys %]
+  <li>[% errors.$field.title %] &nbsp; 
+    <span style="font-weight:normal">[% errors.$field.error %]</span>
+  </li>
+  [% END %]
 </ul>
 </p>
-<p style="color:red;font-weight:bold">Everything you need to fix is highlighted below in red:</p>
 [% ELSIF msg %]
-<h2>[% msg %]</h2>
-[%+ END %]
+<p class="success">[% msg %]</p>
+[% END %]
 
-<form method="post" action="/profile/account.pl" name="profileform">
+<form method="post" action="/profile/account.pl" id="profileform">
+<fieldset>
 
 <input type="hidden" name="submitting" id="submitting" value="1" />
+[% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref | html %]" />[% END %]
 
 [% IF core.profile_id %]
-<input type="hidden" name="profile_id" id="profile_id" value="[% core.profile_id %]">
+<input type="hidden" name="profile_id" id="profile_id" value="[% core.profile_id %]" />
 [% END %]
 
 <h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">About Me</h3>
@@ -90,7 +100,7 @@ Use the links above to upload/manage your photos and change your account details
       <label for="profession">Profession</label>
     </td>
     <td class="pad[% IF errors.profession %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="profession" id="profession" size="30" maxlength="50" value="[% profession FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="profession" id="profession" size="30" maxlength="50" value="[% profession FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -99,7 +109,7 @@ Use the links above to upload/manage your photos and change your account details
     </td>
     <td class="pad[% IF errors.website %]-error[% END %]">
       http://
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !website %]onclick="this.value=''; this.onclick=null" [% END %]class="flat" name="website" id="website" size="30" maxlength="50" value="[% IF website %][% website FILTER html_entity %][% ELSE %]www.THIS-website-name.com[% END %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !website %]onclick="this.value=''; this.onclick=null" [% END %]class="text" name="website" id="website" size="30" maxlength="50" value="[% IF website %][% website FILTER html_entity %][% ELSE %][% core.server_name %][% END %]" />
     </td>
     <td class="pad2[% IF errors.smoker_id %]-error[% END %]">
       <label for="smoker_id">Smoker</label>
@@ -139,13 +149,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="perfect_partner">Perfect partner</label>
     </td>
     <td class="pad[% IF errors.perfect_partner %]-error[% END %]">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="perfect_partner" id="perfect_partner" cols="25" rows="4">[% perfect_partner FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="perfect_partner" id="perfect_partner" cols="25" rows="4">[% perfect_partner FILTER html_entity %]</textarea>
     </td>
     <td class="pad2[% IF errors.interests %]-error[% END %]">
       <label for="interests">My interests</label>
     </td>
     <td class="pad[% IF errors.interests %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="interests" id="interests" size="30" maxlength="65535" value="[% interests FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="interests" id="interests" size="30" maxlength="65535" value="[% interests FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -153,13 +163,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="happy">Makes me happy</label>
     </td>
     <td class="pad[% IF errors.happy %]-error[% END %]">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="happy" id="happy" cols="25" rows="4">[% happy FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="happy" id="happy" cols="25" rows="4">[% happy FILTER html_entity %]</textarea>
     </td>
     <td class="pad2[% IF errors.sad %]-error[% END %]">
       <label for="sad">Makes me sad</label>
     </td>
     <td class="pad[% IF errors.sad %]-error[% END %]">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="sad" id="sad" cols="25" rows="4">[% sad FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="sad" id="sad" cols="25" rows="4">[% sad FILTER html_entity %]</textarea>
     </td>
   </tr>
   <tr>
@@ -167,13 +177,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="bad_habits">Bad habits</label>
     </td>
     <td class="pad[% IF errors.bad_habits %]-error[% END %]">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="bad_habits" id="bad_habits" cols="25" rows="4">[% bad_habits FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="bad_habits" id="bad_habits" cols="25" rows="4">[% bad_habits FILTER html_entity %]</textarea>
     </td>
     <td class="pad2[% IF errors.own_words %]-error[% END %]">
       <label for="own_words">In my own words</label>
     </td>
     <td class="pad[% IF errors.own_words %]-error[% END %]">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="own_words" id="own_words" cols="25" rows="4">[% own_words FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="own_words" id="own_words" cols="25" rows="4">[% own_words FILTER html_entity %]</textarea>
     </td>
   </tr>
 </table>
@@ -196,7 +206,7 @@ Use the links above to upload/manage your photos and change your account details
       <label for="hair">Hair</label>
     </td>
     <td class="pad[% IF errors.hair %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="hair" id="hair" size="30" maxlength="50" value="[% hair FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="hair" id="hair" size="30" maxlength="50" value="[% hair FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -226,7 +236,7 @@ Use the links above to upload/manage your photos and change your account details
       <label for="weight">Weight</label>
     </td>
     <td class="pad[% IF errors.weight %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="weight" id="weight" size="30" maxlength="100" value="[% IF weight %][% weight %][% END %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="weight" id="weight" size="30" maxlength="100" value="[% IF weight %][% weight %][% END %]" />
       &nbsp;&nbsp;
       <select name="weight_type" id="weight_type" onchange="document.profileform.weight.focus()">
         [% FOREACH w = weight_types +%]
@@ -282,13 +292,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="fave_food">Food</label>
     </td>
     <td class="pad[% IF errors.fave_food %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_food" id="fave_food" size="30" maxlength="100" value="[% fave_food FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_food" id="fave_food" size="30" maxlength="100" value="[% fave_food FILTER html_entity %]" />
     </td>
     <td class="pad220[% IF errors.fave_music %]-error[% END %]">
       <label for="fave_music">Music</label>
     </td>
     <td class="pad[% IF errors.fave_music %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_music" id="fave_music" size="30" maxlength="100" value="[% fave_music FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_music" id="fave_music" size="30" maxlength="100" value="[% fave_music FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -296,13 +306,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="fave_tvshow">TV Show</label>
     </td>
     <td class="pad[% IF errors.fave_tvshow %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_tvshow" id="fave_tvshow" size="30" maxlength="100" value="[% fave_tvshow FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_tvshow" id="fave_tvshow" size="30" maxlength="100" value="[% fave_tvshow FILTER html_entity %]" />
     </td>
     <td class="pad220[% IF errors.fave_author %]-error[% END %]">
       <label for="fave_author">Author</label>
     </td>
     <td class="pad[% IF errors.fave_author %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_author" id="fave_author" size="30" maxlength="100" value="[% fave_author FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_author" id="fave_author" size="30" maxlength="100" value="[% fave_author FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -310,13 +320,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="fave_movie">Movie</label>
     </td>
     <td class="pad[% IF errors.fave_movie %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_movie" id="fave_movie" size="30" maxlength="100" value="[% fave_movie FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_movie" id="fave_movie" size="30" maxlength="100" value="[% fave_movie FILTER html_entity %]" />
     </td>
     <td class="pad220[% IF errors.fave_club_bar %]-error[% END %]">
       <label for="fave_club_bar">Club / Bar</label>
     </td>
     <td class="pad[% IF errors.fave_club_bar %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_club_bar" id="fave_club_bar" size="30" maxlength="100" value="[% fave_club_bar FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_club_bar" id="fave_club_bar" size="30" maxlength="100" value="[% fave_club_bar FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -324,13 +334,13 @@ Use the links above to upload/manage your photos and change your account details
       <label for="fave_animal">Animal</label>
     </td>
     <td class="pad[% IF errors.fave_animal %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_animal" id="fave_animal" size="30" maxlength="100" value="[% fave_animal FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_animal" id="fave_animal" size="30" maxlength="100" value="[% fave_animal FILTER html_entity %]" />
     </td>
     <td class="pad220[% IF errors.fave_person %]-error[% END %]">
       <label for="fave_person">Person</label>
     </td>
     <td class="pad[% IF errors.fave_person %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_person" id="fave_person" size="30" maxlength="100" value="[% fave_person FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_person" id="fave_person" size="30" maxlength="100" value="[% fave_person FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -339,13 +349,13 @@ Use the links above to upload/manage your photos and change your account details
     </td>
     <td class="pad[% IF errors.fave_website %]-error[% END %]">
       http://
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !fave_website %]onclick="this.value=''; this.onclick=null" [% END %]class="flat" name="fave_website" id="fave_website" size="30" maxlength="100" value="[% IF fave_website %][% fave_website FILTER html_entity %][% ELSE %]www.THIS-website-name.com[% END %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !fave_website %]onclick="this.value=''; this.onclick=null" [% END %]class="text" name="fave_website" id="fave_website" size="30" maxlength="100" value="[% IF fave_website %][% fave_website FILTER html_entity %][% ELSE %][% core.server_name %][% END %]" />
     </td>
     <td class="pad220[% IF errors.fave_place %]-error[% END %]">
       <label for="fave_place">Place</label>
     </td>
     <td class="pad[% IF errors.fave_place %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_place" id="fave_place" size="30" maxlength="100" value="[% fave_place FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_place" id="fave_place" size="30" maxlength="100" value="[% fave_place FILTER html_entity %]" />
     </td>
   </tr>
   <tr>
@@ -353,7 +363,7 @@ Use the links above to upload/manage your photos and change your account details
       <label for="fave_thing">Thing</label>
     </td>
     <td class="pad[% IF errors.fave_thing %]-error[% END %]">
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="fave_thing" id="fave_thing" size="30" maxlength="100" value="[% fave_thing FILTER html_entity %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" class="text" name="fave_thing" id="fave_thing" size="30" maxlength="100" value="[% fave_thing FILTER html_entity %]" />
     </td>
     <td>&nbsp;</td>
     <td>&nbsp;</td>
@@ -374,7 +384,7 @@ Use the links above to upload/manage your photos and change your account details
       </select>
     </td>
     <td class="pad2[% IF errors.thought_type_id %]-error[% END %]" colspan="3">
-      <textarea onfocus="focusify(this)" onblur="blurify(this)" class="flat" name="thought_text" id="thought_text" cols="25" rows="4">[% thought_text FILTER html_entity %]</textarea>
+      <textarea onfocus="focusify(this)" onblur="blurify(this)" name="thought_text" id="thought_text" cols="25" rows="4">[% thought_text FILTER html_entity %]</textarea>
     </td>
   </tr>
 </table>
@@ -389,13 +399,12 @@ Use the links above to upload/manage your photos and change your account details
       </label>
     </td>
     <td class="pad2[% IF errors.email_alert %]-error[% END %]">
-      <input type="checkbox" name="email_alert" id="email_alert" value="1"[% IF email_alert == 1 %] checked="checked"[% END %]>
+      <input type="checkbox" name="email_alert" id="email_alert" value="1"[% IF email_alert == 1 %] checked="checked"[% END %] />
     </td>
   </tr>
 </table>
 
-<p style="margin-top:32px;margin-bottom:32px">
-  
+
 <h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Hide empty info</h3>
 
 <table style="border:none">
@@ -407,15 +416,16 @@ Use the links above to upload/manage your photos and change your account details
       </label>
     </td>
     <td class="pad2[% IF errors.hide_empty_info %]-error[% END %]">
-      <input type="checkbox" name="hide_empty_info" id="hide_empty_info" value="1"[% IF hide_empty_info == 1 %] checked="checked"[% END %]>
+      <input type="checkbox" name="hide_empty_info" id="hide_empty_info" value="1"[% IF hide_empty_info == 1 %] checked="checked"[% END %] />
     </td>
   </tr>
 </table>
 
 <p style="margin-top:32px;margin-bottom:32px">
-  <input type="submit" name="submit" value="[% IF core.profile_id %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px">
+  <input type="submit" name="submit" value="[% IF core.profile_id %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px" />
 </p>
 
+</fieldset>
 </form>
 
 
