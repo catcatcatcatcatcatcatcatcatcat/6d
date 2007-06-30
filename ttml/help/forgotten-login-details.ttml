@@ -1,8 +1,9 @@
 [% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% title = 'Forgotten Username / Password' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
 [% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
-[% breadcrumbs.push('Forgotten Login Details') %]
+[% breadcrumbs.push("$title") %]
 
 
 <h1>Retrieve login details:</h1>
