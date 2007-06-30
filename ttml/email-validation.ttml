@@ -23,7 +23,7 @@
 [% ELSE %]
   <p class="success">"Thank you [% real_name %],<br />
   Your email address, '[% email %]' has been validated.&nbsp;
-  Please <a target="_self" href="/login.pl">log in</a>!</p>
+  Please <a href="/login.pl">log in</a>!</p>
 [% END %]
 
 [% INCLUDE includes/footer.ttml %]
