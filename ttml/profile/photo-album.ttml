@@ -1,4 +1,4 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% title = 'Photo Album' %]
 [% INCLUDE includes/header.ttml %]
 [%
 profile_title = profile_name;
@@ -8,19 +8,19 @@ END;
 
 IF search_id;
   breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
-  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
-  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$profile_name&search_id=$search_id\">$profile_title</a>");
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$profile_name&amp;search_id=$search_id\">$profile_title</a>");
 ELSE;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$profile_name\">$profile_title</a>");
 END;
-breadcrumbs.push("Photos");
+breadcrumbs.push("$title");
 %]
 
 
-<p style="clear:both;padding-bottom:16px"></p>
+<h1>[% IF profile_name == core.profile_name %]My[% ELSE %][% profile_name %]'s[% END %] Photos</h1>
 
 [% IF num_photos == 0 %]
-  <p><strong>[% profile_name %]</strong> has not uploaded any photos.</p>
+  <p class="err"><strong>[% profile_name %]</strong> has not uploaded any photos.</p>
 [% ELSE %]
   [% INCLUDE "profile/includes/photos-block.ttml" %]
 [% END %]
