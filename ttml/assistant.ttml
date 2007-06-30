@@ -1,16 +1,79 @@
 [% IF firstopen %][% SET onload = "setTimeout('self.focus()', 50); " %][% END %]
 [% SET core.no_nav_links = 1 %]
+[% title = 'Assistant' %]
 [% INCLUDE includes/header.ttml %]
-[% IF core.user_id %]<p>I keep you logged in and say things like [% word1 %] and [% word2 %]!</p>
-<p>The cookie is set and you are user id [% core.user_id %] </p>
+<div style="text-align:center; ">
 
-<a href="/" target="_blank"
-   onClick="javascript:setMainFrameHref('/'); return false;">Main Menu</a><br>&nbsp;<br>
-<a href="javascript:window.close();">Close</a><br>&nbsp;<br>
-<a href="/logout.pl?comingfrommyass=1" target="_blank"
-   onClick="setMainFrameHref('/logout.pl?comingfrommyass=1'); window.close();">Logout</a>
+<h2>Assistant</h2>
+<hr />
+[% IF core.user_id %]<p>This assistant ensures you remain connected to Backpackingbuddies
+but allows you to browse other sites.&nbsp;
+If you receive any new messages you will be alerted here.</p>
+<hr />
 
-[% ELSIF session_cookie %]Your session has expired due to inactivity.
-[% ELSE %]Your connection has been eaten. Bad luck!
+<a href="/" class="_blank"
+   onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a><br />&nbsp;<br />
+<a href="/assistant.pl">Refresh</a><br />&nbsp;<br />
+<a href="javascript:window.close();">Close</a><br />&nbsp;<br />
+<a href="/logout.pl?comingfrommyass=1" class="_blank"
+   onclick="setMainFrameHref('/logout.pl?comingfrommyass=1'); window.close();">Logout</a>
+<hr />
+
+<h3>Messages:</h3>
+[% IF new_messages_count && new_messages_count > 0 %]
+<a href="/profile/message.pl?mode=list&amp;tray=inbox" 
+   class="_blank">[% new_messages_count %] new message[% IF new_messages_count > 1 %]s[% END %]</a>.
+[% ELSE %]
+No new messages.
 [% END %]
+<hr />
+
+<h3>Friends:</h3>
+[% IF friends_online && friends_online > 0 %]
+<ul style="line-height:1.0em; ">
+[% FOREACH friend = friends_online %]
+  <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% friend %]"
+   class="_blank">[% friend %]</a></li>
+[% END %]
+</ul>
+[% ELSE %]
+No friends online.
+[% END %]
+<hr />
+
+<h3>Favourites:</h3>
+[% IF faves_online && faves_online > 0 %]
+<ul style="line-height:1.0em; ">
+[% FOREACH fave = faves_online %]
+  <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% fave %]"
+   class="_blank">[% fave %]</a></li>
+[% END %]
+</ul>
+[% ELSE %]
+No favourites online.
+[% END %]
+<hr />
+
+<h3>Visitors:</h3>
+[% IF recent_visits && recent_visits > 0 %]
+<ul style="line-height:1.0em;">
+[% FOREACH visit = recent_visits.visits %]
+  <li style="float: left; padding-right:5px;"><a style="font-weight:normal"
+         href="/profile/view.pl?profile_name=[% visit.profile_name %]"
+   title="Visited: [% visit.date %]"
+   class="_blank">[% visit.profile_name %]</a></li>
+[% END %]
+</ul>
+[% ELSE %]
+Nobody has visited your profile!
+[% END %]
+<hr style="clear: left; " />
+
+[% ELSIF session_cookie %]
+<p class="err">Your session has expired due to inactivity.</p>
+[% ELSE %]
+<p class="err">Your connection has been eaten. Bad luck!</p>
+[% END %]
+
+</div>
 [% INCLUDE includes/footer.ttml %]
