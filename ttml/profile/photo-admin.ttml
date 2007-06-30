@@ -1,26 +1,29 @@
-[% SET css = [ "/css/profile.css" ] %]
 [% SET js = [ "/js/png_bg_ie_fix.js" ] %]
+[% title = 'Manage Photos' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push("Manage My Photos"); %]
-
-[% # All options on one page (pic with caption below)
-   # Buttons for update caption, delete photo, set as main photo
-   # is having the caption in a textbox ugly? yes :) %]
+[% breadcrumbs.push("$title"); %]
 
 
-<h2 class="smaller" style="padding-top:0">My Photos</h2>
+[% IF core.profile_id;
+     PROCESS 'profile/includes/admin-navigation.ttml';
+     display_navigation('photo-admin');
+   END %]
+
+
+<h1>My Photos</h1>
 
 
 [% IF prev_action %]
   [% IF success == 1 %]
-    Your
+  <p class="success">Your
     [% IF prev_action == "setmainphoto" %]main photo was successfully changed
     [% ELSIF prev_action == "delete" %]photo was successfully deleted
     [% ELSIF prev_action == "editcaption" %]photo caption was successfully updated
     [% ELSE %]previous action was completed successfully
     [% END %]
+  </p>
   [% ELSE %]
-    Your
+  <p class="err">Your
     [% IF prev_action == "setmainphoto" %]main photo could not be changed
     [% ELSIF prev_action == "delete" %]photo could not be deleted
     [% ELSIF prev_action == "editcaption" %]photo caption could not be updated
@@ -35,7 +38,7 @@
     [% ELSIF reason == "noprofile" %]You have not created a profile
     [% ELSE %]An unknown error occured
     [% END %]
-    <br />Please try again.<br /><br />
+  .</p>
   [% END %]
 [% END %]
 
@@ -50,22 +53,30 @@
 [% END %]
 
 [% UNLESS updated %]
-  <p style="clear:both">You have not yet activated your profile. Please do so by
+  <p class="err">You have not yet activated your profile. Please do so by
   <a href="account.pl">entering your details here</a>.</p>
+  [% INCLUDE includes/footer.ttml %]
   [% RETURN %]
 [% END %]
 
 
 <p style="clear:both;margin-bottom:32px">
 [% IF main_photo_id && main_photo_id > 0 %]
-Your main photo is shown below with a pink border. This is
-the photo that appears at the top of your profile, and is the one people will see when you
-appear in a search listing. To set another photo as your main one, click on it. You can still
-<a href="/profile/photo-upload.pl">upload more photos</a>!
+Your main photo is shown below with a pink border.&nbsp;
+This is the photo that appears at the top of your profile, 
+and is the one people will see when you appear in a search listing.&nbsp;
+To set another photo as your main one, click on it.&nbsp;
+You can still <a href="/profile/photo-upload.pl">upload more photos</a>!
 [% ELSE %]
-You have not yet uploaded any photos. <a href="/profile/photo-upload.pl">Upload some here!</a>
+<span class="err">You have not yet uploaded any photos.&nbsp;
+<a href="/profile/photo-upload.pl">Upload some here!</a></span>
 [% END %]
 </p>
+
+[% BLOCK ignore %]
+Usage: [% total_kilobytes / 1000 | format('%.1f') %]MB ([% total_kilobytes / 30 | format('%02i') %]% used).
+[% END %]
+<em>Usage: [% photos.size %] / 50</em><br />
 
 [% SET photo_album_mode = "admin";
    INCLUDE "profile/includes/photos-block.ttml" %]
