@@ -1,8 +1,9 @@
 [% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% title = 'Disabling Pop-up Blockers' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
 [% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
-[% breadcrumbs.push('Disabling Pop-up Blockers') %]
+[% breadcrumbs.push("$title") %]
 
 <h1><a id="Top"></a>Disabling Pop-up Blockers</h1>
 
