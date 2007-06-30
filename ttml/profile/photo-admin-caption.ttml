@@ -1,7 +1,7 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% title = 'Edit Caption' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage My Photos</a>");
-   breadcrumbs.push("Edit Caption"); %]
+[% breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage Photos</a>");
+   breadcrumbs.push("$title"); %]
 
 [% UNLESS core.profile_id %]
   <p class="err">You need to
@@ -12,17 +12,20 @@
   [% RETURN %]
 [% END %]
 
+<h1>Edit Caption</h1>
 
 <form action="photo-admin.pl" method="post">
-<input type="hidden" name="mode" value="editcaption" />
-<input type="hidden" name="submitting" value="1" />
-<input type="hidden" name="photo_id" value="[% photo_info.photo_id %]" />
-<input type="text" name="caption" maxlength="75" size="30" value="[% photo_info.caption FILTER html_entity %]" />
-<input type="submit" value="Ok" />
+<fieldset>
+  <input type="hidden" name="mode" value="editcaption" />
+  <input type="hidden" name="submitting" value="1" />
+  <input type="hidden" name="photo_id" value="[% photo_info.photo_id %]" />
+  <input type="text" class="text" name="caption" maxlength="75" size="30" value="[% photo_info.caption FILTER html_entity %]" />
+  <input type="submit" value="Ok" />
+</fieldset>
 </form>
-<img src="/profile/photo.pl?id=[% photo_info.photo_id %]&f=1&a=1"
+<!-- <img src="/profile/photo.pl?id=[% photo_info.photo_id %]&f=1&a=1" -->
+<img src="/photos/[% core.profile_name %]/[% photo_info.resized_filename %]"
      alt="[% photo_info.caption FILTER html_entity %]" style="margin-top:8px" />
 <br />
-</div>
 
 [% INCLUDE includes/footer.ttml %]
