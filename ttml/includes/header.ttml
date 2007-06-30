@@ -1,83 +1,103 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
 [%- BLOCK ignore -%]
-<!--  <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">  -->
 <?xml version="1.0"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
 [%- END -%]
+
   <head>
-    <title>[% title %]</title>
+    <title>[% IF title %][% title %] - [% END %]Backpacking Buddies</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="rating" content="General" />
     <meta name="ROBOTS" content="All" />
     <meta name="revisit-after" content="7 days" />
-    <meta name="keywords" content="faceparty, dating, profiles" />
-    <meta name="description" content="With thousands of members online now, you're sure to find hundreds of like-minded people, meet dozens of new friends and fall victim to the odd one night stand! Our free chat and dating service is the ultimate online entertainment." />
+    <meta name="keywords" content="backpackingbuddies, backpacking buddies, backpacking, buddies, friends, companions, groups, travel, hostel, hostels, youth hostel, youth hostels, backpacker, backpackers, backpack, meet, meet up" />
+    <meta name="description" content="Meet other backpackers while you're traveling for dates, drinks and trips.  Find fun people to start traveling with, arrange nights out with other backpackers in your city.  Find or become a tour guide in your city.  Rent your sofa or room and find cheap and friendly places to sleep!" />
     <link rel="SHORTCUT ICON" href="/favicon.ico" />
-    <link rel="home" title="Home" href="http://www.livejournal.com/" />
-    <link rel="contents" title="Site Map" href="http://www.livejournal.com/site/" />
-    <link rel="help" title="Technical Support" href="http://www.livejournal.com/support/" />
+    <link rel="home" title="Home" href="http://[% core.server_name %]/" />
+    <link rel="search" title="Search Profiles" href="http://[% core.server_name %]/profiles/search.pl" />
+    <!-- <link rel="contents" title="Site Map" href="http://[% core.server_name %]/#help/sitemap.pl" /> -->
+    <link rel="help" title="Technical Support" href="http://[% core.server_name %]/help/contact-us.pl" />
     
     [% IF !js %][% js = [] %][% ELSE %][% js = js.list %][% END %]
     [% IF !css %][% css = [] %][% ELSE %][% css = css.list %][% END %]
     
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="/css/profile.css" />
     <link rel="stylesheet" type="text/css" href="/css/sweetTitles.css" />
     
+    <!-- Apply the stylesheet to any version of IE whose version 
+         number starts with 5 to work around IE5's broken box model -->
+    <!--[if lt IE 6]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-5.0+5.5.css" />
+    <![endif]-->
+    <!--[if IE 7]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-7.css" />
+    <![endif]-->
+
+[% #core.no_nav_links = 1 %]
+
 [% UNLESS core.no_nav_links %]
     
     <link rel="stylesheet" type="text/css" href="/css/navmenu.css" />
+    <link rel="stylesheet" type="text/css" href="/css/navmenu-orange-black.css" />
     
-  [% IF core.emi && (core.emi > 0) %]
-    [% SET onload = onload _ "show(" _ core.emi _ ");" %]
-    [% IF core.esmi && (core.esmi > 0) %]
-      [% SET onload = onload _ "subselect(" _ core.esmi _ ");" %]
-    [% END %]
-  [% END %]
-    
-  [% IF core.open_assistant %]
-    [% SET onload = onload _ "OpenAssistant();" %]
-  [% ELSIF core.close_assistant %]
-    [% SET onload = onload _ "CloseAssistant();" %]
-  [% END %]
-    
-  [% js.push("/js/navmenu.js") %]
-  [% js.push("/js/common.js") %]
-  [% js.push("/js/addEvent.js") %]
-  [% #js.push("/js/sweetTitles.js") %]
-    
+  [%# IF core.emi && (core.emi > 0) %]
+    [%# SET onload = onload _ "show(" _ core.emi _ ");" %]
+    [%# IF core.esmi && (core.esmi > 0) %]
+      [%# SET onload = onload _ "subselect(" _ core.esmi _ ");" %]
+    [%# END %]
+  [%# END %]
+  
+  [% #js.push("/js/navmenu.js") %]
+  <!-- no defer="defer"!  this must be loaded before page is rendered.. -->
+  <script type="text/javascript" src="/js/navmenu.js"></script>
+  
 [% END %]
 
-    [% FOREACH stylesheet = css %]
-      <link rel="stylesheet" type="text/css" href="[% stylesheet %]" />
-    [%+ END %]
-    
-    [% js.push("/js/assistant.js") %]
-    [% js.push("/js/cookies.js") %]
-    
-    [%+ IF (js AND (js.size > 0)) OR header_js %]
-    <!-- The script 'defer' attribute provides a hint to the user agent 
-         that the script is not going to generate any document 
-         content (e.g., no "document.write" in javascript) and 
-         thus, the user agent can continue parsing and rendering. -->
-    [% END %]
-    [% FOREACH javascript = js %]
-    <script type="text/javascript" src="[% javascript %]" defer></script>
-    [% END %]
-    [%+ IF header_js %]
-<script type="text/javascript" defer>
+[% js.push("/js/cookies.js") %]
+[% js.push("/js/assistant.js") %]
+
+[% IF core.open_assistant %]
+  [% SET onload = onload _ "OpenAssistant();" %]
+[% ELSIF core.close_assistant %]
+  [% SET onload = onload _ "CloseAssistant();" %]
+[% END %]
+
+[% js.push("/js/common.js") %]
+[% js.push("/js/addEvent.js") %]
+[% js.push("/js/sweetTitles.js") %]
+
+[% FOREACH stylesheet = css %]
+  <link rel="stylesheet" type="text/css" href="[% stylesheet %]" />
+[%+ END %]
+
+[%+ IF (js AND (js.size > 0)) OR header_js %]
+<!-- The script 'defer="defer"' attribute provides a hint to the user agent 
+     that the script is not going to generate any document 
+     content (e.g., no "document.write" in javascript) and 
+     thus, the user agent can continue parsing and rendering. -->
+[% END %]
+[% FOREACH javascript = js %]
+  <script type="text/javascript" src="[% javascript %]" defer="defer"></script>
+[% END %]
+[%+ IF header_js %]
+<script type="text/javascript" defer="defer">
 //<!--
-[% INCLUDE header_js %]
+[% header_js %]
 //-->
 </script>
     [% END %]
     [%+ IF header_css %]
-<style>
-[% INCLUDE header_css %]
+<style type="text/css">
+[% header_css %]
 </style>
     [% END %]
   </head>
@@ -86,51 +106,54 @@
 
 
 
-[% UNLESS core.no_nav_links %]
-<div id="Content" onclick="unshow();">
-    <div style='float: right; margin-left: 2em; margin-bottom: 1em;'></div>
-[% END %]
+
+<div id="Content"[% UNLESS core.no_nav_links %] onclick="unshow();"[% END %]>
+
 
 [% IF core.open_assistant %]
   <!-- this content is added when an onload popup is requested (for assistant) on login
        but only becomes visible (display:block) if javascript is available and enabled
        but the javascript can't open the popup! -->
-  <div id="popups_blocked_alert" class="err" style="display:none">
-  <h2 class="err">You appear to have blocked our lovely assistant!</h2>
-  <p>Click here to <a href="/assistant.pl" target="_blank"
-          onclick="OpenAssistant(); return false;" >manually open the assistant</a>
-  this time (this shouldn't be blocked by any intelligent popup blockers).</p>
-  <p>To stop this happening in the future, click here to find out
-  <a href="/help/stop-popup-blockers.html">how to disable popup blockers for certain websites</a>.</p>
+  <div id="popups_blocked_alert" class="error-box" style="display:none;">
+    <span class="error-box-title">Assistant popup has been blocked!</span>
+    <!-- target="_blank" has been removed so that our strict markup is valid but now
+         people we rely on javascript to force the link to open in a new window! -->
+    Manually <a href="/assistant.pl" class="_blank"
+                onclick="OpenAssistant(); return false;">open the assistant in a new tab/window</a>.&nbsp;
+    To stop this happening again, learn
+    <a href="/help/disabling-popup-blockers.pl">How to disable your Popup Blocker</a>.
   </div>
   
   <!-- if the popup couldn't even attempt to popup due to javascript not being available
        or enabled then tell the user (the above message won't have been made visible..). -->
   <noscript>
-    <div class="err">
-      <h2 class="err">You don't appear to have javascript enabled!</h2>
-      <p>This website should work perfectly without it, but if you can
-         turn it on, things will be a lot faster and a lot more fun! :)<br />
-      <p>First of all, click here to <a href="/assistant.pl" target="_blank"
-         onclick="OpenAssistant(); return false;" >manually open the assistant</a>.<br />
-         And learn <a href="/help/enabling-javascript.html">how to enable javascript</a>.
-      </p>
+    <div id="popups_blocked_alert_nojs" class="error-box">
+      <span class="error-box-title">Javascript is not enabled!</span>
+      This website should work perfectly without it, but if you can
+      turn it on, things will be a lot faster and a lot more fun! :)<br />
+      <!-- target="_blank" has been removed so that our strict markup is valid but now
+           people without javascript have to manually force the link to open in a new window! -->
+      Manually <a href="/assistant.pl"
+                  onclick="OpenAssistant(); return false;">open the assistant in a new tab/window/</a>.&nbsp;
+      (Hold <strong>Ctrl</strong> and left click the link above <strong>OR</strong> right click the link and select 
+      '<strong>Open in new tab</strong>' or '<strong>Open in new window</strong>' depending on your browser).&nbsp;
+      To stop this happening again, learn
+      <a href="/help/enabling-javascript.pl">how to enable JavaScript</a>.
     </div>
   </noscript>
 [% END %]
-
+  
 [% IF core.nocookies %]
   <!-- This only gets set on login if login couldn't create and find the test cookie
        (user gets sent back to the page they logged in from with nocookies=1 in query string!) -->
-  <div class="err">
-  <h2 class="err">You appear to have a problem with cookies! ( munch, munch =)</h2>
-  <p>Basically, we store a little bit of information on your computer to let us
-  know that you really are who you say you are and to check that you are logged in..&nbsp;
-  Most websites that let you 'log in' use this technology and it really is perfectly
-  normal and <em>totally safe</em>.&nbsp; I think you need to enable cookies, otherwise
-  you and I just won't get along (and you won't be able to use this website properly!).</p>
-  <p>Learn
-  <a href="/help/enabling-cookies.html">how to enable cookies</a>.</p>
+  <div id="popups_blocked_alert" class="error-box">
+    <span class="error-box-title">You appear to have a problem with cookies! ( munch, munch =)</span>
+    Basically, we store a little bit of information on your computer to let us
+    know that you really are who you say you are and to check that you are logged in..&nbsp;
+    Most websites that let you 'log in' use this technology and it really is perfectly
+    normal and <em>totally safe</em>.&nbsp; You will need to enable cookies, otherwise
+    you won't be able to use this website properly!.</p>
+    Learn <a href="/help/enabling-cookies.pl">how to enable cookies</a>.
   </div>
 [% END %]
 
@@ -139,6 +162,7 @@
   It will do this if you don't clicky for 30 mins.<br />
   The moral of the story?  Get clicky clicky!</p>
 [% END %]
+
 <!-- Content -->
 
 
