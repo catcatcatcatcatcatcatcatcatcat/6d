@@ -1,17 +1,15 @@
 
 
-<form name="loginform" method="post" action="/login.pl">
-  <input type="hidden" name="mode" value="login" />
-  <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
-
+<form id="loginform" method="post" action="/login.pl">
   <fieldset class="exist">
+    <input type="hidden" name="mode" value="login" />
+    <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
     <div class="container">
     <h2>Existing customers <span>Sign in here</span></h2>
     <p>
       <label for="profile_name">Username:</label>
-      <input type="text" id="profile_name" tabindex="5" name="profile_name"
-         [% IF profile_name %]value="[% profile_name %]"
-         [%- ELSIF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] />
+      <input type="text" class="text" id="profile_name" tabindex="5" name="profile_name"
+         [% IF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] />
     </p>
     <p>
       <label for="password">Password: </label>
@@ -21,7 +19,7 @@
     <p>
       <label for="remember_me">Remember me</label>
       <input type="checkbox" id="remember_me" name="remember_me"
-             value="1" [% IF remember_me %]checked="checked"[% END %] />
+             value="1" [% IF core.remember_me %]checked="checked"[% END %] />
     </p>
     <p id="signinButton">
       <input type="image" alt="Sign in" name="submit" src="/images/login/sign_in_button.gif" />
@@ -30,7 +28,7 @@
       <li class="o"><a href="/help/forgotten-login-details.pl"
                        onclick="openWindow(this.href + '?popup=1', 'forgottenLoginDetails', 500, 300, 'yes');return false;"
                     >Forgotten your username or password?</a></li>
-      <li class="o"><a href="/help/enabling-cookies.html"
+      <li class="o"><a href="/help/enabling-cookies.pl"
                        onclick="openWindow(this.href + '?popup=1', 'enablingCookies', 700, 500, 'yes');return false;"
                     >Problems logging in? (cookies FAQ)</a></li>
     </ul>
@@ -44,7 +42,7 @@
       <td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:0 10px;">
   <label for="profile_name">Username:</label>
   </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:5px 10px;">
-  <input type="text" id="profile_name" tabindex="5" name="profile_name"
+  <input type="text" class="text" id="profile_name" tabindex="5" name="profile_name"
          [% IF profile_name %]value="[% profile_name %]"
          [%- ELSIF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] /><br />
   </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:0 10px;">
@@ -59,13 +57,13 @@
   <label for="remember_me">remember me</label>
   </td></tr><tr><td style="background:url(/images/styles/red_dots_bg_horizontal.gif) repeat-x top; padding:5px 10px 0 10px;">
   <input type="submit" id="submit" tabindex="8" name="submit"
-         value="Login" style="float:right; padding-bottom:10px; margin-right:-10px"/>
+         value="Login" style="float:right; padding-bottom:10px; margin-right:-10px" />
   </td></tr>
   </table>
   
 
 <p><a href="/help/forgotten-login-details.pl">Forgotten your username or password?</a></p>
-<p><a href="/help/enabling-cookies.html">Problems logging in? (cookies FAQ)</a></p>
+<p><a href="/help/enabling-cookies.pl">Problems logging in? (cookies FAQ)</a></p>
 <p><a href="/signup.pl">Not a member? Signup here!</a></p>
 -->
 
