@@ -1,148 +1,228 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% IF message.flag == "LINKEDFRIEND";
+  title = 'Messages: Friend Request';
+ELSE;
+  title = 'Messages: Read Message';
+END %]
 [% INCLUDE includes/header.ttml %]
+[%
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
+  IF from_profile;
+    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&amp;search_id=$search_id\">$from_profile</a>");
+  END;
+ELSIF from_profile;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
+ELSE;
+  breadcrumbs.push("<a href=\"/profile/message.pl?mode=summary\">Messages</a>");
+END;
+IF tray;
+  #MACRO ucfirst(s) GET s FILTER ucfirst;
+  #linkstr = "<a href=\"/profile/message.pl?mode=$tray\">" _ ucfirst(tray) _ "</a>";
+  #breadcrumbs.push(linkstr);
+  ucfirst_tray = tray FILTER ucfirst;
+  breadcrumbs.push("<a href=\"/profile/message.pl?mode=$tray\">$ucfirst_tray</a>");
+END;
+IF message.flag == "LINKEDFRIEND";
+  breadcrumbs.push("Friend Request");
+ELSE;
+  breadcrumbs.push("Read");
+END %]
 
+[% IF message_cache_count && (tray_count.$tray.total > message_cache_count);
+# If we have a new message (one has landed since we've been scrolling
+# back and forth through this folder's message list), make it clear!
+new_message_alert = 1;
+END; %]
 
-[% # All options on one page (pic with caption below)
-   # Buttons for update caption, delete photo, set as main photo
-   # is having the caption in a textbox ugly? yes :) %]
+[% INCLUDE profile/message/includes/folder_nav.ttml %]
 
+<h1>Read Message</h1>
 
-[% IF prev_action %]
-  [% IF success == 1 %]
-    [% IF prev_action == "addfriend" %]Your friend link request has been sent successfully
-    [% ELSIF prev_action == "delfriend" %]Your friend link has been deleted successfully
-    [% ELSIF prev_action == "respond" %]Your friend request has been processed successfully<br />
-    [% ELSIF prev_action == "block" %]Your block has been added successfully
-    [% ELSIF prev_action == "unblock" %]Your block has been removed successfully
-    [% ELSE %]Your previous action was completed successfully
+[% message_links_block = BLOCK %]
+  [% IF previous_message_id || next_message_id %]
+<ul class="opt" style="float: right; font-size: 0.9em; ">
+  [% IF previous_message_id %]<li class="opt[% IF !next_message_id %]2[% END %]"><a href="/profile/message.pl?mode=read&amp;tray=[% tray %]&amp;message_id=[% previous_message_id %]">Previous Message</a></li>[% END %]
+  [% IF next_message_id %]<li class="opt2"><a href="/profile/message.pl?mode=read&amp;tray=[% tray %]&amp;message_id=[% next_message_id %]">Next Message</a></li>[% END %]
+</ul>
+  [% END %]
+[% END %]
+[% message_links_block %]
+
+[% message_options_block = BLOCK %]
+<ul class="opt">
+  [% UNLESS message.flag == "LINKEDFRIEND" ||
+            message.flag == "LINKEDFRIENDRESPONSE" %]
+    [% IF !message.original_message.defined %]
+      [% IF message.suspected_spam_date %]
+  <li class="opt"><img src="/images/icons/message/submit_spam.gif" alt="Submitted as Spam" /> Submitted as Spam</li>
+      [% ELSE %]
+  <li class="opt"><a href="/profile/message.pl?mode=submitasspam&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+    ><img src="/images/icons/message/submit_spam.gif" alt="Submit as Spam" /> Submit as Spam</a></li>
+      [% END %]
     [% END %]
+    [% IF tray == "inbox" %]
+  <li class="opt"><a href="/profile/message.pl?mode=reply&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+    ><img src="/images/icons/message/compose_message_reply.gif" alt="Reply" /> Reply</a></li>
+    [% END %]
+  <li class="opt"><a href="/profile/message.pl?mode=forward&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+    ><img src="/images/icons/message/compose_message_forward.gif" alt="Forward" /> Forward</a></li>
+  [% END %]
+  [% UNLESS message.flag == "LINKEDFRIEND" && !message.recipient_read_flag %]
+  <li class="opt2"><a href="/profile/message.pl?mode=delete&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+    ><img src="/images/icons/message/delete_message.gif" alt="Delete" /> Delete</a></li>
+  [% END %]
+</ul>
+[% END %]
+[% message_options_block %]
+
+[% IF message_main_photo;
+     PROCESS profile/includes/photo.ttml;
+     IF tray == "inbox";
+       display_photo(message_main_photo, message.sender_profile_name, adult_pass, from_profile, search_id);
+     ELSE;
+       display_photo(message_main_photo, message.recipient_profile_name, adult_pass, from_profile, search_id);
+     END;
+   END %]
+
+<p>
+<br />
+<b>From:</b> <a href="/[% message.sender_profile_name %]">[% message.sender_profile_name %]</a><br />
+<b>To:</b> <a href="/[% message.recipient_profile_name %]">[% message.recipient_profile_name %]</a><br />
+<b>Date:</b> [% message.sent_date %]<br />
+<b>Subject:</b> [% message.subject FILTER html_entity %]<br />
+</p>
+
+<div id="messagebody" style="clear: left; margin-bottom: 20px; background-color: #FDFDFD; padding: 10px; ">
+[% message.body FILTER html_entity FILTER replace("\n","<br />\n") %]
+[% IF message.flag == "LINKEDFRIEND" %]
+  [% IF message.recipient_read_flag %]<h3>You have already responded to this request.</h3>
   [% ELSE %]
-    [% IF prev_action == "addfriend" %]Your friend link request could not be sent
-    [% ELSIF prev_action == "delfriend" %]Your friend link could not be deleted
-    [% ELSIF prev_action == "respond" %]Your friend request response could not be processed
-    [% ELSIF prev_action == "block" %]Your block could not be added
-    [% ELSIF prev_action == "unblock" %]Your block could not be removed
-    [% ELSE %]Your previous action could not be completed
-    [% END -%]
-    .<br />
-    Reason:
-    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist
-    [% ELSIF reason == "badprofileid" %]The profile specified does not exist
-    [% ELSIF reason == "noprofileidorname" %]No profile was specified
-    [% ELSIF reason == "nofriendlinkfound" %]The profile is not currently linked as your friend
-    [% ELSIF reason == "nopendingfriendlinkfound" %]No pending request could be found from this profile
-    [% ELSIF reason == "linkrequestdeleted" %]The pending request was deleted by
-      the other user since you opened the message (weird, huh?).. I'd talk to him if I were you.
-    [% ELSIF reason == "blocklinkalreadyexists" %]You already have a block on this profile
-    [% ELSIF reason == "noblocklinkfound" %]This profile is not currently blocked
-    [% ELSIF reason == "noprofile" %]You have not created a profile
-    [% ELSIF reason == "itisyou" %]You cannot create a link to yourself
-    [% ELSIF reason == "friendblocked" %]The profile is blocked - please remove this link first
-    [% ELSIF reason == "blockisfriend" %]The profile is a friend - please remove this link first
-    [% ELSE %]An unknown error occured
-    [% END %]
-    .<br />Please try again.<br /><br />
-  [% END %]
-[% END %]
-
-
-[% IF prev_action == "respond" %]
-  [% IF (response == "accept") || (response == "acceptandreciprocate") %]
-    A happy message has been sent to <strong>[% requester_profile_name %]</strong>
-    to inform them of your acceptance! :)<br />
-    [% IF response == "acceptandreciprocate" %]
-      The happy bunny has also been added to your friends!<br />
-    [% ELSE %]
-      Don't you want to
-      <a href="/profile/friendsandblocks.pl?mode=addfriend&friend_profile_id=[% requester_profile_id %]">
-        add them as a friend</a> too?
-    [% END %]
-  [$ ELSIF (response == "reject") || (response == "rejectandblock") %]
-    A sad message has been sent to <strong>[% requester_profile_name %]</strong>
-    to inform them of your rejection. :(<br />
-    [% IF response == "rejectandblock" %]
-      The poor lamb has also been added to your blocked users.<br />
-      You won't see any more messages from them!<br />
-    [% END %]
-  [% END %]
-[% END %]
-
-
-<h2>Manage my Friends and Blocks</h2>
-
-
-[% UNLESS core.profile_id %]
-  <p class="err">You need to
-    <a href="account.pl">create a profile</a>
-    before you can play with your friends.
-  </p>
-  [% INCLUDE includes/footer.ttml %]
-  [% RETURN %]
-[% END %]
-
-<p>&nbsp;</p>
-
-<h3>My Friends</h3>
-[% UNLESS friend_links.size > 0 %]
-  <p>You currently have no friends (aww). You can add a friend by clicking on
-  &quot;Add as friend&quot; on their profile page or by entering the profile name below.</p>
-[% ELSE %]
-  <p>Your friends are listed below. Click on their name to view their
-     profile, or on &quot;delete&quot; to unlink your profiles.</p>
-  <ol>
-  [% FOREACH link = friend_links %]
-    <li>
-      <a href="/[% link.requestee_profile_name %]">[% link.requestee_profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfriend&friend_profile_id=[% link.requestee_profile_id %]">(delete)</a>
-      <em> - [% IF link.status == "unread" %]
-               unread (sent: [% link.requested_date %])
-             [% ELSIF link.status == "read" %]
-               read: [% link.read_date %]
-             [% ELSIF (link.status == "accepted") OR (link.status == "reciprocal") %]
-               added: [% link.decision_date %]
-             [% END %]
-      </em>
-    </li>
-  [% END %]
-  </ol>
-[% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
-    <input type="hidden" name="mode" value="addfriend" />
-    Add friend: <input type="textbox" name="friend_profile_name" value="[% friend_profile_name %]">
-    <input type="submit" value="Add"/>
+  <a href="/profile/friendsandblocks.pl?mode=respond&amp;friend_profile_name=[% 
+  message.sender_profile_name %]&amp;response=acceptandreciprocate"><div
+    class="linkboxes"><h3>Confirm and Reciprocate</h3>Confirm this Friendship and Add as Friend</div></a>
+  <a href="/profile/friendsandblocks.pl?mode=respond&amp;friend_profile_name=[% 
+  message.sender_profile_name %]&amp;response=accept"><div
+    class="linkboxes"><h3>Confirm Only</h3>Confirm this Friendship Only</div></a>
+  <a href="/profile/friendsandblocks.pl?mode=respond&amp;friend_profile_name=[% 
+  message.sender_profile_name %]&amp;response=reject"><div
+    class="linkboxes"><h3>Reject</h3>Reject this Friendship</div></a>
+  <a href="/profile/friendsandblocks.pl?mode=respond&amp;friend_profile_name=[% 
+  message.sender_profile_name %]&amp;response=rejectandblock"><div
+    class="linkboxes"><h3>Reject and Block</h3>Reject this Friendship and Block this Person</div></a>
+  <!--
+  <form name="linkedfriendresponse" method="post" action="/profile/message.pl">
+    <fieldset>
+    <input type="hidden" name="mode" value="respond" />
+    <input type="hidden" name="message_id" value="[% message.message_id %]" />
+    <input type="hidden" name="friend_profile_name" value="[% message.sender_profile_name %]" />
+    <input type="submit" name="response" value="Accept"
+           style="font-size:2.0em; color:#181; margin:10px;"
+           [% IF message.recipient_read_flag %]disabled="disabled"[% END %] />
+    <input type="submit" name="response" value="Reject"
+           style="font-size:2.0em; color:#B11; margin:10px;"
+           [% IF message.recipient_read_flag %]disabled="disabled"[% END %] />
+    </fieldset>
   </form>
-</p>
-
-<p>&nbsp;</p>
-
-<h3>My Blocks</h3>
-[% UNLESS block_links.size > 0 %]
-  <p>You currently have no blocks (aren't you a nice person?).
-  You can add a block by clicking on
-  &quot;Block this person&quot; on their profile page or by entering the profile name below.<br />
-  Don't worry - they won't know you've blocked them, it just stops them from contacting you.
-  If you decide to unblock them at a later stage,
-    you will see all of the messages they sent to you while you had blocked them.</p>
-[% ELSE %]
-  <p>Your blocked profiles are listed below. Click on their name to view their
-     profile, or on &quot;unblock&quot; to unblock their profile.</p>
-  <ol>
-  [% FOREACH block = block_links %]
-    <li>
-      <a href="/[% block.blockee_profile_name %]">[% block.blockee_profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=unblock&block_profile_id=[% block.blockee_profile_id %]">(unblock)</a>
-      <em> - blocked [% block.blocked_date %]</em>
-    </li>
+  -->
   [% END %]
-  </ol>
+  <br />
 [% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
-    <input type="hidden" name="mode" value="block" />
-    Add block: <input type="textbox" name="block_profile_name" value="[% block_profile_name %]">
-    <input type="submit" value="Add"/>
-  </form>
-</p>
+[% IF message.original_message.defined %]
+  [% MACRO recurse_inner_messages(this_msg, is_reply, is_forward, recurse_limit, recurse_level) BLOCK %]
+    [% UNLESS recurse_level.defined && recurse_level > 0; recurse_level = 0; END %]
+    [% # We shan't recurse deeper than 15 or things would look crap!
+       UNLESS recurse_limit.defined && recurse_limit > 0; recurse_limit = 15; END %]
+    
+    [% recurse_level = recurse_level + 1 %]
+    [% IF is_reply %]
+        <div style="border-left: 3px solid #00[% 16 - recurse_level FILTER format('%x') %]; padding-left: 3px; ">
+          <h3>Original Message:</h3>
+          <b>From:</b> <a href="/[% message.sender_profile_name %]">[% this_msg.sender_profile_name %]</a><br />
+          <b>To:</b> <a href="/[% message.recipient_profile_name %]">[% this_msg.recipient_profile_name %]</a><br />
+          <b>Date:</b> [% this_msg.sent_date %]<br />
+          <b>Subject:</b> [% this_msg.subject FILTER html_entity %]<br />
+          <br />
+          [% this_msg.body FILTER html_entity FILTER replace("\n","<br />\n") %]<br />
+    [% ELSIF is_forward %]
+        <div style="border-left: 3px solid #0[% 16 - recurse_level FILTER format('%x') %]0; padding-left: 3px; ">
+          <h3>Original Message:</h3>
+          <b>From:</b> [% this_msg.sender_profile_name %]<br />
+          <b>To:</b> [% this_msg.recipient_profile_name %]<br />
+          <b>Date:</b> [% this_msg.sent_date %]<br />
+          <b>Subject:</b> [% this_msg.subject FILTER html_entity %]<br />
+          <br />
+          [% this_msg.body FILTER html_entity FILTER replace("\n","<br />\n") %]<br />
+    [% END %]
+    
+    [% # If we have not yet reached the recurse limit and we have another message to process..
+       IF (recurse_level < recurse_limit) && (this_msg.forward_id || this_msg.reply_id) %]
+      [% IF this_msg.original_message %]
+        [% recurse_inner_messages(this_msg.original_message,
+                                  this_msg.reply_id,
+                                  this_msg.forward_id,
+                                  recurse_limit,
+                                  recurse_level) %]
+      [% ELSE %]
+          <h2><a class="_blank" href="/profile/message.pl?mode=viewconvhist&tray=[% tray %]&message_id=[% message.message_id %]">View entire conversation thread</a></h2>
+      [% END %]
+    [% END %]
+    [% IF is_reply || is_forward %]
+          <br />
+        </div>
+    [% END %]
+  [% END %]
+  
+  [% recurse_inner_messages(message.original_message,
+                            message.reply_id,
+                            message.forward_id,
+                            1) %]
+  
+  [% IF message.original_message.original_message.defined %]
+<!-- Only show the show/hide more conv hist link if javascript is enabled -->
+<script type="text/javascript">
+//<!--
+  document.write('\n\
+    <br /><br /><input type="button" name="extendedconvhist_switch" id="extendedconvhist_switch"\n\
+                       value="Show more conversation history &gt;&gt;"\n\
+                       onclick="o = document.getElementById(\'extendedconvhist\');\n\
+        t = document.getElementById(\'extendedconvhist_switch\');\n\
+        if (o.style.display == \'inline\') {\n\
+          o.style.display = \'none\';\n\
+          this.value = this.value.replace(/^&lt;&lt; Hide/, \'Show\');\n\
+          this.value = this.value + \' &gt;&gt;\';\n\
+        } else {\n\
+          o.style.display = \'inline\';\n\
+          this.value = this.value.replace(/^Show/, \'&lt;&lt; Hide\');\n\
+          this.value = this.value.replace(/ &gt;&gt;$/, \'\');\n\
+        };\n\
+        return false" />\n\
+    <br /><br />\n\
+    <div id="extendedconvhist" style="display:none">\n\
+  ');
+//-->
+</script>
+    <div style="border-left: 3px solid #0[% IF message.reply_id %]0F[% ELSIF message.forward_id %]F0[% END %]; padding-left: 3px; ">
+      [% recurse_inner_messages(message.original_message.original_message,
+                                message.original_message.reply_id,
+                                message.original_message.forward_id,
+                                0,
+                                2) %]
+    </div>
+<!-- Only show the show/hide more conv hist link if javascript is enabled -->
+<script type="text/javascript">
+//<!--
+  document.write('<\/div>');
+//-->
+</script>
+    <br />
+  [% END%]
+[% END %]
+</div>
+<script type="text/javascript" src="/js/smilies.js" defer="defer"></script>
+
+[% message_options_block %]
+
+[% message_links_block %]
 
 [% INCLUDE includes/footer.ttml %]

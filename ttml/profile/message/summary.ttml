@@ -1,148 +1,25 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% title = 'Messages: Summary' %]
 [% INCLUDE includes/header.ttml %]
+[%
+breadcrumbs.push("Messages");
+title = "Messages: Summary";
+%]
 
 
-[% # All options on one page (pic with caption below)
-   # Buttons for update caption, delete photo, set as main photo
-   # is having the caption in a textbox ugly? yes :) %]
-
-
-[% IF prev_action %]
-  [% IF success == 1 %]
-    [% IF prev_action == "addfriend" %]Your friend link request has been sent successfully
-    [% ELSIF prev_action == "delfriend" %]Your friend link has been deleted successfully
-    [% ELSIF prev_action == "respond" %]Your friend request has been processed successfully<br />
-    [% ELSIF prev_action == "block" %]Your block has been added successfully
-    [% ELSIF prev_action == "unblock" %]Your block has been removed successfully
-    [% ELSE %]Your previous action was completed successfully
-    [% END %]
-  [% ELSE %]
-    [% IF prev_action == "addfriend" %]Your friend link request could not be sent
-    [% ELSIF prev_action == "delfriend" %]Your friend link could not be deleted
-    [% ELSIF prev_action == "respond" %]Your friend request response could not be processed
-    [% ELSIF prev_action == "block" %]Your block could not be added
-    [% ELSIF prev_action == "unblock" %]Your block could not be removed
-    [% ELSE %]Your previous action could not be completed
-    [% END -%]
-    .<br />
-    Reason:
-    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist
-    [% ELSIF reason == "badprofileid" %]The profile specified does not exist
-    [% ELSIF reason == "noprofileidorname" %]No profile was specified
-    [% ELSIF reason == "nofriendlinkfound" %]The profile is not currently linked as your friend
-    [% ELSIF reason == "nopendingfriendlinkfound" %]No pending request could be found from this profile
-    [% ELSIF reason == "linkrequestdeleted" %]The pending request was deleted by
-      the other user since you opened the message (weird, huh?).. I'd talk to him if I were you.
-    [% ELSIF reason == "blocklinkalreadyexists" %]You already have a block on this profile
-    [% ELSIF reason == "noblocklinkfound" %]This profile is not currently blocked
-    [% ELSIF reason == "noprofile" %]You have not created a profile
-    [% ELSIF reason == "itisyou" %]You cannot create a link to yourself
-    [% ELSIF reason == "friendblocked" %]The profile is blocked - please remove this link first
-    [% ELSIF reason == "blockisfriend" %]The profile is a friend - please remove this link first
-    [% ELSE %]An unknown error occured
-    [% END %]
-    .<br />Please try again.<br /><br />
-  [% END %]
-[% END %]
-
-
-[% IF prev_action == "respond" %]
-  [% IF (response == "accept") || (response == "acceptandreciprocate") %]
-    A happy message has been sent to <strong>[% requester_profile_name %]</strong>
-    to inform them of your acceptance! :)<br />
-    [% IF response == "acceptandreciprocate" %]
-      The happy bunny has also been added to your friends!<br />
-    [% ELSE %]
-      Don't you want to
-      <a href="/profile/friendsandblocks.pl?mode=addfriend&friend_profile_id=[% requester_profile_id %]">
-        add them as a friend</a> too?
-    [% END %]
-  [$ ELSIF (response == "reject") || (response == "rejectandblock") %]
-    A sad message has been sent to <strong>[% requester_profile_name %]</strong>
-    to inform them of your rejection. :(<br />
-    [% IF response == "rejectandblock" %]
-      The poor lamb has also been added to your blocked users.<br />
-      You won't see any more messages from them!<br />
-    [% END %]
-  [% END %]
-[% END %]
-
-
-<h2>Manage my Friends and Blocks</h2>
-
+[% INCLUDE profile/message/includes/folder_nav.ttml %]
 
 [% UNLESS core.profile_id %]
   <p class="err">You need to
     <a href="account.pl">create a profile</a>
-    before you can play with your friends.
+    before you can send and receive messages.
   </p>
   [% INCLUDE includes/footer.ttml %]
   [% RETURN %]
-[% END %]
-
-<p>&nbsp;</p>
-
-<h3>My Friends</h3>
-[% UNLESS friend_links.size > 0 %]
-  <p>You currently have no friends (aww). You can add a friend by clicking on
-  &quot;Add as friend&quot; on their profile page or by entering the profile name below.</p>
 [% ELSE %]
-  <p>Your friends are listed below. Click on their name to view their
-     profile, or on &quot;delete&quot; to unlink your profiles.</p>
-  <ol>
-  [% FOREACH link = friend_links %]
-    <li>
-      <a href="/[% link.requestee_profile_name %]">[% link.requestee_profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfriend&friend_profile_id=[% link.requestee_profile_id %]">(delete)</a>
-      <em> - [% IF link.status == "unread" %]
-               unread (sent: [% link.requested_date %])
-             [% ELSIF link.status == "read" %]
-               read: [% link.read_date %]
-             [% ELSIF (link.status == "accepted") OR (link.status == "reciprocal") %]
-               added: [% link.decision_date %]
-             [% END %]
-      </em>
-    </li>
-  [% END %]
-  </ol>
+  <h3>Messages</h3>
+  <p>Well here you are.. This page is pretty pointless, isn't it?
+     Click on one of those links up there to get to your messages!</p>
 [% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
-    <input type="hidden" name="mode" value="addfriend" />
-    Add friend: <input type="textbox" name="friend_profile_name" value="[% friend_profile_name %]">
-    <input type="submit" value="Add"/>
-  </form>
-</p>
 
-<p>&nbsp;</p>
-
-<h3>My Blocks</h3>
-[% UNLESS block_links.size > 0 %]
-  <p>You currently have no blocks (aren't you a nice person?).
-  You can add a block by clicking on
-  &quot;Block this person&quot; on their profile page or by entering the profile name below.<br />
-  Don't worry - they won't know you've blocked them, it just stops them from contacting you.
-  If you decide to unblock them at a later stage,
-    you will see all of the messages they sent to you while you had blocked them.</p>
-[% ELSE %]
-  <p>Your blocked profiles are listed below. Click on their name to view their
-     profile, or on &quot;unblock&quot; to unblock their profile.</p>
-  <ol>
-  [% FOREACH block = block_links %]
-    <li>
-      <a href="/[% block.blockee_profile_name %]">[% block.blockee_profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=unblock&block_profile_id=[% block.blockee_profile_id %]">(unblock)</a>
-      <em> - blocked [% block.blocked_date %]</em>
-    </li>
-  [% END %]
-  </ol>
-[% END %]
-<p>
-  <form action="/profile/friendsandblocks.pl" method="post">
-    <input type="hidden" name="mode" value="block" />
-    Add block: <input type="textbox" name="block_profile_name" value="[% block_profile_name %]">
-    <input type="submit" value="Add"/>
-  </form>
-</p>
 
 [% INCLUDE includes/footer.ttml %]
