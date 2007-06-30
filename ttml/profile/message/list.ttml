@@ -1,32 +1,99 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% SET js = [ "/js/tipMessage.js" ] %]
+[% header_css = BLOCK %]
+table#messagestable {
+  font-size: 0.9em;
+}
+/* table#messagestable td a, table#messagestable td a:link { */
+table#messagestable td a {
+  font-weight: normal;
+}
+table#messagestable tr.unread * {
+  font-weight: bold;
+}
+dl.table-display {
+  margin: 0; padding: 1px;
+  border: 2px solid #F3F3F3;
+  background-color: #E5E5E5;
+  margin-left: 30px;
+  font-size: 0.75em;
+  float: left;
+  clear: none;
+}
+dl.table-display dt {
+  float: left;
+  margin: 0;
+  padding-left: 3px;
+  margin-left: 3px;
+  border-left: 1px solid #AAA;
+  font-weight: bold;
+}
+dl.table-display dd {
+  float: left;
+  margin: 0;
+  padding-left: 2px;
+  vertical-align: bottom;
+}
+[% END %]
+[% ucfirst_tray = tray FILTER ucfirst;
+   title = "Messages: $ucfirst_tray" %]
 [% INCLUDE includes/header.ttml %]
+[%
+IF search_id;
+  breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
+  IF from_profile;
+    breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile&amp;search_id=$search_id\">$from_profile</a>");
+  END;
+ELSIF from_profile;
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
+ELSE;
+  breadcrumbs.push("<a href=\"/profile/message.pl?mode=summary\">Messages</a>");
+END;
+breadcrumbs.push(ucfirst_tray);
+%]
 
 
 [% IF prev_action %]
   [% IF success == 1 %]
-    [% IF prev_action == "send" %]Your message has been sent successfully
-    [% ELSE %]Your previous action was completed successfully
+  <p class="success">
+    [% IF prev_action == "send" %]Your message has been sent successfully.
+    [% ELSE %]Your previous action was completed successfully.
     [% END %]
+  </p>
   [% ELSE %]
-    [% IF prev_action == "send" %]Your message could not be sent
-    [% ELSE %]Your previous action could not be completed
-    [% END -%]
-    .<br />
+  <p class="err">
+    [% IF prev_action == "send" %]Your message could not be sent.
+    [% ELSE %]Your previous action could not be completed.
+    [% END %]<br />
     Reason:
-    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist
-    [% ELSIF reason == "badprofileid" %]The profile specified does not exist
-    [% ELSIF reason == "noprofileidorname" %]No profile was specified
-    [% ELSIF reason == "noprofile" %]You have not created a profile
-    [% ELSE %]An unknown error occured
+    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist.
+    [% ELSIF reason == "badprofileid" %]The profile specified does not exist.
+    [% ELSIF reason == "noprofileidorname" %]No profile was specified.
+    [% ELSIF reason == "noprofile" %]You have not created a profile.
+    [% ELSIF reason == "notposted" %]You did not submit the form correctly.  Hmmmm.. Bad spammer!
+    [% ELSIF reason == "badmessageid" %]The message did not belong to you.
+    [% ELSIF reason == "alreadyresponded" %]You have already responded to this message.
+    [% ELSIF reason == "alreadysubmittedasspam" %]You have already submitted this message as spam.
+    
+    [% ELSE %]An unknown error occured.
     [% END %]
-    .<br />Please try again.<br /><br />
+  </p>
   [% END %]
 [% END %]
 
+[% IF tray_count.$tray.total > message_cache_count;
+# If we have a new message (one has landed since we've been scrolling
+# back and forth through this folder's message list), make it clear!
+new_message_alert = 1;
+END; %]
 
-<h2>[% IF tray == "inbox" %]My Inbox
+
+[% INCLUDE profile/message/includes/folder_nav.ttml %]
+
+
+<h1>[% IF tray == "inbox" %]My Inbox
     [% ELSIF tray == "sent" %]My Sent Messages
-    [% ELSIF tray == "drafts" %]My Drafts[% END %]</h2>
+    [% ELSIF tray == "drafts" %]My Drafts[% END %]</h1>
 
 
 [% UNLESS core.profile_id %]
@@ -40,49 +107,311 @@
 
 <p>&nbsp;</p>
 
-
-
-
 <script type="text/javascript">
-function selectAll() {
+//<!--
+function selectAll(to_select_or_not_to_select) {
   var form = document.messages;
   for (x=0; x<form.elements.length; x++) {
-    form.elements[x].checked = true;
+    form.elements[x].checked = to_select_or_not_to_select;
   }
+  return false;
 }
+//-->
 </script>
 
-<form action="message.pl" name="messages" id="messages" method="POST">
-  
-	<table style="border:none;width:100%;background:url(/images/profile/inboxbackground.png) repeat;padding:4px">
-		<tr>
-			<th style="width:20%">Date</th>
-			<th style="width:55%">Subject</th>
-			<th style="width:20%">[% IF tray == "inbox" %]From
-                            [% ELSIF tray == "sent" %]To
-                            [% ELSIF tray == "drafts" %]To
-                            [% END %]</th>
-			<th style="width:5%;text-align:center">Delete</th>
-		</tr>
-    [% FOREACH message = messages %]
-		<tr[% UNLESS message.read_date %] class="unread"[% END %]>
-			<td>[% sent_date %]</td>
-			<td><a href="/profile/message.pl?mode=read&message_id=[% message.message_id %]">[% message.subject %]</a></td>
-			<td>[% IF tray == "inbox" %]<a href="/[% sender_profile_name %]">[% sender_profile_name %]</a>
-          [% ELSIF tray == "sent" %]<a href="/[% recipient_profile_name %]">[% recipient_profile_name %]</a>
-          [% ELSIF tray == "drafts" %]<a href="/[% recipient_profile_name %]">[% recipient_profile_name %]</a>
-          [% END %]</td>
-			<td class="del"><input type="checkbox" name="[% message.message_id %]" /></td>
-		</tr>
-    [% END %]
-  </table>
-  
+[% IF tray_count.$tray.total %]
+
+[% IF !limit.defined; limit = 10; END; # Initialise things!
+   IF !offset.defined; offset = 0; END %]
+
+[% page_links_block = BLOCK %]
+  [% IF offset > 0 || (offset + limit) < message_cache_count %]
   <ul class="opt" style="float:right;font-size:0.9em">
-    <li class="opt"><a href="#" onClick="selectAll()">Select All</a></li>
-    <li class="opt2"><input type="image" src="images/submit.gif" border="0" alt="Delete Selected"></li>
+    [% IF offset > 0 %]
+    <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;offset=[% 
+      IF (offset - limit) <= 0; 0; ELSE; offset - limit; END %]">&lt; Previous
+      [% IF (offset - limit) <= 0; offset; ELSE; limit; END %]</a></li>
+    [% END %]
+    [% IF (offset + limit) < message_cache_count %]
+    <li class="opt2"><a href="/profile/message.pl?mode=[% tray %]&amp;offset=[% 
+      offset + limit %]">Next
+      [% message_cache_count - (offset + limit) %] &gt;</a></li>
+    [% END %]
   </ul>
+  [% END %]
+[% END %]
+[% page_links_block %]
+
+<h3>Showing messages [% offset + 1 %] -
+[% IF (offset + limit) > message_cache_count; message_cache_count; ELSE; offset + limit; END %]
+of [% message_cache_count %].</h3>
+
+<form action="message.pl" id="nummessages" method="get">
+<fieldset>
   
+  <input type="hidden" name="mode" value="[% mode %]" />
+  <input type="hidden" name="tray" value="[% tray %]" />
+<!--
+  <input type="hidden" name="offset" value="[% offset %]" />
+  <input type="hidden" name="order" value="[% order %]" />
+  <input type="hidden" name="order2" value="[% order2 %]" />
+-->
+  
+  Show
+  <select name="limit" onchange="this.form.submit()">
+    [% FOREACH limit_level = [10, 20, 50, 100] %]
+    <option value="[% limit_level %]"[% IF limit_level == limit %] selected="selected"[% END %]>[% limit_level %]</option>
+    [% END %]
+  </select> messages per page.
+  <noscript>
+    <fieldset>
+      <input type="submit" value="Go!" />
+    </fieldset>
+  </noscript>
+  
+</fieldset>
 </form>
 
+
+<form action="message.pl" id="messages" method="get">
+<fieldset>
+  
+  <input type="hidden" name="tray" value="[% tray %]" />
+<!--
+  <input type="hidden" name="offset" value="[% offset %]" />
+  <input type="hidden" name="order" value="[% order %]" />
+  <input type="hidden" name="order2" value="[% order2 %]" />
+-->
+  
+  <table id="messagestable" class="hovertable" style="border: none; width: 90%; background-color: #EEE; padding: 4px">
+    <tr class="nohoverchange">
+      <th colspan="[% IF tray == "inbox" %]5[% ELSIF tray == "drafts" %]3[% ELSE %]4[% END %]"></th>
+      <th style="width: 20%; background-color: #444; color: #fff; "><a
+          style="color: #fff; "
+          href="/profile/message.pl?mode=[% tray %]&amp;order=[% IF order == "date" %]__[% END %]date[% IF order && !order.search('date$') %]&amp;order2=[% order %][% END %]">Date
+          [% IF order.search('date$') %]<img src="/images/icons/arrow-white-[% IF order == "__date" %]up[% ELSE %]down[% END %].gif"
+                                             alt="ordered by this column" />
+          [% ELSIF order2.search('date$') %]<img src="/images/icons/arrow-white-[% IF order2 == "__date" %]up[% ELSE %]down[% END %]-small.gif"
+                                             alt="sub-ordered by this column" />[% END %]
+        </a>
+      </th>
+      <th style="width: 50%; background-color: #444; color: #fff; "><a
+          style="color: #fff; "
+          href="/profile/message.pl?mode=[% tray %]&amp;order=[% IF order == "subject" %]__[% END %]subject[% IF order && !order.search('subject$') %]&amp;order2=[% order %][% END %]">Subject
+          [% IF order.search('subject$') %]<img src="/images/icons/arrow-white-[% IF order == "__subject" %]up[% ELSE %]down[% END %].gif"
+                                                alt="ordered by this column" />
+          [% ELSIF order2.search('subject$') %]<img src="/images/icons/arrow-white-[% IF order2 == "__subject" %]up[% ELSE %]down[% END %]-small.gif"
+                                             alt="sub-ordered by this column" />[% END %]
+        </a>
+      </th>
+      <th style="width: 20%; background-color: #444; color: #fff; ">[% IF tray == "drafts" %]To[% ELSE %]<a
+          style="color: #fff; "
+          href="/profile/message.pl?mode=[% tray %]&amp;order=[% IF order == "profile_name" %]__[% END %]profile_name[% IF order && !order.search('profile_name$') %]&amp;order2=[% order %][% END %]">[%
+             IF tray == "inbox" %]From
+          [% ELSIF tray == "sent" %]To
+          [% END %]
+          [% IF order.search('profile_name$') %]<img src="/images/icons/arrow-white-[% IF order == "__profile_name" %]up[% ELSE %]down[% END %].gif"
+                                                     alt="ordered by this column" />
+          [% ELSIF order2.search('profile_name$') %]<img src="/images/icons/arrow-white-[% IF order2 == "__profile_name" %]up[% ELSE %]down[% END %]-small.gif"
+                                             alt="sub-ordered by this column" />[% END %]
+        </a>[% END %]
+      </th>
+    </tr>
+    [% FOREACH message = messages %]
+    <tr id="messagerow-[% message.message_id %]"
+        onmouseover="this.className+=' hover'"
+        onmouseout="this.className=this.className.substring(0,this.className.lastIndexOf(' hover'))"
+        [% IF !message.read_date && tray == "inbox" %]class="unread"[% END %]>
+      <td class="action"><input type="checkbox" name="message_id" value="[% message.message_id %]" 
+                          [% IF selectall %] checked="checked"[% END %] /></td>
+      <td class="messageaction">
+        <a href="/profile/message.pl?mode=markas[% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]flagged[% ELSE %]unflagged[% END %]&amp;message_id=[% message.message_id %]"
+             title="Flag" onclick="return toggle_message_flagged_flag('[% message.message_id %]')"><img
+               id="messageflaggedimage-[% message.message_id %]"
+               [% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]class="flagged"[% END %]
+               src="/images/icons/message/[% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]flagged[% ELSE %]unflagged[% END %].gif"
+               alt="Flag" /></a></td>
+      [% IF tray == "inbox" %]
+      <td class="messageaction"><a href="/profile/message.pl?mode=reply&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+        title="Reply"><img src="/images/icons/message/compose_message_reply.gif" alt="Reply" /></a></td>
+      [% END %]
+      [% IF tray != "drafts" %]
+      <td class="messageaction"><a href="/profile/message.pl?mode=forward&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+        title="Forward"><img src="/images/icons/message/compose_message_forward.gif" alt="Forward" /></a></td>
+      [% END %]
+      <td class="messageaction"><a href="/profile/message.pl?mode=delete&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+        title="Delete"><img src="/images/icons/message/delete_message.gif" alt="Delete" /></a></td>
+      <td>[% message.sent_date %]</td>
+      <td>[% IF tray == "inbox" %]
+            [% IF (message.read_date && message.flag != "LINKEDFRIEND") ||
+                  (message.flag == "LINKEDFRIEND" && message.recipient_read_flag) %]
+            <a href="/profile/message.pl?mode=markas[% IF message.recipient_read_flag %]unread[% ELSE %]read[% END %]&amp;message_id=[% message.message_id %]"
+               onclick="return toggle_message_read_flag('[% message.message_id %]')"
+               title="Mark message as read/unread">[% END %]<img
+                 id="messagereadimage-[% message.message_id %]"
+                 src="/images/icons/message/[% IF message.recipient_read_flag %]opened[%
+                                                 IF message.recipient_forwarded_flag %]_forwarded[%
+                                                 ELSIF message.recipient_replied_flag %]_replied[%
+                                                 END;
+                                               ELSE %]closed[%
+                                               END %]_message[% IF message.flag == "LINKEDFRIEND" %]_special[% END %].gif"
+                 alt="Message read/unread" />[% IF message.read_date %]</a>[% END %]
+          [% ELSIF tray == "sent" %]
+          <img id="messagereadimage-[% message.message_id %]"
+               src="/images/icons/message/[% IF message.sender_read_flag %]opened[%
+                                               IF message.sender_forwarded_flag %]_forwarded[%
+                                               END;
+                                             ELSE %]closed[%
+                                             END %]_message.gif"
+               alt="Message read/unread by recipient" />
+          [% ELSIF tray == "drafts" %]
+          <img id="messagereadimage-[% message.message_id %]"
+               src="/images/icons/message/opened_message.gif"
+               alt="Draft message" />
+          [% END %]
+          <a href="/profile/message.pl?mode=[% IF tray == "drafts" %]editdraft[% ELSE %]read[% END %]&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+             title="[% message.body FILTER truncate(200) FILTER html_entity %]">[% IF message.subject.length > 0 %][% message.subject FILTER truncate(50) FILTER html_entity %][% ELSE %]<em>(no subject)</em>[% END %]</a></td>
+      <td>[% IF tray == "drafts" %][% message.draft_recipient_profile_name %][% ELSE %]<a href="/[% message.profile_name %]">[% message.profile_name %]</a>[% END %]</td>
+    </tr>
+    [% END %]
+    <tr class="nohoverchange">
+      <td colspan="[% IF tray == "inbox" %]8[% ELSIF tray == "drafts" %]6[% ELSE %]7[% END %]">
+        <ul class="opt" style="float: left; font-size: 0.9em; ">
+          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=1" onclick="return selectAll(true);">Select All</a></li>
+          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=0" onclick="return selectAll(false);">Deselect All</a></li>
+          <li class="opt2"><b>With selected:</b> <input type="image" name="mode" value="deleteselected" src="/images/icons/message/delete_message.gif" title="Delete Selected" /> Delete
+          [% IF tray == "inbox" %]
+          <input type="image" name="mode" value="markselectedasread" src="/images/icons/message/opened_message.gif" title="Mark as Read" /> Mark as Read
+          <input type="image" name="mode" value="markselectedasunread" src="/images/icons/message/closed_message.gif" title="Mark as Unead" /> Mark as Unread
+          [% END %]
+          </li>
+        </ul>
+      </td>
+    </tr>
+    <tr class="nohoverchange">
+      <td colspan="[% IF tray == "inbox" %]8[% ELSIF tray == "drafts" %]6[% ELSE %]7[% END %]">
+        [% IF tray == "inbox" || tray == "sent" %]
+        <dl class="table-display" style="float: right; ">
+            <dd><span style="font-weight: bold; float: left; ">Key: </span></dd>
+          [% IF tray == "inbox" %]
+          <dt><img src="/images/icons/message/closed_message.gif" alt="Unread message" /></dt>
+            <dd>Unread message</dd>
+          <dt><img src="/images/icons/message/opened_message.gif" alt="Read message" /></dt>
+            <dd>Read message</dd>
+          <dt><img src="/images/icons/message/opened_replied_message.gif" alt="Replied to message" /></dt>
+            <dd>Replied to message</dd>
+          <dt><img src="/images/icons/message/opened_forwarded_message.gif" alt="Message forwarded" /></dt>
+            <dd>Message forwarded</dd>
+          [% ELSIF tray == "sent" %]
+          <dt><img src="/images/icons/message/closed_message.gif" alt="Recipient not read message" /></dt>
+            <dd>Recipient not read message</dd>
+          <dt><img src="/images/icons/message/opened_message.gif" alt="Recipipent read message" /></dt>
+            <dd>Recipipent read message</dd>
+          <dt><img src="/images/icons/message/opened_forwarded_message.gif" alt="Message forwarded" /></dt>
+            <dd>Message forwarded</dd>
+          [% END %]
+        </dl>
+        [% END %]
+      </td>
+    </tr>
+  </table>
+</fieldset>
+</form>
+
+[% page_links_block %]
+
+<script src="/js/xmlhttp.js" type="text/javascript"></script>
+<script type="text/javascript">
+//<!--
+  var xmlhttp = new_xmlhttp();
+  function toggle_message_read_flag( message_id ) {
+    message_row_object = document.getElementById("messagerow-" + message_id);
+    message_read_image_object = document.getElementById("messagereadimage-" + message_id);
+    if (!message_row_object || !message_read_image_object)
+      return;
+    read = 0; // Let's assume that we are setting it to unread
+    //alert('original classname of message row: ' + message_row_object.className);
+    if (message_read_image_object.src.match(/closed/)) {            // If image was closed envelope
+      read = 1;                                                     // we will be setting it to read..
+    }
+    
+    url = "/ajax/" + "toggle_message_read_flag." + "pl?message_id=" + message_id + "&read=" + read + "&random=" + Math.random();
+    xmlhttp.open('GET',url,true);
+    xmlhttp.onreadystatechange=function() {
+      if (xmlhttp.readyState == 4 || xmlhttp.readyState == "complete") { // Complete
+        if (xmlhttp.status == 200) { // OK response
+          if (read == 1) {
+            //message_row_object.className=
+            //  message_row_object.className.substring(message_row_object.className.indexOf('unread'),message_row_object.className.lastIndexOf('unread'))"
+            //message_row_object.className =
+            //  message_row_object.className.replace(/ *\bunread\b */,' ');
+            message_read_image_object.src =
+              message_read_image_object.src.replace(/closed/, 'opened');
+            //alert('was unread so className now ' + message_row_object.className);
+            //alert('was unread so image now ' + message_read_image_object.src);
+          } else {
+            //message_row_object.className =
+            //  message_row_object.className.replace(/ *$/,' unread');
+            //if (!message_row_object.className)
+            //  message_row_object.className = 'unread';
+            message_read_image_object.src =
+              message_read_image_object.src.replace(/opened/, 'closed');
+            //alert('was read so className now ' + message_row_object.className);
+            //alert('was read so image now ' + message_read_image_object.src);
+          }
+          //return false;
+        } else {
+          //return true;
+        }
+      }
+    }
+    xmlhttp.send(null);
+    return false;
+  }
+  
+  function toggle_message_flagged_flag( message_id ) {
+    message_flagged_image_object = document.getElementById("messageflaggedimage-" + message_id);
+    if (!message_flagged_image_object)
+      return;
+    flagged = 1; // Let's assume that we are setting it to flagged
+    if (message_flagged_image_object.className.match(/\bflagged\b/)) {
+      flagged = 0; // It was styled as flagged so we will be setting it to unflagged..
+    }
+    
+    url = "/ajax/" + "toggle_message_flagged_flag." + "pl?message_id=" + message_id + "&flagged=" + flagged + "&random=" + Math.random();
+    xmlhttp.open('GET',url,true);
+    xmlhttp.onreadystatechange=function() {
+      if (xmlhttp.readyState == 4 || xmlhttp.readyState == "complete") { // Complete
+        if (xmlhttp.status == 200) { // OK response
+          if (flagged == 1) {
+            message_flagged_image_object.className =
+              message_flagged_image_object.className.replace(/ *$/,' flagged');
+            message_flagged_image_object.src =
+              message_flagged_image_object.src.replace(/unflagged/, 'flagged');
+          } else {
+            message_flagged_image_object.className =
+              message_flagged_image_object.className.replace(/ ?\bflagged\b ?/,' ');
+            message_flagged_image_object.src =
+              message_flagged_image_object.src.replace(/flagged/, 'unflagged');
+          }
+        }
+      }
+    }
+    xmlhttp.send(null);
+    return false;
+  }
+//-->
+</script>
+
+[% ELSE %]
+
+<table style="border: none; width: 90%; background-color: #849C9C; padding: 4px">
+    <tr>
+      <th>No messages</th>
+    </tr>
+</table>
+
+
+[% END %]
 
 [% INCLUDE includes/footer.ttml %]
