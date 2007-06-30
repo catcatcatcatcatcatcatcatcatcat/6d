@@ -1,6 +1,7 @@
+[% title = 'Garbageman Collection' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="#/easter-eggs.pl">Easter Eggs</a>') %]
-[% breadcrumbs.push('Garbageman!') %]
+[% breadcrumbs.push("$title") %]
 
 
 <h1>Garbageman:</h1>
