@@ -1,6 +1,7 @@
+[% title = 'Frequently Asked Questions' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
-[% breadcrumbs.push('Frequently Asked Questions') %]
+[% breadcrumbs.push("$title") %]
 
 <h1>Frequently Asked Questions</h1>
 
