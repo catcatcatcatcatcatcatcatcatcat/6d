@@ -1,4 +1,4 @@
-[% SET header_js = 1; BLOCK header_js %]
+[% header_js = BLOCK %]
 if (document.all) { self.status = 'Press CTRL + D to bookmark this page'; };
 var showWelcome = function () { show(1) };
 if (window.attachEvent)
@@ -7,79 +7,7 @@ if (window.addEventListener)
     window.addEventListener("load", showWelcome, false);
 [% END %]
 
-[% SET header_css = 1; BLOCK header_css %]
-
-/* Centre content on front page */
-/* 
-#Content {
-    margin: 120px auto 0px auto;
-    width: 740px;
-}
-* html div#Content { width: 740px; }
-*/
-
-a.color_dark:link {
-    color: #036;
-    background-color: transparent;
-}
-a.color_dark:visited {
-    color: #036;
-    background-color: transparent;
-}
-a.color_dark:hover {
-    color: #69c;
-    background-color: transparent;
-}
-.smalltext {
-    font-size: smaller;
-}
-.bullets {
-    margin: 5px 0px 5px 0px;
-}
-.bullet_text {
-    white-space: nowrap;
-}
-table .stats-meter {
-    width: 130px;
-    border: 1px solid #cbcbcb;
-    border-collapse: collapse;
-}
-
-.stats-meter td {
-    background: url(/images/stats_back.gif) repeat-x bottom;
-    border: 1px solid #cbcbcb;
-    border-collapse: collapse;
-    padding: 0.1em 0.2em 0em 0.2em;
-    font-weight: bold;
-}
-
-.news .subject {
-    color: #036;
-    font-weight: bold;
-}
-.news .date {
-    color: #909090;
-    font-weight: bold;
-}
-
-.sub_head {
-    color: #036;
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-.link_span {
-    padding: 5px 0px 5px 0px;
-    text-decoration: underline;
-}
-
-.mousearea {
-    text-decoration: none;
-}
-[% END %]
-
 [% INCLUDE includes/header.ttml %]
-
 
 
 [% # Let's cheat a little bit! :) %]
@@ -87,18 +15,17 @@ table .stats-meter {
 [% site_stats.logins  = site_stats.logins  + 54321 %]
 [% site_stats.online  = site_stats.online  + 123 %]
   
-  <div style="width:150px; float:left; margin-right:20px">
-    <table style='margin-top: 4px;' width="100%" bgcolor="#bbddff" border="0" cellpadding="1" cellspacing="0">
-      <tr bgcolor="#bbddff">
-        <td bgcolor="#bbddff"><b>&nbsp;<a href="#">Website Stats</a></b></td>
+  <div style="width:150px; float:right; margin:0 0 20px 20px">
+    <table style="margin-top: 4px; background-color: #ddd; color: inherit; border: 0; width: 100%; " cellpadding="1" cellspacing="0">
+      <tr style="background-color: #ddd; color: inherit; ">
+        <td style="background-color: #ddd; color: inherit; "><b>&nbsp;<a href="#">Website Stats</a></b></td>
       </tr>
       <tr>
         <td>
-          <table bgcolor="#ffffff" width="100%">
+          <table style="background-color: #fff; color: inherit; width: 100%; ">
             <tr>
               <td valign='top' align='right' style="padding: 0em 0.3em 0em 0.3em;">
-                <p>
-                  <div class="smalltext">
+                <div class="smalltext" style="margin: 0.75em 0; ">
                     <table class='stats-meter'>
                       <tr>
                         [% SET commafied_number = site_stats.signups.chunk(-3).join(',') %]
@@ -112,11 +39,9 @@ table .stats-meter {
                         [% END %]
                       </tr>
                     </table>signups
-                  </div>
-                </p>
+                </div>
                 <div class="smalltext" style="margin-top: 4px"><a href="#">Latest Profiles</a></div>
-                <p>
-                  <div class="smalltext">
+                <div class="smalltext" style="margin: 0.75em 0; ">
                     <table class='stats-meter'>
                       <tr>
                         [% SET commafied_number = site_stats.logins.chunk(-3).join(',') %]
@@ -130,10 +55,8 @@ table .stats-meter {
                         [% END %]
                       </tr>
                     </table>logins
-                  </div>
-                </p>
-                <p>
-                  <div class="smalltext">
+                </div>
+                <div class="smalltext" style="margin: 0.75em 0; ">
                     <table class='stats-meter'>
                       <tr>
                         [% SET commafied_number = site_stats.online.chunk(-3).join(',') %]
@@ -147,9 +70,7 @@ table .stats-meter {
                         [% END %]
                       </tr>
                     </table>online
-                  </div>
-                </p>
-                
+                </div>
               </td>
             </tr>
           </table>
@@ -159,33 +80,102 @@ table .stats-meter {
   </div>
 
 [% IF core.user_id %]
-  <!-- We'll only show this on the front page as it's an annoying nag which we'll
-       also have highlighted in the menu options at the top! -->
-  [% UNLESS core.email_validated %]
-    <p>Your account has not yet been activated  You are restreeected!
-    To request another activation email, 
-    <a href="/help/resend-activation.pl">click here</a>.</p>
+  [% IF welcome %]
+    This is the welcome page you should get just after you sign up..<br />
+    There should be some decent content in here and a tour but there isn't yet!<br />
+    [% IF core.ref %]For now you can go back to
+      <a href="[% core.ref %]">the place you came from before you signed up</a>.[% END %]
+  [% ELSE %]
+    [% IF user_stats.mins_online > 0 && user_stats.last_session_end %]
+    <p>You have logged in [% user_stats.num_logins.chunk(-3).join(',') %] times,
+       spending
+       [% IF user_stats.time_online.years %][% user_stats.time_online.years %] year[% IF user_stats.time_online.years > 1 %]s[% END %], [% END %]
+       [% IF user_stats.time_online.months %][% user_stats.time_online.months %] month[% IF user_stats.time_online.months > 1 %]s[% END %],
+       [% ELSIF user_stats.time_online.weeks %][% user_stats.time_online.weeks %] week[% IF user_stats.time_online.weeks > 1 %]s[% END %], [% END %]
+       [% IF user_stats.time_online.days %][% user_stats.time_online.days %] day[% IF user_stats.time_online.days > 1 %]s[% END %], [% END %]
+       [% IF user_stats.time_online.hours %][% user_stats.time_online.hours %] hour[% IF user_stats.time_online.hours > 1 %]s[% END %], [% END %]
+       [% user_stats.time_online.mins %] minute[% IF user_stats.time_online.mins > 1 %]s[% END %]
+       online
+       visiting [% user_stats.num_clicks.chunk(-3).join(',') %] pages
+       since you joined at [% user_stats.joined %].<br />
+       That's [% (user_stats.num_clicks / user_stats.mins_online) * 60 FILTER format('%.1f') %]
+       clicks every hour - you can do better than that!
+    </p>
+    <p>You were last online at [% user_stats.last_session_end %]
+       and you have looked at [% user_stats.unique_visited_count.chunk(-3).join(',') %] different profiles
+       a total of [% user_stats.total_visited_count.chunk(-3).join(',') %] times.
+    </p>
+    [% END %]
   [% END %]
-  
-  <p>You have logged in [% user_stats.num_logins.chunk(-3).join(',') %] times,
-     spending
-     [% IF user_stats.time_online.years %][% user_stats.time_online.years %] year[% IF user_stats.time_online.years > 1 %]s[% END %], [% END %]
-     [% IF user_stats.time_online.months %][% user_stats.time_online.months %] month[% IF user_stats.time_online.months > 1 %]s[% END %],
-     [% ELSIF user_stats.time_online.weeks %][% user_stats.time_online.weeks %] week[% IF user_stats.time_online.weeks > 1 %]s[% END %], [% END %]
-     [% IF user_stats.time_online.days %][% user_stats.time_online.days %] day[% IF user_stats.time_online.days > 1 %]s[% END %], [% END %]
-     [% IF user_stats.time_online.hours %][% user_stats.time_online.hours %] hour[% IF user_stats.time_online.hours > 1 %]s[% END %], [% END %]
-     [% user_stats.time_online.mins %] minute[% IF user_stats.time_online.mins > 1 %]s[% END %]
-     online
-     visiting [% user_stats.num_clicks.chunk(-3).join(',') %] pages
-     since you joined at [% user_stats.joined %].<br />
-     That's [% (user_stats.num_clicks / user_stats.mins_online) * 60 FILTER format('%.1f') %]
-     clicks every hour - you can do better than that!</p>
-  <p>You were last online at [% user_stats.last_session_end %]
-     and you have looked at [% user_stats.unique_visited_count.chunk(-3).join(',') %] different profiles
-     a total of [% user_stats.total_visited_count.chunk(-3).join(',') %] times.</p>
 [% ELSE %]
   [% IF core.logged_out %]
-    <h2>You are now logged out.  Please come back soon!</h2>
+    <h2 class="success">You are now logged out.</h2>
+    <h1> &nbsp; &nbsp; &nbsp; Please come back soon!</h1>
+  [% ELSE %]
+    <h1>Welcome!</h1>
+    <h3>What is BackpackingBuddies.com?</h3>
+    <p>
+      For now, this is a project which has allowed the author to try out a few new tricks,
+      learn about a lot of technologies and get the whole lot working in a 
+      multi-server, scalable (for high-traffic) setup.&nbsp;
+      The content (there are many more features once you sign up and log in)
+      and branding has only recently become apparent.&nbsp; That's why it's a bit rubbish..
+    </p>
+    <h3>The beef:</h3>
+    <p>
+      This site is written in <strong>Object Oriented</strong> <strong>PERL</strong> with an engine
+      that does every bit of hard work to allow new feature and page creation to be as simple as possible
+      (see the main site engine object's methods in <a class="_blank" href="http://files.backpackingbuddies.com/files/lib/rusty.pm">rusty.pm</a> within the <a class="_blank" href="http://files.backpackingbuddies.com/">Code listings for this site</a>).&nbsp;
+      No code has been lifted or copied (apart from two modules heavily adapted from 
+      <a class="_blank" href="http://search.cpan.org/search?m=module&amp;q=cgi%3A%3Acarp">CGI::Carp</a> and 
+      <a class="_blank" href="http://search.cpan.org/search?m=module&amp;q=imagepwd">ImagePwd</a> to do what they
+      already did well, a little differently) -
+      everything has been hand-coded and techniques researched as much as possible at every stage.&nbsp;
+      It runs on a <strong>mod_perl 2</strong> enabled 
+      <strong>Apache</strong> server with all of the code and start-up module pre-compilation
+      fully optimised to run as quickly and lightly as possible (benchmarked throughout)
+      under the <strong>Modperl::Registry</strong> handler, using persistent database connections
+      but also designed and tested to fall back and run under normal <strong>CGI</strong>.&nbsp;
+      The mod_perl server sits behind a caching, buffering <strong>Squid</strong> 
+      <strong>reverse proxy</strong> (<strong>http accelerator</strong>)
+      so that Apache serves up only the dynamic pages (as fast as it can, regardless of slow clients), 
+      leaving lightweight <strong>Lighttpd</strong> to give us everything else (if it's not already cached).&nbsp;
+      Benchmarking can be seen in the bottom left hand corner, but we are now running <strong>Gentoo Linux</strong> on
+      a relatively memory-tight and slow virtual machine so the speed may not look as
+      great as it really is! (It really is great.. :).<br />
+      Two environments exist in separate mod_perl parent processes (eating up double the memory); 
+      Production and Development, and there is no need yet 
+      for separate Testing environments as there is only one developer!&nbsp;
+      All pages are built using pre-compiled XS Stash <strong>Template Toolkit</strong> templates and written
+      in fully-validated, compliant <strong>XHTML 1.1</strong> driven by external (again, fully-validated) <strong>CSS</strong> stylesheets.&nbsp;
+      <strong>JavaScript</strong> sits on top of an already functioning website to act as an extra, 
+      but optional layer of functionality and 'niceness'.&nbsp;  Such functionality includes <strong>AJAX</strong> - one of many
+      '<strong>Web 2.0</strong>' technologies and approaches used within this site <em>(fancy
+      <a class="_blank" href="http://en.wikipedia.org/wiki/Image:Web20_en.png">a Web 2.0 picture</a>
+      to explain this buzzword?)</em>.<br />
+      <strong>Web standards</strong> have been adhered to with regards to <strong>accessibility</strong>
+      and <strong>cross-browser issues</strong> - so this should look good and work perfectly for everyone!&nbsp;
+      All pages and relevant database fields are <strong>UTF-8 unicode encoded</strong> 
+      to make sure that international visitors enjoy themselves too.<br />
+      Please, feel free to take a look at all of the <a class="_blank" href="http://files.backpackingbuddies.com/">Code behind this site</a>
+      and the <a class="_blank" href="/info/db_datadict.html">Database design</a>.
+    </p>
+    <h3>The monkey and the girls..</h3>
+    <p>
+      As explained above, this is very much a <strong>work in progress</strong> and, 
+      as you will see, the design and colours (and website name) are all changing!&nbsp;
+      As such, for the next few days there will be a lot of clashing and nastiness!&nbsp;
+      There will also be a few links lying around that do not go anywhere (they remind me to do things)
+      but every link that goes somewhere <em>does</em> work!<br />
+      Thanks for taking a look, and remember to look at the 
+      <a class="_blank" href="http://files.backpackingbuddies.com/">Code behind this site</a> (the most important bit)
+      and the <a class="_blank" href="/info/db_datadict.html">Database design</a>.
+    </p>
+    <h3>Statistics and lies!</h3>
+    <p>
+      And yes, the 'website stats' figures on this page have been massaged.&nbsp;
+      But it's more fun that way.
+    </p>
   [% END %]
 [% END %]
 
