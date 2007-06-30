@@ -1,8 +1,9 @@
 [% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% title = 'Enabling Cookies' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
 [% breadcrumbs.push('<a href="/help/faq.pl">Frequently Asked Questions</a>') %]
-[% breadcrumbs.push('Enabling Cookies') %]
+[% breadcrumbs.push("$title") %]
 
 <h1>Enabling Cookies (Problems Logging In?)</h1>
 
