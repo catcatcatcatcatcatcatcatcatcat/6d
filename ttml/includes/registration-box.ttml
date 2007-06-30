@@ -1,23 +1,32 @@
 
 
-<form name="login" action="/signup.pl" method="POST">
-  <input type="hidden" name="mode" value="reg">
+<form id="signup" action="/signup.pl" method="post">
+<fieldset class="new">
+  <input type="hidden" name="mode" value="reg" />
   <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
-  
-  <fieldset class="new">
     <div class="container">
       <h2>New customers <span><strong>Register</strong> here</span></h2>
       <p>
         <label for="email">Email address: </label><input name="email" value="" class="ip" type="text" id="email" />
       </p>
       <p>
-        <label for="confirmemail">Confirm email: </label><input name="confirmemail" value="" class="ip" type="text" id="confirmemail" />
+        <label for="real_name">Full Name: </label><input name="real_name" value="" class="ip" type="text" id="real_name" />
       </p>
       <p>
-        <label for="firstname">First Name: </label><input name="firstname" value="" class="ip" type="text" id="firstname" />
+        <label for="real_name">Gender: </label>
+        <select name="gender">
+          [% FOREACH g = genders %]<option value="[% g.value %]" [% IF g.value == gender %] selected="selected"[% END %]>[% g.name %]</option>
+          [% END %]
+        </select>
       </p>
       <p>
-        <label for="lastname">Surname: </label><input name="lastname" value="" class="ip" type="text" id="lastname" />
+        <label for="real_name">Country: </label>
+      </p>
+      <p style="text-align: right; ">
+        <select name="country_id">
+          [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]</option>
+          [% END %]
+        </select>
       </p>
       <p id="regButton">
         <input type="image" alt="Register" name="confirm-register" src="/images/login/register_button.gif" />
@@ -30,5 +39,4 @@
     </div>
   </fieldset>
 </form>
-</div>
 
