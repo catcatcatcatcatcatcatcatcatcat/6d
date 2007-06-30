@@ -1,6 +1,7 @@
+[% title = 'Contact Us' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
-[% breadcrumbs.push('Contact Us') %]
+[% breadcrumbs.push("$title") %]
 
 <h1>Contact Us</h1>
 
@@ -63,7 +64,7 @@ and get help right now.</p>
   </tr>
   <tr>
     <td colspan="2">
-      Type of Problem:<span class="mandatory">*</span><br />
+      Type of Contact:<span class="mandatory">*</span><br />
       <select style="width:300px" name="dept">
         <option value="support" [% IF dept == "support" %]selected="selected"[% END %]>Technical Support</option>
       </select>
@@ -71,7 +72,7 @@ and get help right now.</p>
   </tr>
   <tr>
     <td colspan="2">
-      Specific Problem:<span class="mandatory">*</span><br />
+      Specific Reason:<span class="mandatory">*</span><br />
       <select style="width:300px" name="problem">
         <option value="login" [% IF problem == "login" %]selected="selected"[% END %]>Logging In</option>
         <option value="signup" [% IF problem == "signup" %]selected="selected"[% END %]>Signing Up</option>
