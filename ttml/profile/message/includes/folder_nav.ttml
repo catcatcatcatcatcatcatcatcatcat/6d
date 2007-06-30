@@ -1,24 +1,29 @@
-<ul class="opt" style="float:right">
+<ul class="opt" style="float:right; margin-top: -1em; ">
   
-  <li class="opt"[% IF tray_count.inbox.unread > 0 %] style="font-weight: bold;"[% END %]
-    >[% UNLESS mode == list && tray == "inbox" %]<a href="/profile/message.pl?mode=inbox">[% END %]<img
+  <li class="opt">[% UNLESS mode == list && tray == "inbox" && !new_message_alert %]
+    [% IF new_message_alert %]<span style="font-weight: bold; color: #F00;">CLICK TO UPDATE:</span> [% END %]
+    <a href="/profile/message.pl?mode=inbox"
+       [% IF new_message_alert %]style="background-color: #FDD; padding:2px; border: 2px solid #F99;"[% END %]>[% END %]<img
       src="/images/icons/message/special_message.gif"
-      alt="Inbox" /> Inbox[% IF tray_count.inbox.unread > 0 %] ([% tray_count.inbox.unread %])[% END %]
+      alt="Inbox" />[% IF tray_count.inbox.flagged_as_unread > 0 %]<span 
+        style="font-weight: bold;">[% END %] Inbox[% IF tray_count.inbox.total > 0 %]
+          ([% IF tray_count.inbox.flagged_as_unread > 0 %][% tray_count.inbox.flagged_as_unread %] unread </span>/[% END %][% tray_count.inbox.total %])[% END %]
     [% UNLESS mode == list && tray == "inbox" %]</a>[% END %]</li>
   
-  <li class="opt"[% IF tray_count.sent.unread > 0 %] style="font-weight: bold;"[% END %]
-    >[% UNLESS mode == list && tray == "sent" %]<a href="/profile/message.pl?mode=sent">[% END %]<img
+  <li class="opt">[% UNLESS mode == list && tray == "sent" %]
+    <a href="/profile/message.pl?mode=sent">[% END %]<img
       src="/images/icons/message/special_message.gif"
-      alt="Sent Items" /> Sent[% IF tray_count.sent.unread > 0 %] ([% tray_count.sent.unread %])[% END %]
+      alt="Sent Items" /> Sent[% IF tray_count.sent.total > 0 %] ([% tray_count.sent.total %])[% END %]
     [% UNLESS mode == list && tray == "sent" %]</a>[% END %]</li>
   
-  <li class="opt"[% IF tray_count.drafts.unread > 0 %] style="font-weight: bold;"[% END %]
-    >[% UNLESS mode == list && tray == "drafts" %]<a href="/profile/message.pl?mode=drafts">[% END %]<img
+  <li class="opt">[% UNLESS mode == list && tray == "drafts" %]
+    <a href="/profile/message.pl?mode=drafts"
+       [% IF tray_count.drafts.total > 0 %] style="font-weight: bold;"[% END %]>[% END %]<img
       src="/images/icons/message/special_message.gif"
-      alt="Drafts" /> Drafts[% IF tray_count.drafts.unread > 0 %] ([% tray_count.drafts.unread %])[% END %]
+      alt="Drafts" /> Drafts[% IF tray_count.drafts.total > 0 %] ([% tray_count.drafts.total %])[% END %]
     [% UNLESS mode == list && tray == "drafts" %]</a>[% END %]</li>
   
-  <li class="opt">[% UNLESS mode == "compose" %]<a 
+  <li class="opt2">[% UNLESS mode == "compose" %]<a 
     href="/profile/message.pl?mode=compose">[% END %]<img
       src="/images/icons/message/compose_message.gif"
       alt="Compose New Message" /> Compose New Message[% UNLESS mode == "compose" %]</a>[% END %]</li>
