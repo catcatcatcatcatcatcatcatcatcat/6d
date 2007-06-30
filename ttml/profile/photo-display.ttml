@@ -1,4 +1,4 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% title = 'Full Size Photo' %]
 [% INCLUDE includes/header.ttml %]
 [%
 profile_title = photo.profile_name;
@@ -8,16 +8,16 @@ END;
 
 IF search_id;
   breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
-  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&search_id=$search_id&rejoin_search=1\">Results</a>");
-  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$photo.profile_name&search_id=$search_id\">$profile_title</a>");
-  breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=$photo.profile_id&search_id=$search_id\">Photos</a>");
+  breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
+  breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=${photo.profile_name}&amp;search_id=$search_id\">$profile_title</a>");
+  breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=${photo.profile_id}&amp;search_id=$search_id\">Photos</a>");
 ELSIF adminmode;
-  breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage My Photos</a>");
+  breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage Photos</a>");
 ELSE;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$photo.profile_name\">$profile_title</a>");
   breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=$photo.profile_id\">Photos</a>");
 END;
-breadcrumbs.push("Full Size Photo");
+breadcrumbs.push("$title");
 %]
 
 
@@ -27,10 +27,26 @@ breadcrumbs.push("Full Size Photo");
   [% RETURN %]
 [% END %]
 
-<p>This picture has been viewed [% photo.total_visit_count %] times since it was uploaded on [% photo.uploaded %]</p>
+[% real_photo_link = "/photos/${photo.profile_name}/${photo.resized_filename}" %]
+[% IF adminmode;
+  photo_link = real_photo_link;
+ELSIF photo.photo_id && photo.adult && !adult_pass;
+  photo_link = "/photos/adult.png";
+ELSIF photo.photo_id && !photo.checked_date && !adult_pass;
+  photo_link = "/photos/pending.png";
+ELSIF !photo.photo_id;
+  photo_link = "/photos/default.png";
+ELSE;
+  photo_link = real_photo_link;
+END %]
+
+<p>This picture has been viewed [% photo.total_visit_count %] times since it was uploaded on [% photo.uploaded_date %]</p>
+
+<!-- Access control should have been figured out from within photo-display.pl -->
 
 <p style="clear:both;margin-left:16px">
-<img src="/profile/photo.pl?id=[% photo.photo_id %]&f=1[% IF adminmode %]&a=1[% END %]"
+<!-- <img src="/profile/photo.pl?id=[% photo.photo_id %]&f=1[% IF adminmode %]&a=1[% END %]" -->
+<img src="[% photo_link %]"
      alt="[% photo.caption FILTER html_entity %]" style="margin-top:8px" /></p>
 <p>[% photo.caption FILTER html_entity %]</p>
 
