@@ -1,4 +1,7 @@
-[% SET css = [ "/css/profile.css" ] %]
+[% title = "Search Profiles" %]
+[% IF random_selection; title = title _ " (Random Selection)";
+   ELSIF search_string != ""; title = title _ ": $search_string";
+   END %]
 [% INCLUDE includes/header.ttml %]
 [%
   breadcrumbs.push('<a href="/profile/search.pl">Search Profiles</a>');
@@ -18,83 +21,108 @@
   <p class="err">Sorry, but there are currently no more members matching your search criteria.<br />
   <a href="/profile/search.pl">Click here</a> to search for more.</p>
 [% ELSE %]
-  <ul class="opt" style="float:right">
-  [% IF prev_page_link %]
-    <li class="opt[% UNLESS next_page_link %]2[% END %]">
-      <a href="[% prev_page_link FILTER html_entity %]">Prev</a>
-    </li>
+  [% IF prev_page_link || next_page_link %]
+    <ul class="opt" style="float:right">
+    [% IF prev_page_link %]
+      <li class="opt[% UNLESS next_page_link %]2[% END %]">
+        <a href="[% prev_page_link FILTER html_entity %]">Prev</a>
+      </li>
+    [% END %]
+    [% IF next_page_link %]
+      <li class="opt2">
+        <a href="[% next_page_link FILTER html_entity %]">Next</a>
+      </li>
+    [% END %]
+    </ul>
   [% END %]
-  [% IF next_page_link %]
-    <li class="opt2">
-      <a href="[% next_page_link FILTER html_entity %]">Next</a>
-    </li>
-  [% END %]
-  </ul>
-  <h2 style="margin-top:0;margin-bottom:0;">[% search_title %]</h2>
-  <h5 style="margin-left:10px;margin-top:0;margin-bottom:0;">Snapshot created [% search_date %]
+  <h1 style="margin-bottom:0; ">Search Results: [% search_string %]</h1>
+  <h5 style="margin-left:15px;margin-top:0;">Snapshot created [% search_date %]
 <!--
-    <a href="#put this here if the search date is over a minute old or something like that..
-              and get it to add any new profiles found on this search criteria and add them to
-              the end of this search results set then take user back to this page with a msg
-              telling them how many new profiles were found and added to this search set..
-              Maybe also tell them how many that they searched for have gone offline and give
-              them the option to remove these now :)">Update</a> |
+put this here if the search date is over a minute old or something like that..
+and get it to add any new profiles found on this search criteria and add them to
+the end of this search results set then take user back to this page with a msg
+telling them how many new profiles were found and added to this search set..
+Maybe also tell them how many that they searched for have gone offline and give
+them the option to remove these now :)
+make sure we take the user back to the profile that is
+on the start of this page or the first one that still exists when we remove
+profiles as the offset may leave us looking at things way ahead of where we were
+in the search results..
 -->
-    <a href="#this is another option">Append new online</a> |
-    <a href="#as is this - make sure we take the user back to the profile that is
-                on the start of this page or the first one that still exists when we remove
-                profiles as the offset may leave us looking at things way ahead of where we were
-                in the search results..">Remove offline</a> |
-    <a href="#oooh.. with all of these, the ordering will be messed up!">Update (Both)</a>
+    <a href="#this_is_another_option">Append new online</a> |
+    <a href="#as_is_this">Remove offline</a> |
+    <a href="#oooh.._with_all_of_these,_the_ordering_will_be_messed_up_(see_comment_above)!">Update (Both)</a>
   </h5>
-  <h5 style="margin-left:10px;margin-top:0;">Showing [% offset + 1 %] - [% offset + profiles.size %]
+  <h5 style="margin-left:30px;margin-top:0;">Showing [% offset + 1 %] - [% offset + profiles.size %]
                                              from [% num_results %] matching profiles.</h5>
   <!--<div style="background-color:#fdf7fa;border:2px #fdfbfc solid">-->
   [% FOREACH p = profiles %]
   [% caption = p.photo.caption FILTER html_entity %]
-  [% IF !p.photo.checked_date; # Quick and Nasty Kludge!
-       p.photo.tnnc_width = 100;
-       p.photo.tnnc_height = 100;
+  
+  [% IF (p.photo.photo_id && (p.photo.adult || !p.photo.checked_date) && !adult_pass)
+        || !p.photo.photo_id; # Quick and Nasty Kludge!
+     p.photo.tnnc_width = 100;
+     p.photo.tnnc_height = 100;
      END %]
+  [% real_photo_link = "/photos/${p.profile_name}/${p.photo.thumbnail_nocrop_filename}" %]
+  [% IF p.photo.photo_id && p.photo.adult && !adult_pass;
+       photo_link = "/photos/adult.png";
+     ELSIF p.photo.photo_id && !p.photo.checked_date && !adult_pass;
+       photo_link = "/photos/pending.png";
+     ELSIF !p.photo.photo_id;
+       photo_link = "/photos/default.png";
+     ELSE;
+       photo_link = real_photo_link;
+    END %]
+  
   <div class="thumbnail-info-container"
        style="float:left">
     <div class="thumbnail-container">
-      <a href="/profile/view.pl?profile_name=[% p.profile_name %]&search_id=[% search_id %]&from_search=1"
-         class="thumbnail-shadow"
-         title="[% caption %] :: Other info like age:[% IF p.age %][% p.age %][% ELSE %]Unspecified[% END %]">
-        <div class="thumbnail-shadow"
-             style="background-image:url('/images/thumbnail-shadow/[% p.photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% p.photo.tnnc_width %]x[% p.photo.tnnc_height %].png');
-                    width:[% p.photo.tnnc_width %]px;
-                    height:[% p.photo.tnnc_height %]px;
-                    position:absolute;
-                    top: 50%; margin-top:-[% (p.photo.tnnc_height+15) / 2 %]px;
-                    left: 50%; margin-left:-[% (p.photo.tnnc_width+15) / 2 %]px;">
-              <img src="[% p.photo.thumbnail %]&nc=1"
-                   style="width:[% p.photo.tnnc_width %]px;
-                          height:[% p.photo.tnnc_height %]px;"
-                   alt="[% caption %]" />
-        </div>
-      </a>
+      <div class="thumbnail-shadow"
+           style="background-image:url('/images/thumbnail-shadow/[% p.photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% p.photo.tnnc_width %]x[% p.photo.tnnc_height %].png');
+                  width:[% p.photo.tnnc_width %]px;
+                  height:[% p.photo.tnnc_height %]px;
+                  position:absolute;
+                  top: 50%; margin-top:-[% (p.photo.tnnc_height+15) / 2 %]px;
+                  left: 50%; margin-left:-[% (p.photo.tnnc_width+15) / 2 %]px;
+                  z-index:1; ">
+        <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1"
+           class="thumbnail-shadow"
+           title="[% caption %] :: Other info like age:[% IF p.age %][% p.age %][% ELSE %]Unspecified[% END %]">
+          <!-- <img src="[% p.photo.thumbnail %][% IF p.photo.thumbnail.search('\?') %]&[% ELSE %]?[% END %]nc=1" -->
+          <img src="[% photo_link %]"
+               style="width:[% p.photo.tnnc_width %]px;
+                      height:[% p.photo.tnnc_height %]px;
+                      position:relative; z-index:10; "
+               alt="[% caption %]" />
+        </a>
+      </div>
     </div>
-    <p style="text-align:right;padding-right:4px;max-width:115px;margin-bottom:0">
-      <a href="/profile/view.pl?profile_name=[% p.profile_name %]&search_id=[% search_id %]&from_search=1">[% p.profile_name %]</a>
+    <p>
+      <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1">[% p.profile_name %]</a>
       [% IF p.adult %]<span style="color:red;font-weight:bold" title="This profile contains adult pictures"> [A!]</span>[% END %]
     </p>
-    <p style="text-align:right;padding-right:4px;max-width:115px;font-size:0.9em">
-      [% IF p.age %][% p.age %][% ELSE %] - [% END %], [% p.gender FILTER format('%1s') %], [% p.sexuality %]
+    <p>
+      <span class="extra">
+        [% IF p.age %][% p.age %][% ELSE %] - [% END %],
+        [% p.gender.search('female') ? 'f' : 'm' %], 
+        [% p.sexuality.replace('bisexual/curious','bi/curious') %]
+      </span>
     </p>
   </div>
   [% END %]
   <div style="clear:both"></div>
   <!--</div>-->
-  <ul class="opt" style="clear:both;float:right;margin-top:-24px">
-  [% IF prev_page_link %]
-    <li class="opt[% UNLESS next_page_link %]2[% END %]"><a href="[% prev_page_link FILTER html_entity %]">Prev</a></li>
+  [% IF prev_page_link || next_page_link %]
+    <ul class="opt" style="clear:both;float:right;margin-top:-24px">
+    [% IF prev_page_link %]
+      <li class="opt[% UNLESS next_page_link %]2[% END %]"><a href="[% prev_page_link FILTER html_entity %]">Prev</a></li>
+    [% END %]
+    [% IF next_page_link %]
+      <li class="opt2"><a href="[% next_page_link FILTER html_entity %]">Next</a></li>
+    [% END %]
+    </ul>
   [% END %]
-  [% IF next_page_link %]
-    <li class="opt2"><a href="[% next_page_link FILTER html_entity %]">Next</a></li>
-  [% END %]
-  </ul>
 [% END %]
 
 [% INCLUDE includes/footer.ttml %]
