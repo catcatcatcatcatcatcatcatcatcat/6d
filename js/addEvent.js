@@ -23,7 +23,7 @@ function addEvent( obj, type, fn ) {
 		obj["on"+type] = obj["e"+type+fn];
 	}
 }
-	
+
 var EventCache = function(){
 	var listEvents = [];
 	return {
