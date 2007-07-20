@@ -131,10 +131,10 @@
 <p style="font-style:italic; color: #444; font-size:0.8em; text-align: center; line-height:1.3em; ">
   Something not working as expected?
   <a style="font-weight: normal; "
-     href="mailto:i_brokeded_it@backpackingbuddies.com?subject=Ref:[% core.profile_name %]%20+%20[% core.self_url_escaped %]">Tell us!</a>
+     href="/help/contact-us.pl?dept=support&amp;problem=other&amp;ref=[% core.self_url_escaped %]">Tell us!</a>
   &nbsp;Thought of a new feature or improvement?
   <a style="font-weight: normal; "
-     href="mailto:i_gots_an_idea@backpackingbuddies.com?subject=Ref:[% core.profile_name %]%20+%20[% core.self_url_escaped %]">Get in touch!</a>
+     href="/help/contact-us.pl?dept=suggestions&amp;problem=other&amp;ref=[% core.self_url_escaped %]">Get in touch!</a>
   <br />
   <span style="color:#AAA">Doorways: 
   <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
