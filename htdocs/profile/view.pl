@@ -34,7 +34,6 @@ $rusty->{params}->{profile_name} =~ s/\s//o;
 $rusty->{ttml} = "profile/view.ttml";
 
 
-
 if ($rusty->{params}->{from_search} && $rusty->{params}->{search_id}) {
   
   # If this profile has been viewed from clicking on a search result,
@@ -105,7 +104,8 @@ leo.name AS ethnic_origin, lec.name AS eye_colour,
 lrs.name AS relationship_status, ls.name AS smoker,
 lst.name AS starsign, ltt.name AS thought_type,
 up.hide_empty_info, up.updated, up.created, up.total_visit_count,
-DATE_FORMAT(up.deleted_date, '%a %d/%m/%y %H:%i') AS deleted_date
+DATE_FORMAT(up.deleted_date, '%a %d/%m/%y %H:%i') AS deleted_date,
+up.showfaves, up.showfriends
 
 FROM `user~profile` up
 LEFT JOIN `user~stats` us ON up.user_id = us.user_id
@@ -222,22 +222,41 @@ $profile->{waist_in} = int($rusty->cmToInches($profile->{waist}));
 #$profile->{fave_website} = lc($profile->{website});
 $profile->{fave_website} =~ s@^(?!(:ht|f)tps?://)@@o;
 
-# Let's see if we are blocking this person..
+# Let's see if we have blocked/befriended/faved/noted this person..
 $profile->{block} = $rusty->findBlockLink($rusty->{core}->{'profile_id'}, $profile->{'profile_id'});
 $profile->{friend} = $rusty->findFriendLink($rusty->{core}->{'profile_id'}, $profile->{'profile_id'});
 $profile->{fave} = $rusty->findExistingFaveLink($rusty->{core}->{'profile_id'}, $profile->{'profile_id'});
+$profile->{note} = $rusty->findExistingProfileNote($rusty->{core}->{'profile_id'}, $profile->{'profile_id'});
 
-if ($profile->{linked_friends} = $rusty->getAllFriends($profile->{'profile_id'})) {
+# Get 5 most recently added buddies..
+if ($profile->{linked_friends} = $rusty->getAllFriends($profile->{'profile_id'}, 5)) {
   my $random_pick = int(rand(@{$profile->{linked_friends}}+0));
-  my $random_photo = $rusty->getMainPhoto(${$profile->{linked_friends}}[$random_pick]->{requestee_profile_id});
-  $profile->{random_friend}->{thumbnail} = $random_photo->{thumbnail};
-  $profile->{random_friend}->{name} = ${$profile->{linked_friends}}[$random_pick]->{requestee_profile_name};
+  $profile->{random_friend}->{main_photo} = $rusty->getPhotoInfo(${$profile->{linked_friends}}[$random_pick]->{main_photo_id});
+  $profile->{random_friend}->{profile_id} = ${$profile->{linked_friends}}[$random_pick]->{profile_id};
+  $profile->{random_friend}->{profile_name} = ${$profile->{linked_friends}}[$random_pick]->{profile_name};
+}
+
+# Get 5 most recently added favourite profiles..
+if ($profile->{faves} = $rusty->getAllFaves($profile->{'profile_id'}, 5)) {
+  my $random_pick = int(rand(@{$profile->{faves}}+0));
+  $profile->{random_fave}->{main_photo} = $rusty->getPhotoInfo(${$profile->{faves}}[$random_pick]->{main_photo_id});
+  $profile->{random_fave}->{profile_id} = ${$profile->{faves}}[$random_pick]->{profile_id};
+  $profile->{random_fave}->{profile_name} = ${$profile->{faves}}[$random_pick]->{profile_name};
 }
 
 
 if ($profile->{own_profile}) {
   $query = <<ENDSQL
-SELECT v.visit_id, v.visitor_profile_id, up.profile_name
+SELECT v.visit_id, v.visitor_profile_id, up.profile_name, up.main_photo_id,
+  CONCAT_WS(' ',
+    IF(DATE(v.time) = CURRENT_DATE(), '',
+      IF(DATE(v.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
+        IF(DATE(v.time) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK), DATE_FORMAT(v.time, '%W, %e/%c, '),
+          DATE_FORMAT(v.time, '%e/%c/%y')
+        )
+      )
+    ), DATE_FORMAT(v.time, '%H:%i')
+  ) AS time
 FROM `user~profile~visit` v
 INNER JOIN `user~profile` up ON up.profile_id = v.profile_id
 WHERE v.profile_id = ?
@@ -255,7 +274,7 @@ ENDSQL
   
   if (@visitors) {
     $profile->{last_visitor}->{profile_name} = $visitors[0]->{profile_name};
-    $profile->{last_visitor}->{main_photo} = $rusty->getMainPhoto($visitors[0]->{visitor_id});
+    $profile->{last_visitor}->{main_photo} = $rusty->getPhotoInfo($visitors[0]->{main_photo_id});
     
 #    # Delete all visits stored since the 10th oldest (last retrieved) to keep
 #    # this database table nice and sparse!  We don't care after 10 per user..
@@ -273,6 +292,13 @@ ENDSQL
 }
 
 $rusty->{data}->{search_id} = $rusty->{params}->{search_id};
+$rusty->{data}->{mode} = $rusty->{params}->{mode};
+
+# Catch any processing errors..
+$rusty->{data}->{prev_action} = $rusty->{params}->{prev_action};
+$rusty->{data}->{success} = $rusty->{params}->{success};
+$rusty->{data}->{reason} = $rusty->{params}->{reason};
+
 
 $rusty->{data} = { %{$rusty->{data}}, %$profile };
 
