@@ -1,3 +1,4 @@
+[% SET js = [ "/js/textarea-grow.js" ] %]
 [% title = "${profile_name}'s Profile" %]
 [% INCLUDE includes/header.ttml %]
 [%
@@ -37,21 +38,56 @@ END;
 
 
 [% ELSIF core.user_id %]
+  
+  [% IF prev_action %]
+    [% IF success == 1 %]
+    <p class="success">
+      [% IF prev_action == "addnote" %]Your note has been added successfully
+      [% ELSIF prev_action == "editnote" %]Your note has been edited successfully
+      [% ELSIF prev_action == "delnote" %]Your note has been deleted successfully
+      [% ELSE %]Your previous action was completed successfully
+      [% END %]
+    </p>
+    [% ELSE %]
+    <p class="err">
+      [% IF prev_action == "addnote" %]Your note could not be added
+      [% ELSIF prev_action == "editnote" %]Your note could not be edited
+      [% ELSIF prev_action == "delnote" %]Your note could not be deleted
+      [% ELSE %]Your previous action could not be completed
+      [% END -%]
+      .<br />
+      Reason:
+      [% IF reason == "badprofilename" %]The profile name <strong>[% IF friend_profile_name %][% friend_profile_name %][% ELSIF fave_profile_name %][% fave_profile_name %][% ELSIF block_profile_name %][% block_profile_name %][% END %]</strong> does not exist
+      [% ELSIF reason == "badprofileid" %]The profile specified does not exist
+      [% ELSIF reason == "noprofileidorname" %]No profile was specified
+      [% ELSIF reason == "itisyou" %]You cannot create a link to yourself
+      [% ELSIF reason == "nonote" %]You have not written any note
+      [% ELSE %]An unknown error occured
+      [% END %]
+    </p>
+    [% END %]
+  [% END %]
+  
   <ul class="opt" style="float:right">
+    <li class="opt">
+      <a href="[% IF note %]/profile/friendsandblocks.pl?mode=delnote&amp;noted_profile_name=[% profile_name %][% ELSE %]/profile/view.pl?profile_name=[% profile_name %]&amp;mode=addnote[% END %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+         title="[% IF note %]Remove[% ELSE %]Add[% END %] Note"
+         [% IF !note %]onclick="document.getElementById('profilenote-edit').style.display='block'; return false; "[% END %]><img src="/images/icons/friendsandblocks/[% IF note %]delete[% ELSE %]add[% END %]_note.gif" alt="Remove Note" /></a>
+    </li>
     [% UNLESS block %]
     <li class="opt"><a [% IF fave %]
       href="/profile/friendsandblocks.pl?mode=delfave&amp;fave_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Remove Favourite"><img src="/images/icons/friendsandblocks/delete_fave.gif" alt="Remove Favourite" /></a></li>
+      title="Remove From Favourites"><img src="/images/icons/friendsandblocks/delete_fave.gif" alt="Remove From Favourites" /></a></li>
                        [% ELSE %]
       href="/profile/friendsandblocks.pl?mode=addfave&amp;fave_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Add Favourite"><img src="/images/icons/friendsandblocks/add_fave.gif" alt="Add Favourite" /></a></li>
+      title="Add To Favourites"><img src="/images/icons/friendsandblocks/add_fave.gif" alt="Add To Favourites" /></a></li>
                        [% END %]
     <li class="opt"><a [% IF friend %]
       href="/profile/friendsandblocks.pl?mode=delfriend&amp;friend_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Remove Friend"><img src="/images/icons/friendsandblocks/delete_friend.gif" alt="Remove Friend" /></a></li>
+      title="Remove From Friends"><img src="/images/icons/friendsandblocks/delete_friend.gif" alt="Remove From Friends" /></a></li>
                        [% ELSE %]
       href="/profile/friendsandblocks.pl?mode=addfriend&amp;friend_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Add Friend"><img src="/images/icons/friendsandblocks/add_friend.gif" alt="Add Friend" /></a></li>
+      title="Add To Friends"><img src="/images/icons/friendsandblocks/add_friend.gif" alt="Add To Friends" /></a></li>
                        [% END %]
     <li class="opt"><a
       href="/profile/message.pl?mode=compose&amp;to=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
@@ -65,15 +101,32 @@ END;
       title="Block"><img src="/images/icons/friendsandblocks/block.gif" alt="Block" /></a></li>
                        [% END %]
   </ul>
+  
+  <div id="profilenote-edit" style="float: right; clear: right;[% IF !note && mode != 'addnote' %] display: none; [% END %]">
+    <form id="profilenote" name="profilenote" action="/profile/friendsandblocks.pl" method="post">
+      <fieldset>
+        <input type="hidden" name="mode" value="[% IF note %]editnote[% ELSE %]addnote[% END %]" />
+        <input type="hidden" name="noted_profile_name" value="[% profile_name %]" />
+        <input type="hidden" name="from_profile" value="[% profile_name %]" />
+        [% IF search_id %]<input type="hidden" name="search_id" value="[% search_id %]" />[% END %]
+        <textarea id="note" name="note" style="float: right; clear: right; " cols="15" rows="3"
+                  onfocus="ta_interval = window.setInterval('fixup_textarea_size(document.profilenote.note,20,9)', 250); "
+                  onblur="window.clearInterval(ta_interval); "
+                  >[% note.note %]</textarea>
+        <input type="submit" style="float: right; " value="[% IF note %]Edit[% ELSE %]Create[% END %] Note" />
+      </fieldset>
+    </form>
+  </div>
+  
 [% ELSE %]
   <!-- A mini-set of enticing features for non-members to click on and get dragged into the signup process! -->
   <ul class="opt" style="float:right">
     <li class="opt"><a
       href="/profile/friendsandblocks.pl?mode=addfave&amp;fave_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Add Favourite"><img src="/images/icons/friendsandblocks/add_fave.gif" alt="Add Favourite" /></a></li>
+      title="Add To Favourites"><img src="/images/icons/friendsandblocks/add_fave.gif" alt="Add To Favourites" /></a></li>
     <li class="opt"><a
       href="/profile/friendsandblocks.pl?mode=addfriend&amp;friend_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
-      title="Add Friend"><img src="/images/icons/friendsandblocks/add_friend.gif" alt="Add Friend" /></a></li>
+      title="Add To Friends"><img src="/images/icons/friendsandblocks/add_friend.gif" alt="Add To Friends" /></a></li>
     <li class="opt2"><a
       href="/profile/message.pl?mode=compose&amp;to=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
       title="Send Message"><img src="/images/icons/message/compose_message.gif" alt="Send Message" /></a></li>
@@ -98,7 +151,7 @@ END;
    ELSE;
      photo_link = real_photo_link;
   END %]
-
+  
 <div id="mainphoto"
      class="thumbnail-info-container"
      style="float:left; clear:left;">
@@ -395,52 +448,81 @@ END;
 <br />
 <br />
 
-[% IF friends && friends.size > 0 %]
+[% IF showfriends && linked_friends && linked_friends.size > 0 %]
 <h3>Linked Friends</h3>
-<a href="/[% random_friend.name %]">
-[% IF random_friend.adult && !adult_pass;
+<a href="/[% random_friend.profile_name %]">
+[% IF random_friend.main_photo.adult && !adult_pass;
      photo_link = "/photos/adult.png";
-   ELSIF !random_friend.checked_date && !adult_pass;
+   ELSIF !random_friend.main_photo.checked_date && !adult_pass;
      photo_link = "/photos/pending.png";
-   ELSIF !random_friend.photo_id;
+   ELSIF !random_friend.main_photo.photo_id;
      photo_link = "/photos/default.png";
    ELSE;
      photo_link = "/photos/${random_friend.profile_name}/${random_friend.main_photo.thumbnail_filename}";
   END %]
 <img src="[% photo_link %]"
-     alt="random friend"
+     alt="random friend's picture: [% random_friend.profile_name %]"
      style="float:left;width:50px;height:50px" /></a>
 <ul class="opt" style="padding-left:10px">
-  <li class="opt" style="font-weight:bold"><a href="/[% random_friend.name %]">[% random_friend.name %]</a></li>
+  <li class="opt[% IF linked_friends.size == 1 %]2[% END %]" style="font-weight:bold"><a href="/[% random_friend.profile_name %]">[% random_friend.profile_name %]</a></li>
   [% FOREACH friend = linked_friends %]
-    [% UNLESS friend.id == random_friend.id %]
-      <li class="opt[% IF loop.last %]2[% END %]" style="font-weight:bold"><a href="/[% friend.name %]">[% friend.name %]</a></li>
+    [% UNLESS friend.profile_id == random_friend.profile_id %]
+      <li class="opt[% IF loop.last %]2[% END %]" style="font-weight:bold"><a href="/[% friend.profile_name %]">[% friend.profile_name %]</a></li>
     [% END %]
   [% END %]
 </ul>
+<div style="clear: left;"></div>
+[% END %]
+
+
+[% IF showfaves && faves && faves.size > 0 %]
+<h3>Favourites</h3>
+<a href="/[% random_fave.profile_name %]">
+[% IF random_fave.main_photo.adult && !adult_pass;
+     photo_link = "/photos/adult.png";
+   ELSIF !random_fave.main_photo.checked_date && !adult_pass;
+     photo_link = "/photos/pending.png";
+   ELSIF !random_fave.main_photo.photo_id;
+     photo_link = "/photos/default.png";
+   ELSE;
+     photo_link = "/photos/${random_fave.profile_name}/${random_fave.main_photo.thumbnail_filename}";
+  END %]
+<img src="[% photo_link %]"
+     alt="random fave's picture: [% random_fave.profile_name %]"
+     style="float:left;width:50px;height:50px" /></a>
+<ul class="opt" style="padding-left:10px">
+  <li class="opt[% IF faves.size == 1 %]2[% END %]" style="font-weight:bold"><a href="/[% random_fave.profile_name %]">[% random_fave.profile_name %]</a></li>
+  [% FOREACH fave = faves %]
+    [% UNLESS fave.profile_id == random_fave.profile_id %]
+      <li class="opt[% IF loop.last %]2[% END %]" style="font-weight:bold"><a href="/[% fave.profile_name %]">[% fave.profile_name %]</a></li>
+    [% END %]
+  [% END %]
+</ul>
+<div style="clear: left;"></div>
 [% END %]
 
 
 [% IF visitors && visitors.size > 0 %]
 <h3 style="clear:left;padding-top:32px">Recent visitors</h3>
 <a href="/[% last_visitor.profile_name %]">
-[% IF last_visitor.adult && !adult_pass;
+[% IF last_visitor.main_photo.adult && !adult_pass;
      photo_link = "/photos/adult.png";
-   ELSIF !last_visitor.checked_date && !adult_pass;
+   ELSIF !last_visitor.main_photo.checked_date && !adult_pass;
      photo_link = "/photos/pending.png";
-   ELSIF !last_visitor.photo_id;
-     photo_link = "/photos/${last_visitor.profile_name}/${last_visitor.main_photo.thumbnail_filename}";
+   ELSIF !last_visitor.main_photo.photo_id;
+     photo_link = "/photos/default.png";
    ELSE;
-     photo_link = real_photo_link;
+     photo_link = "/photos/${last_visitor.profile_name}/${last_visitor.main_photo.thumbnail_filename}";
   END %]
 <img src="[% photo_link %]"
-     alt="last visitor"
+     alt="last visitor: [% last_visitor.profile_name %]"
      style="float:left;width:50px;height:50px" /></a>
 <ul class="opt" style="padding-left:10px">
   [% FOREACH visitor = visitors %]
-    <li class="opt[% IF loop.last %]2[% END %]" style="font-weight:bold"><a href="/[% visitor.profile_name %]">[% visitor.profile_name %]</a></li>
+    <li class="opt[% IF loop.last %]2[% END %]" style="font-weight:bold"><a href="/[% visitor.profile_name %]" title="visited: [% visitor.time %]">[% visitor.profile_name %]</a></li>
   [% END %]
 </ul>
+<div style="clear: left;"></div>
 [% END %]
 
 
