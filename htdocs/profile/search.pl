@@ -304,7 +304,10 @@ ENDSQL
       push @search_params, "matching \"$rusty->{params}->{profile_name}\"";
     }
     
-    $query .= " AND up.profile_name LIKE \"$profile_name_sql\" ";
+    if ($profile_name_sql) {
+      $query .= " AND up.profile_name LIKE \"$profile_name_sql\" ";
+    }
+    
   } else {
     delete $rusty->{params}->{profile_name};
   }
