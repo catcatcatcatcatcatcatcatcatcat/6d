@@ -421,6 +421,32 @@ and remember to upload a photo of yourself when you've finished!</p>
   </tr>
 </table>
 
+<h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">Show extra info</h3>
+
+<table style="border:none">
+  <tr>
+    <td class="pad[% IF errors.showfriends %]-error[% END %]">
+      <label for="showfriends">
+        Show list of your friends on your profile.
+      </label>
+    </td>
+    <td class="pad2[% IF errors.showfriends %]-error[% END %]">
+      <input type="checkbox" name="showfriends" id="showfriends" value="1"[% IF !showfriends.defined || showfriends == 1 %] checked="checked"[% END %] />
+    </td>
+  </tr>
+  <tr>
+    <td class="pad[% IF errors.showfaves %]-error[% END %]">
+      <label for="showfaves">
+        Show list of your favourite profiles on your profile
+      </label>
+    </td>
+    <td class="pad2[% IF errors.showfaves %]-error[% END %]">
+      <input type="checkbox" name="showfaves" id="showfaves" value="1"[% IF !showfaves.defined || showfaves == 1 %] checked="checked"[% END %] />
+  </tr>
+</table>
+
+
+
 <p style="margin-top:32px;margin-bottom:32px">
   <input type="submit" name="submit" value="[% IF core.profile_id %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px" />
 </p>
