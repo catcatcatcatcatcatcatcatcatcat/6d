@@ -250,13 +250,16 @@ sub new() {
   # the profiles thing but i've fixed that and i'm going to leave it
   # all as is! :)
   #warn "self: " . $self_url;
+  # Make url relative when working with just one TLD - if we develop more
+  # sharing same login, maybe change this to use full TLD in self_url again
+  $self_url =~ s!^(?:https?|ftp)\://\Q$ENV{SERVER_NAME}\E!!o;
   $self->{core}->{'self_url'} = $self_url;
   require URI::Escape;
   $self->{core}->{'self_url_escaped'} = URI::Escape::uri_escape($self_url);
   
   $self->{core}->{server_name} = $ENV{SERVER_NAME};
   $self->{core}->{mod_perl_api_version} = $ENV{MOD_PERL_API_VERSION};
-  $self->{core}->{perl_version} = $1 if $] =~ /(^\d+\.\d)/; # 1dp.
+  $self->{core}->{perl_version} = $1 if $] =~ /(^\d+\.\d)/o; # 1dp.
   $self->{core}->{server_software} = "Apache 2"; #$ENV{SERVER_SOFTWARE};
   $self->{core}->{mysql_version} = $DATABASE_VERSION;
   
