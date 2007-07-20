@@ -44,7 +44,8 @@ and get help right now.</p>
 <p>Fields marked with a <span class="mandatory">*</span> must be filled in.</p>
 <form method="post" action="/help/contact-us.pl">
 <fieldset>
-<input type="hidden" class="text" name="send" value="1" />
+<input type="hidden" name="ref" value="[% core.ref_escaped %]" />
+<input type="hidden" name="send" value="1" />
 <table>
   <tr>
     <td>Email:<span class="mandatory">*</span></td>
@@ -67,6 +68,7 @@ and get help right now.</p>
       Type of Contact:<span class="mandatory">*</span><br />
       <select style="width:300px" name="dept">
         <option value="support" [% IF dept == "support" %]selected="selected"[% END %]>Technical Support</option>
+        <option value="suggestions" [% IF dept == "suggestions" %]selected="selected"[% END %]>Suggestions</option>
       </select>
     </td>
   </tr>
@@ -79,6 +81,7 @@ and get help right now.</p>
         <option value="activation" [% IF problem == "activation" %]selected="selected"[% END %]>Account Activation</option>
         <option value="javascript" [% IF problem == "javascript" %]selected="selected"[% END %]>Enabling Javascript</option>
         <option value="cookies" [% IF problem == "cookies" %]selected="selected"[% END %]>Enabling Cookies</option>
+        <option value="other" [% IF problem == "other" %]selected="selected"[% END %]>Other</option>
       </select>
     </td>
   </tr>
