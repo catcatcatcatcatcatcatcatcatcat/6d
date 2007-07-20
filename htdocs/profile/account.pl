@@ -71,6 +71,8 @@ $rusty->{param_info} = {
   # boolean (TINYINY(1)) - but checkbox so vals are '1' or '':
   email_alert         => { title => 'Email alerts', regexp => '^1?$' },
   hide_empty_info     => { title => 'Hide empty info', regexp => '^1?$' },
+  showfriends         => { title => 'Show linked friends', regexp => '^1?$' },
+  showfaves           => { title => 'Show favourite profiles', regexp => '^1?$' },
   
   # hidden fields
   profile_id          => { minnum => 1, maxnum => 65535, allow_empty => 1 },
@@ -204,9 +206,11 @@ INSERT INTO `user~profile`
  fave_person, fave_website,
  fave_place, fave_thing,
  thought_type_id, thought_text,
- hide_empty_info, user_id)
+ hide_empty_info, showfriends,
+ showfaves, user_id)
 VALUES
 (NOW(), NOW(),
+ ?, ?,
  ?, ?,
  ?, ?,
  ?, ?,
@@ -248,7 +252,8 @@ ENDSQL
         $rusty->{params}->{fave_person},      $rusty->{params}->{fave_website},
         $rusty->{params}->{fave_place},       $rusty->{params}->{fave_thing},
         $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
-        $rusty->{params}->{hide_empty_info},  $rusty->{core}->{'user_id'}
+        $rusty->{params}->{hide_empty_info},  $rusty->{params}->{showfriends},
+        $rusty->{params}->{showfaves},        $rusty->{core}->{'user_id'}
       );
 
       my $inserted_profile_id = $rusty->DBH->{'mysql_insert_id'};
@@ -296,7 +301,8 @@ fave_club_bar = ?, fave_animal = ?,
 fave_person = ?, fave_website = ?,
 fave_place = ?, fave_thing = ?,
 thought_type_id = ?, thought_text = ?,
-hide_empty_info = ?
+hide_empty_info = ?, showfriends = ?,
+showfaves = ?
 WHERE
 user_id = ?
 ENDSQL
@@ -321,7 +327,8 @@ ENDSQL
         $rusty->{params}->{fave_person},      $rusty->{params}->{fave_website},
         $rusty->{params}->{fave_place},       $rusty->{params}->{fave_thing},
         $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
-        $rusty->{params}->{hide_empty_info},  $rusty->{core}->{'user_id'}
+        $rusty->{params}->{hide_empty_info},  $rusty->{params}->{showfriends},
+        $rusty->{params}->{showfaves},        $rusty->{core}->{'user_id'}
       );
       $sth->finish;
     }
