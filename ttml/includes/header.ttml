@@ -75,6 +75,8 @@
 [% js.push("/js/addEvent.js") %]
 [% js.push("/js/sweetTitles.js") %]
 
+
+
 [% FOREACH stylesheet = css %]
   <link rel="stylesheet" type="text/css" href="[% stylesheet %]" />
 [%+ END %]
@@ -91,6 +93,8 @@
 [%+ IF header_js %]
 <script type="text/javascript" defer="defer">
 //<!--
+/* the onclick event of links with a class name of "new-window" */
+addEvent(window, 'load', getNewWindowLinks);
 [% header_js %]
 //-->
 </script>
