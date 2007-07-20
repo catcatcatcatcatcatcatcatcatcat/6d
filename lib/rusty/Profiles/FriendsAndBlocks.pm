@@ -16,6 +16,8 @@ sub getAllFriends($) {
   
   my $profile_id = shift;
   
+  my $limit = (shift || 100);
+  
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
@@ -34,10 +36,13 @@ LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.requester_profile_id = ?
   AND upf.deleted_date IS NULL
   AND upf.status != 'rejected'
+ORDER BY upf.decided_date DESC
+LIMIT ?
 ENDSQL
 ;
+  
   my $sth = $dbh->prepare_cached($query);
-  $sth->execute($profile_id);
+  $sth->execute($profile_id, $limit);
   my @friends = ();
   while (my $friend_info = $sth->fetchrow_hashref) {
     push @friends, $friend_info;
@@ -401,6 +406,8 @@ sub getAllFaves($) {
   
   my $profile_id = shift;
   
+  my $limit = (shift || 100);
+  
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
@@ -413,10 +420,12 @@ INNER JOIN `user~profile` up ON upf.fave_profile_id = up.profile_id
 LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.profile_id = ?
   AND upf.removed_date IS NULL
+ORDER BY upf.added_date DESC
+LIMIT ?
 ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
-  $sth->execute($profile_id);
+  $sth->execute($profile_id, $limit);
   my @faves = ();
   while (my $fave_info = $sth->fetchrow_hashref) {
     push @faves, $fave_info;
@@ -469,7 +478,7 @@ sub findExistingFaveLink($$) {
   
   my $query = <<ENDSQL
 SELECT fave_link_id, profile_id, fave_profile_id,
-       DATE_FORMAT(added_date, '%d/%m/%y %H:%i') AS blocked_date
+       DATE_FORMAT(added_date, '%d/%m/%y %H:%i') AS added_date
 FROM `user~profile~fave_link`
 WHERE (profile_id = ? AND fave_profile_id = ?)
   AND removed_date IS NULL
@@ -558,7 +567,7 @@ SELECT upb.block_link_id, upb.blockee_profile_id AS profile_id,
        DATE_FORMAT(upb.blocked_date, '%d/%m/%y %H:%i') AS blocked_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
 FROM `user~profile~block_link` upb
-INNER JOIN `user~profile` up ON upb.blockee_profile_id = up.profile_id
+INNER JOIN `user~profile` up ON up.profile_id = upb.blockee_profile_id
 LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upb.blocker_profile_id = ?
   AND upb.unblocked_date IS NULL
@@ -654,6 +663,130 @@ ENDSQL
 
 
 
+
+
+
+sub getAllProfileNotes($) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $limit = (shift || 100);
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT upn.note, upn.noted_profile_id AS profile_id,
+       up.profile_name, up.main_photo_id,
+       DATE_FORMAT(upn.added_date, '%d/%m/%y %H:%i') AS added_date,
+       upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
+FROM `user~profile~note` upn
+INNER JOIN `user~profile` up ON up.profile_id = upn.noted_profile_id
+LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+WHERE upn.profile_id = ?
+ORDER BY upn.added_date DESC
+LIMIT ?
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id, $limit);
+  my @notes = ();
+  while (my $notes_info = $sth->fetchrow_hashref) {
+    push @notes, $notes_info;
+  }
+  $sth->finish;
+  
+  return @notes ? \@notes : undef;
+}
+
+
+sub findExistingProfileNote($$) {
+  
+  my $self = shift;
+  
+  my ($profile_id, $fave_profile_id) = @_;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT note, DATE_FORMAT(added_date, '%d/%m/%y %H:%i') AS added_date
+FROM `user~profile~note`
+WHERE profile_id = ?
+  AND noted_profile_id = ?
+LIMIT 1
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id, $fave_profile_id);
+  my $fave_link = $sth->fetchrow_hashref;
+  $sth->finish;
+  
+  return $fave_link;
+}
+
+
+# Creates or updates a profile note..
+sub createProfileNote($$) {
+  
+  my $self = shift;
+  
+  my ($profile_id, $noted_profile_id, $note) = @_;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+INSERT INTO `user~profile~note`
+       (profile_id, noted_profile_id, note, added_date)
+VALUES (?, ?, ?, NOW())
+ON DUPLICATE KEY
+UPDATE note = ?,
+updated_date = NOW()
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  my $rows = $sth->execute($profile_id, $noted_profile_id, $note, $note);
+  $sth->finish;
+  
+  # We will always succeed with this and if duplicate
+  # key is found, it does return '0E0' - this is a bug workaround. :)
+  return 1; #($rows eq '0E0' ? 0 : 1);
+}
+
+
+sub deleteProfileNote($) {
+  
+  my $self = shift;
+  
+  my ($profile_id, $noted_profile_id) = @_;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+DELETE FROM `user~profile~note`
+WHERE profile_id = ?
+  AND noted_profile_id = ?
+LIMIT 1
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  my $rows = $sth->execute($profile_id, $noted_profile_id);
+  $sth->finish;
+  
+  return ($rows eq '0E0' ? 0 : 1);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 sub getProfileDisplayPrefs($) {
   
   my $self = shift;
@@ -709,6 +842,7 @@ ENDSQL
   
   return ($rows eq '0E0' ? 0 : 1);
 }
+
 
 
 
