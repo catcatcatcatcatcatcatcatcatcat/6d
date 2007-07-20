@@ -31,6 +31,9 @@ breadcrumbs.push("$title")
     [% ELSIF prev_action == "delfriend" %]Your friend link has been deleted successfully
     [% ELSIF prev_action == "addfave" %]Your favourite link has been added successfully
     [% ELSIF prev_action == "delfave" %]Your favourite link has been deleted successfully
+    [% ELSIF prev_action == "addnote" %]Your note has been added successfully
+    [% ELSIF prev_action == "editnote" %]Your note has been edited successfully
+    [% ELSIF prev_action == "delnote" %]Your note has been deleted successfully
     [% ELSIF prev_action == "respond" %]Your friend link request has been processed successfully<br />
     [% ELSIF prev_action == "block" %]Your block has been added successfully
     [% ELSIF prev_action == "unblock" %]Your block has been removed successfully
@@ -44,6 +47,9 @@ breadcrumbs.push("$title")
     [% ELSIF prev_action == "delfriend" %]Your friend link could not be deleted
     [% ELSIF prev_action == "addfave" %]Your favourite link could not be added
     [% ELSIF prev_action == "delfave" %]Your favourite link could not be deleted
+    [% ELSIF prev_action == "addnote" %]Your note could not be added
+    [% ELSIF prev_action == "editnote" %]Your note could not be edited
+    [% ELSIF prev_action == "delnote" %]Your note could not be deleted
     [% ELSIF prev_action == "respond" %]Your friend link request response could not be processed
     [% ELSIF prev_action == "block" %]Your block could not be added
     [% ELSIF prev_action == "unblock" %]Your block could not be removed
@@ -69,6 +75,7 @@ breadcrumbs.push("$title")
     [% ELSIF reason == "blockisfave" %]The profile is a favourite - please remove this link first
     [% ELSIF reason == "invalidresponse" %]The response given is not a valid response
     [% ELSIF reason == "notenoughinfo" %]Not enough information was given to determine thie link
+    [% ELSIF reason == "nonote" %]You have not written any note
     [% ELSE %]An unknown error occured
     [% END %]
   </p>
@@ -299,5 +306,44 @@ breadcrumbs.push("$title")
     <input type="submit" value="Add" />
   </fieldset>
   </form>
+
+<p>&nbsp;</p>
+
+<h3>My Notes</h3>
+[% UNLESS notes %]
+  <p>You currently have no notes attached to profiles. You can add a note by clicking on
+  &quot;Add Note&quot; on their profile page.</p>
+[% ELSE %]
+  <p>Your notes attached to profiles are listed below. Hover over their name to see the attached note,
+  click on their name to view their profile, or on &quot;edit&quot; or &quot;delete&quot; to edit/delete your note.</p>
+  <ol>
+  [% FOREACH note = notes %]
+    [% real_photo_link = "/photos/${note.profile_name}/${note.thumbnail_filename}" %]
+    [% IF note.adult && !adult_pass;
+         photo_link = "/photos/adult.png";
+       ELSIF note.photo_id && !note.checked_date && !adult_pass;
+         photo_link = "/photos/pending.png";
+       ELSIF !note.photo_id;
+         photo_link = "/photos/default.png";
+       ELSE;
+         photo_link = real_photo_link;
+      END %]
+    <li>
+      <a href="/[% note.profile_name %]"
+         title="favourite [% note.profile_name %] added: [% note.added_date %]"
+         onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
+         onmouseout="htm()"
+      >[% note.profile_name %]</a>
+      <a href="/profile/friendsandblocks.pl?mode=editnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params | html %]"
+         title="edit note for [% note.profile_name %]"><img src="/images/icons/friendsandblocks/add_note.gif"
+                                                                 alt="Edit note for [% note.profile_name %]" /></a>
+      <a href="/profile/friendsandblocks.pl?mode=delnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params | html %]"
+         title="delete note for [% note.profile_name %]"><img src="/images/icons/friendsandblocks/delete_note.gif"
+                                                                 alt="Delete note for [% note.profile_name %]" /></a>
+    </li>
+  [% END %]
+  </ol>
+[% END %]
+  <p>To add a note to a profile, visit their profile and click "Add Note".</p>
 
 [% INCLUDE includes/footer.ttml %]
