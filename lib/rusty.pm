@@ -186,6 +186,7 @@ sub new() {
     if ($self->{params}->{'login'}) {
       $self->{core}->{'open_assistant'} = 1;
     }
+    $self->{core}->{'email'} = $self->get_email_address($self->{core}->{'user_id'});
     $self->{core}->{'email_validated'} = $self->is_email_validated($self->{core}->{'user_id'});
     
   } elsif ($self->session_cookie) {
@@ -1165,6 +1166,13 @@ ENDSQL
     my $user_id = shift;
     _lookup_user_info($user_id) unless exists($user_info->{user_id});
     return ($user_info->{email_validated} ? 1 : 0);
+  }
+  
+  sub get_email_address($) {
+    $self = shift;
+    my $user_id = shift;
+    _lookup_user_info($user_id) unless exists($user_info->{user_id});
+    return $user_info->{email};
   }
   
   sub _lookup_user_info($) {
