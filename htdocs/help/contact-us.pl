@@ -16,7 +16,7 @@ use rusty::Profiles;
 
 our $rusty = rusty::Profiles->new;
 
-use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description );
+use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref );
 
 
 # Subroutine prototypes
@@ -34,6 +34,8 @@ $dept = $rusty->{data}->{dept} = $rusty->{params}->{dept};
 $problem = $rusty->{data}->{problem} = $rusty->{params}->{problem};
 $subject = $rusty->{data}->{subject} = $rusty->{params}->{subject};
 $description = $rusty->{data}->{description} = $rusty->{params}->{description};
+
+$ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
 
 if ($rusty->{params}->{'error'}) {
   
@@ -112,6 +114,7 @@ ENDSQL
     ($rusty->{core}->{user_info}->{email}, $rusty->{core}->{user_info}->{real_name}) = $sth->fetchrow_array;
     $sth->finish;
   }
+  
 }
 
 $rusty->process_template;
@@ -157,6 +160,8 @@ ENDMSG
 Problem Type: $problem
 
 Subject: $subject
+
+Ref: $ref
 
 ============
 
