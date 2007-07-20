@@ -16,7 +16,6 @@ use vars qw($rusty $query $sth);
 
 $rusty = rusty::Profiles->new;
 
-
 if (!$rusty->{core}->{'user_id'}) {
   require URI::Escape;
   print $rusty->CGI->redirect( -url => "/login.pl?ref="
@@ -63,6 +62,8 @@ SWITCH:
   &delfave, last SWITCH if /^delfave$/;
   &block, last SWITCH if /^block$/;
   &unblock, last SWITCH if /^unblock$/;
+  &addeditnote($_), last SWITCH if /^(?:add|edit)note$/;
+  &delnote, last SWITCH if /^delnote$/;
   &updateprefs, last SWITCH if /^updateprefs$/;
   &list, last SWITCH if /^list$/;
   
@@ -84,6 +85,7 @@ sub list {
     $rusty->{data}->{friend_links} = $rusty->getAllFriends($rusty->{core}->{'profile_id'});
     $rusty->{data}->{fave_links} = $rusty->getAllFaves($rusty->{core}->{'profile_id'});
     $rusty->{data}->{block_links} = $rusty->getAllBlocks($rusty->{core}->{'profile_id'});
+    $rusty->{data}->{notes} = $rusty->getAllProfileNotes($rusty->{core}->{'profile_id'});
     $rusty->{data}->{display_prefs} = $rusty->getProfileDisplayPrefs($rusty->{core}->{'profile_id'});
   }
   
@@ -828,6 +830,173 @@ sub unblock {
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=".($success>0?1:0) );
 }
+
+
+sub addeditnote {
+  
+  my $action = shift;
+    
+  # If a profile name has been specified, check it exists
+  # and get the associated profile id.  If not, send back with error.
+  if (length($rusty->{params}->{noted_profile_name}) > 0) {
+    
+    $rusty->{data}->{noted_profile_name} = $rusty->{params}->{noted_profile_name};
+    
+    if (!($rusty->{data}->{noted_profile_id} =
+         $rusty->getProfileIdFromProfileName($rusty->{data}->{noted_profile_name}))) {
+      
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{data}->{noted_profile_name}
+                                         . "&prev_action=$action"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=0&reason=badprofilename"
+                                         . "&noted_profile_name="
+                                         . $rusty->{data}->{noted_profile_name} );
+      $rusty->exit;
+      
+    }
+  
+  # If a profile id has been specified, check it exists
+  # and get the associated profile name.  If not, send back with error.
+  } elsif ($rusty->{params}->{noted_profile_id} > 0) {
+    
+    $rusty->{data}->{noted_profile_id} = $rusty->{params}->{noted_profile_id};
+    
+    if (!($rusty->{data}->{noted_profile_name} =
+         $rusty->getProfileNameFromProfileId($rusty->{data}->{noted_profile_id}))) {
+      
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{data}->{noted_profile_name}
+                                         . "&prev_action=$action"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=0&reason=badprofileid" );
+      $rusty->exit;
+      
+    }
+  
+  # If the fool has not specified any profile name or id, send them back!
+  } else {
+    
+    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                       . $rusty->{data}->{noted_profile_name}
+                                       . "&prev_action=$action"
+                                       . $rusty->{data}->{query_string_params}
+                                       . "&success=0&reason=noprofileidorname" );
+    $rusty->exit;
+    
+  }
+  
+  # If they are trying to create a note about themselves..
+  if ($rusty->{core}->{profile_id} == $rusty->{data}->{noted_profile_id}) {
+    
+    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                       . $rusty->{data}->{noted_profile_name}
+                                       . "&prev_action=$action"
+                                       . $rusty->{data}->{query_string_params}
+                                       . "&success=0&reason=itisyou" );
+    $rusty->exit;
+  }
+  
+  if (length($rusty->{params}->{note}) == 0) {
+    
+    if ($action eq 'addnote') {
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{data}->{noted_profile_name}
+                                         . "&prev_action=$action"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=0&reason=nonote"
+                                         . "&mode=addnote" );
+      $rusty->exit;
+    } else {
+      
+      my $success = $rusty->deleteProfileNote($rusty->{core}->{'profile_id'},
+                                              $rusty->{data}->{noted_profile_id});
+      
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{data}->{noted_profile_name}
+                                         . "&prev_action=delnote"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=$success" );
+      $rusty->exit;
+    }
+  }
+  
+  my $success = $rusty->createProfileNote($rusty->{core}->{'profile_id'},
+                                          $rusty->{data}->{noted_profile_id},
+                                          $rusty->{params}->{note});
+  
+  print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                     . $rusty->{data}->{noted_profile_name}
+                                     . "&prev_action=$action"
+                                     . $rusty->{data}->{query_string_params}
+                                     . "&success=$success" );
+  $rusty->exit;
+}
+
+
+sub delnote {
+  
+  # If a profile name has been specified, check it exists
+  # and get the associated profile id.  If not, send back with error.
+  if (length($rusty->{params}->{noted_profile_name}) > 0) {
+    
+    $rusty->{data}->{noted_profile_name} = $rusty->{params}->{noted_profile_name};
+    
+    if (!($rusty->{data}->{noted_profile_id} =
+         $rusty->getProfileIdFromProfileName($rusty->{data}->{noted_profile_name}))) {
+      
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{params}->{noted_profile_name}
+                                         . "&prev_action=delnote"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=0&reason=badprofilename"
+                                         . "&noted_profile_name="
+                                         . $rusty->{data}->{noted_profile_name} );
+      $rusty->exit;
+      
+    }
+    
+  # If a profile id has been specified, check it exists
+  # and get the associated profile name.  If not, send back with error.
+  } elsif ($rusty->{params}->{noted_profile_id} > 0) {
+    
+    $rusty->{data}->{noted_profile_id} = $rusty->{params}->{noted_profile_id};
+    
+    if (!($rusty->{data}->{noted_profile_name} =
+         $rusty->getProfileNameFromProfileId($rusty->{data}->{noted_profile_id}))) {
+      
+      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                         . $rusty->{params}->{noted_profile_name}
+                                         . "&prev_action=delnote"
+                                         . $rusty->{data}->{query_string_params}
+                                         . "&success=0&reason=badprofileid" );
+      $rusty->exit;
+      
+    }
+    
+  # If the fool has not specified any profile name or id, send them back!
+  } else {
+    
+    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                       . $rusty->{params}->{noted_profile_name}
+                                       . "&prev_action=delnote"
+                                       . $rusty->{data}->{query_string_params}
+                                       . "&success=0&reason=noprofileidorname" );
+    $rusty->exit;
+    
+  }
+  
+  my $success = $rusty->deleteProfileNote($rusty->{core}->{'profile_id'},
+                                          $rusty->{data}->{noted_profile_id});
+  
+  print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+                                     . $rusty->{params}->{noted_profile_name}
+                                     . "&prev_action=delnote"
+                                     . $rusty->{data}->{query_string_params}
+                                     . "&success=$success" );
+}
+
+
 
 
 sub updateprefs {
