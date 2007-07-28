@@ -1,6 +1,7 @@
 [% title = 'Edit Caption' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage Photos</a>");
+[% breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>');
+   breadcrumbs.push('<a href="/profile/photo-admin.pl">Manage Photos</a>');
    breadcrumbs.push("$title"); %]
 
 [% UNLESS core.profile_id %]
