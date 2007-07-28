@@ -11,6 +11,7 @@
 }
 [% END %]
 [% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>'); %]
 [% breadcrumbs.push("$title") %]
 
 
@@ -47,18 +48,14 @@
 
 <label for="age_min">Min age:</label>
 <select name="age_min" id="age_min"
-        onclick="if(document.getElementById('age_max').selectedIndex < this.selectedIndex) { 
-                   document.getElementById('age_max').options[this.selectedIndex - 1].selected = true
-                         } ">
+        onchange="if (document.getElementById('age_max').selectedIndex < (this.selectedIndex - 1)) document.getElementById('age_max').options[this.selectedIndex - 1].selected = true; ">
   <option value="any"[% IF !age_min.defined || age_min == 'any' %] selected="selected"[% END %]>Any</option>
   [% ages = [recent_visitors.visitor_stats.age_min .. recent_visitors.visitor_stats.age_max] %]
   [% FOREACH a = ages %]<option value="[% a %]"[% IF age_min.defined && age_min == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
 </select>&nbsp;
 <label for="age_max">Max age:</label>
 <select name="age_max" id="age_max"
-        onclick="if(document.getElementById('age_min').selectedIndex > this.selectedIndex) { 
-                   document.getElementById('age_min').options[this.selectedIndex + 1].selected = true
-                         } ">
+        onchange="if (document.getElementById('age_min').selectedIndex > (this.selectedIndex + 1)) document.getElementById('age_min').options[this.selectedIndex + 1].selected = true; ">
   [% FOREACH a = ages %]<option value="[% a %]"[% IF age_max.defined && age_max == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
   <option value="any"[% IF !age_max.defined || age_max == 'any' %] selected="selected"[% END %]>Any</option>
 </select>
