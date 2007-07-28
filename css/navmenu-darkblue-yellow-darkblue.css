@@ -1,0 +1,98 @@
+/* Override the default colors :) */
+
+body {
+  background: #fff url(/images/navigation/darkblue-yellow-darkblue/navbar-background.gif) repeat-x;
+  color: inherit;
+}
+
+#NavMenuList a {
+  color: #000; background-color: #FF3;
+}
+#NavMenuList a:hover, #NavMenuList li.Selected a {
+  color: #000; background-color: #FFF;
+}
+#NavMenuList .NavSubMenuList li, #NavMenuList .NavSubMenuList li a {
+  color: #FFF; background-color: #036;
+}
+#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+  color: #000; background-color: #FFF;
+}
+#NavMenuList a span.navmenu-attention {
+  color: #000; background-color: inherit;
+}
+#NavMenuList a:hover span.navmenu-attention {
+  color: #000; background-color: inherit;
+}
+#NavMenuList .NavSubMenuList a span.navmenu-attention {
+  color: #FAA; background-color: inherit;
+}
+#NavMenuList .NavSubMenuList a:hover span.navmenu-attention {
+  color: #FFF; background-color: inherit;
+}
+
+#FooterNav, #FooterNav li, #FooterNav li a {
+  color: #000; background-color: #FF3;
+}
+#FooterNav a:hover {
+  color: #000; background-color: #FFF;
+}
+
+#Userpic {
+  background: url(/images/navigation/white-orange-darkgrey/navbar-right.jpg) no-repeat;
+}
+
+#Logo {
+  background:url(/images/navigation/white-orange-darkgrey/logo.gif) no-repeat;
+}
+
+#LoginBox {
+  color: #FFF; background-color: #036;
+}
+#LoginBox a {
+  color: #FFF; background-color: inherit;
+}
+#NotLoggedInDiv {
+  color: #FFF; background-color: #036;
+}
+#NotLoggedInDiv a {
+  color: #FFF; background-color: inherit;
+}
+#NotLoggedInDiv #login_profile_name {
+  background: url(/images/navigation/white-orange-darkgrey/login-icon.gif) no-repeat;
+}
+
+#Greeting {
+  color: #FFF; background-color: #036;
+}
+#Greeting a {
+  color: #FFF; background-color: inherit;
+}
+
+
+
+
+
+h1 {
+  color: #036; background-color: inherit;
+}
+h2 {
+  color: #258; background-color: inherit;
+}
+h3 {
+  color: #47A; background-color: inherit;
+}
+/*
+hr {
+  color: #963; background-color: #A74;
+}
+*/
+
+a:link {
+  color: #BB4; background-color: inherit;
+}
+a:visited {
+  color: #992; background-color: inherit;
+}
+a:active {
+  color: #DD6; background-color: inherit;
+}
