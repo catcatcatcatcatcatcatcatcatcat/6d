@@ -60,8 +60,9 @@
 [% END %]
 
 [% IF core.benchmark %]
-  <pre style="padding:1px;margin:5px;clear:both;float:left;
-              border:2px dashed #F2EEEE; background-color:#FAF8F8;color:#401"
+  <pre style="padding: 1px; margin: 5px; clear: both; float: left;
+              font-size: 0.8em;
+              border: 2px dashed #F2EEEE; background-color: #FAF8F8; color: #401"
        title="benchmark before processing template (which can be the biggest lag!)"
   >[% core.benchmark %]</pre>
 [% END %]
