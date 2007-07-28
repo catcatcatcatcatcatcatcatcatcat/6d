@@ -1,6 +1,7 @@
 [% SET js = [ "/js/form.js" ] %]
-[% title = 'My Account' %]
+[% title = 'Edit Profile' %]
 [% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>'); %]
 [% breadcrumbs.push("$title") %]
 
 [% IF core.profile_id;
@@ -351,7 +352,9 @@ and remember to upload a photo of yourself when you've finished!</p>
     </td>
     <td[% IF errors.fave_website %] class="error"[% END %]>
       http://
-      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !fave_website %]onclick="this.value=''; this.onclick=null" [% END %]class="text" name="fave_website" id="fave_website" size="30" maxlength="100" value="[% IF fave_website %][% fave_website FILTER html_entity %][% ELSE %][% core.server_name %][% END %]" />
+      <input type="text" onfocus="focusify(this)" onblur="blurify(this)" [% IF !fave_website %]onclick="this.value=''; this.onclick=null" [% END %]
+             class="text" name="fave_website" id="fave_website" size="30" maxlength="100" 
+             value="[% IF fave_website %][% fave_website FILTER html_entity %][% ELSE %][% core.server_name %][% END %]" />
     </td>
     <td class="pad220[% IF errors.fave_place %]-error[% END %]">
       <label for="fave_place">Place</label>
