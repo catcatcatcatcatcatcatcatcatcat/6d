@@ -1,5 +1,5 @@
 [% SET js = [ "/js/tipMessage.js" ] %]
-[% title = 'Manage Friends/Blocks' %]
+[% title = 'My Community' %]
 [% INCLUDE includes/header.ttml %]
 
 [%
@@ -11,6 +11,8 @@ IF search_id;
   END;
 ELSIF from_profile;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
+ELSE;
+  breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>');
 END;
 breadcrumbs.push("$title")
 %]
@@ -106,8 +108,9 @@ breadcrumbs.push("$title")
   </p>
 [% END %]
 
-<h1 style="clear:left;">Manage my Friends and Blocks</h1>
-
+<h1 style="clear:left;">My Community</h1>
+<p style="font-size: 0.8em; color: #555; ">This section allows you to manage your 
+friends, favourite profiles, blocked profiles and notes attached to profiles.</p>
 
 [% UNLESS core.profile_id %]
   <p class="err">You need to
@@ -330,11 +333,11 @@ breadcrumbs.push("$title")
       END %]
     <li>
       <a href="/[% note.profile_name %]"
-         title="favourite [% note.profile_name %] added: [% note.added_date %]"
+         title="note added about [% note.profile_name %]: [% note.added_date %] :: [% note.note %] "
          onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
          onmouseout="htm()"
       >[% note.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=editnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params | html %]"
+      <a href="/profile/view.pl?profile_name=[% note.profile_name %]&amp;mode=editnote[% query_string_params | html %]"
          title="edit note for [% note.profile_name %]"><img src="/images/icons/friendsandblocks/add_note.gif"
                                                                  alt="Edit note for [% note.profile_name %]" /></a>
       <a href="/profile/friendsandblocks.pl?mode=delnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params | html %]"
@@ -343,7 +346,7 @@ breadcrumbs.push("$title")
     </li>
   [% END %]
   </ol>
+  <p>To add a note to a new profile, visit their profile and click "Add Note".</p>
 [% END %]
-  <p>To add a note to a profile, visit their profile and click "Add Note".</p>
 
 [% INCLUDE includes/footer.ttml %]
