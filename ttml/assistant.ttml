@@ -60,7 +60,7 @@ No favourites online.
 [% FOREACH visit = recent_visits.visits %]
   <li style="float: left; padding-right:5px;"><a style="font-weight:normal"
          href="/profile/view.pl?profile_name=[% visit.profile_name %]"
-   title="Visited: [% visit.date %]"
+   title="Visited: [% visit.time %]"
    class="_blank">[% visit.profile_name %]</a></li>
 [% END %]
 </ul>
