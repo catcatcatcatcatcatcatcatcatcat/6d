@@ -1,8 +1,6 @@
 /* Navigation */ 
 
 body {
-  background: #fff url(/images/navigation/navbar-background.gif) repeat-x;
-  color: inherit;
   margin: 0; padding: 0;
 }
 
@@ -30,21 +28,15 @@ looking for a good fix.
 }
 #NavMenuList a {
   padding: 2px 10px 1px 10px;
-  width: auto; /*height: 16px;*/
-  color: #FFF; background-color: #036;
+  color: #000; background-color: #FFF;
+  width: auto; height: 16px; /* 'correct' height (overridden in ie5.x css file */
   font: 11px Arial, Geneva, Helvetica, sans-serif;
   text-decoration: none;
   float: left; display: block;
   border-top: 1px solid #FFF;
 }
-#NavMenuList a {
-  height:16px; /* 'correct' height (overridden in ie5.x css file */
-}
-#NavMenuList a:hover {
-  color: #000; background-color: #FFF;
-}
-#NavMenuList li.Selected a {
-  color: #000; background-color: #FFF;
+#NavMenuList a:hover, #NavMenuList li.Selected a {
+  color: #FFF; background-color: #000;
 }
 #NavMenuList .NavSubMenuList {
   visibility: hidden;
@@ -61,24 +53,25 @@ looking for a good fix.
   list-style: none;
 }
 #NavMenuList .NavSubMenuList li a {
-  color: #FFF; background-color: #69C;
+  color: #555; background-color: #FFF;
+  border-width: 1px 0 0 0;
+  border-style: solid;
   float: left;
   z-index: 2;
 }
-#NavMenuList .NavSubMenuList li a:hover {
-  color: #000; background-color: #FFF;
+#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+  color: #FFF; background-color: #000;
 }
-#NavMenuList .NavSubMenuList li.Selected a {
-  color: #000; background-color: #FFF;
+#NavMenuList a span.navmenu-attention, #NavMenuList .NavSubMenuList a span.navmenu-attention {
+  font-weight: bold;
+  color: #F70; background-color: inherit;
 }
 #NavMenuListTitle {
   margin-left: 40px;
   text-decoration: underline;
   display: none;
 }
-#NavMenuList a span.navmenu-attention {
-  color: #F06; background-color: inherit;
-}
+
 
 
 
@@ -89,17 +82,16 @@ looking for a good fix.
   /*margin: 0px; padding: 0 100px 0 70px;*/
   /*border: 1px solid #69C;*/
   margin: 0; padding: 0; border: 0;
-  color: #FFF; background-color: #69C;
+  color: #000; background-color: #FFF;
   clear: both;
   width: 100%; height: 20px;
 }
 #FooterNav li {
-  color: #FFF; background-color: #69C;
   display: inline;
   list-style: none;
 }
 #FooterNav a {
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: #FFF;
   font: 11px Arial, Geneva, Helvetica, sans-serif;
   text-decoration: none;
   padding: 3px 10px 1px 10px;
@@ -107,7 +99,7 @@ looking for a good fix.
   float: left;
 }
 #FooterNav a:hover {
-  color: #000; background-color: #FFF;
+  color: #FFF; background-color: #000;
 }
 
 
@@ -126,58 +118,78 @@ div#Content { width: auto; }
 #Userpic {
   display: block;
   position: absolute;
-  left: auto; right: 0; top: 0;
-  width: 101px; height: 100px;
-  color: #FFF; background-color: inherit;
+  left: auto; right: -1px; top: 0;
+  width: 100px; height: 100px;
   text-align: right;
+  /* background: url(/images/navigation/bustyparty/navbar-right.jpg) no-repeat; */
   z-index: 2;
+  margin: 0; padding: 0;
 }
+/*
 #Userpic img {
   display: inline;
   width: 100px; height: 100px;
   color: #000; background-color: #FFF;
   border: 0;
 }
+*/
 
 
 #Logo {
   position: absolute;
   left: 0; top: 0;
-  height: 68px;
-  margin: 0; padding: 0;
+  height: 68px; width: 278px;
+  /* background: url(/images/navigation/bustyparty/logo.gif) no-repeat;
+  cursor: hand; */
 }
+/*
 #Logo img {
   border: 0;
 }
+*/
 #LogoSubText {
   position: absolute;
   left: 100px; top: 50px;
   height: 5px; border: 0;
   margin: 0; padding: 0;
-  color: #FFF; background-color:#69C;
+  color: #FFF; background-color: #69C;
+  display: none;
+  /* background: url(/images/navigation/white-orange-darkgrey/navbar-logo-subtext.gif) no-repeat;
+  cursor: hand; */
 }
+/*
 #LogoSubText img {
   border: 0;
   float: left;
 }
+*/
 
 #Greeting {
   position: absolute;
   left: auto; right: 112px; top: 15px;
   width: auto; height: 20px;
   text-align: right;
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: #FFF;
   font: 12px Arial, Helvetica, sans-serif;
   text-decoration: none;
 }
 #Greeting a {
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: inherit;
   font-size:1.2em;
 }
 #Greeting #Logout {
   font: 9px Arial, Geneva, Helvetica, sans-serif;
   margin-left: 10px;
 }
+
+#login_profile_name {
+  background: url(/images/navigation/bustyparty/login-icon.gif) no-repeat;
+  color: #00C; background-color: #FFF;
+  background-position: 0px 1px;
+  padding-left: 18px;
+  font-weight: bold;
+}
+
 
 #Setlang {
   position: absolute;
@@ -197,15 +209,16 @@ div#Content { width: auto; }
   left: auto; right: 120px; top: 4px;
   width: auto; height: 20px;
   text-align: right;
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: #FFF;
   font: 12px Arial, Helvetica, sans-serif;
 }
 #LoginBox a {
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: inherit;
 }
 #LoginBox #Login {
   font: 11px Arial, Geneva, Helvetica, sans-serif;
-  margin-left: 10px;
+  /* margin-left: 10px; */
+  padding: 1px 4px;
 }
 
 #NotLoggedInDiv {
@@ -213,12 +226,15 @@ div#Content { width: auto; }
   left: auto; right: 150px; top: 12px;
   width: auto; height: 20px;
   text-align: right;
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: #FFF;
   font: 14px Arial, Helvetica, sans-serif;
 }
 #NotLoggedInDiv a {
-  color: #FFF;  background-color: inherit;
+  color: #000;  background-color: inherit;
   font-weight: normal;
+}
+#NotLoggedInDiv #login_profile_name {
+  color: #000; background-color: #FFF;
 }
 
 
