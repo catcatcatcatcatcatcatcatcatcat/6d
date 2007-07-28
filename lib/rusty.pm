@@ -268,6 +268,23 @@ sub new() {
   $self->{core}->{'emi'} = $self->{params}->{'emi'}; # emi = expand_menu_item
   $self->{core}->{'esmi'} = $self->{params}->{'esmi'}; # esmi = expand_sub_menu_item
   
+  # Grab the user's theme preference from their cookie..
+  $self->{core}->{'theme'} = $self->_grab_theme_cookie() || 0;
+  
+  # Setup the themes that we can offer (should this be done here??)
+  $self->{core}->{'themes'} = [ 'white-orange-darkgrey',
+                                'white-red-white',
+                                'darkgrey-orange-darkgrey',
+                                'orange-pink-orange',
+                                'darkblue-yellow-darkblue',
+                                'darkgrey-beige-darkgrey',
+                                'grey-green-grey',
+                                'lightgrey-green-lightgrey',
+                                'beige-orange-darkgrey', #similar to orange-black!
+                                'bustyparty',
+                                #'empty', #empty theme just to allow simple theme framework to show through
+                                ];
+  
   $self->benchmark->stop('birth');
   
   # Use this for testing text-only mode (dev)
@@ -276,7 +293,6 @@ sub new() {
   return $self;
   
 }
-
 
 
 ##############################
@@ -339,6 +355,12 @@ sub benchmark() { return $_[0]->{benchmark}; }
     my $self = shift;
     $_visitor_cookie = $self->CGI->cookie( -name => "visitor" );
     return $_visitor_cookie if defined wantarray;
+  }
+  
+  # This is the personalised theme cookie..
+  sub _grab_theme_cookie() {
+    my $self = shift;
+    return $self->CGI->cookie( -name => "theme" );
   }
 }
 
