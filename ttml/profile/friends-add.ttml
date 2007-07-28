@@ -11,7 +11,7 @@ IF search_id;
 ELSIF from_profile;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$from_profile\">$from_profile</a>");
 ELSE;
-  breadcrumbs.push("<a href=\"/profile/friendsandblocks.pl\">Manage your friends</a>");
+  breadcrumbs.push('<a href="/profile/friendsandblocks.pl">My Community</a>');
 END;
 breadcrumbs.push("$title");
 %]
