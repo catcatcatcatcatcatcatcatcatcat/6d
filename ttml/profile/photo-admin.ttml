@@ -1,6 +1,7 @@
 [% SET js = [ "/js/png_bg_ie_fix.js" ] %]
 [% title = 'Manage Photos' %]
 [% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>'); %]
 [% breadcrumbs.push("$title"); %]
 
 
