@@ -2,12 +2,12 @@
 [% title = 'My Visitors' %]
 [% header_css = BLOCK %]
 #visitor_table {
-  border: 1px #AAA solid;
+  padding: 3px;
 }
 #visitor_table td {
-  padding: 0 10px 0 10px;
+  padding: 0 5px;
   margin: 0;
-  border: 1px #CCC solid;
+  border-bottom: 1px #EEE solid;
 }
 [% END %]
 [% INCLUDE includes/header.ttml %]
