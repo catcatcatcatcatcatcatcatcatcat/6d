@@ -49,3 +49,32 @@ function getNewWindowLinks() {
 }
 
 /* ########################################### */
+
+function change_theme() {
+  /* Get the current chosen theme (if none, assume it is at zero index) */
+  var current_theme_index = Get_Cookie('theme');
+  if (current_theme_index == undefined)
+    current_theme_index = 0;
+  
+  /* choose random theme that isn't the currently chosen one */
+  var chosen_theme_index = current_theme_index;
+  while (chosen_theme_index == current_theme_index) {
+    chosen_theme_index = Math.floor(Math.random()*themes.length);
+  }
+  
+  /* Set this theme in the cookie */
+  Set_Cookie( 'theme',
+              chosen_theme_index,
+              (365 * 5),
+              '/' );
+  /* Set this theme in the css itself! */
+  document.getElementById('theme').href = '/css/navmenu-' + themes[chosen_theme_index] + '.css';
+}
+
+/*
+function init_theme() {
+  var chosen_theme_index = Math.floor(Math.random()*themes.length);
+  chosen_theme_index = Get_Cookie('theme');
+  document.getElementById('theme').href = '/css/navmenu-' + themes[chosen_theme_index] + '.css';
+}
+*/
