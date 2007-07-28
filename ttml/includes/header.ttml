@@ -47,7 +47,7 @@
 [% UNLESS core.no_nav_links %]
     
     <link rel="stylesheet" type="text/css" href="/css/navmenu.css" />
-    <link rel="stylesheet" type="text/css" href="/css/navmenu-orange-black.css" />
+    <link id="theme" rel="stylesheet" type="text/css" href="/css/navmenu-[% core.themes.${core.theme} %].css" />
     
   [%# IF core.emi && (core.emi > 0) %]
     [%# SET onload = onload _ "show(" _ core.emi _ ");" %]
@@ -87,10 +87,18 @@
      content (e.g., no "document.write" in javascript) and 
      thus, the user agent can continue parsing and rendering. -->
 [% END %]
+
+<script type="text/javascript" defer="defer">
+//<!--
+var themes = new Array( '[% core.themes.join("',\n'") %]' );
+//-->
+</script>
+
 [% FOREACH javascript = js %]
   <script type="text/javascript" src="[% javascript %]" defer="defer"></script>
 [% END %]
-[%+ IF header_js %]
+
+[%+ #IF header_js %]
 <script type="text/javascript" defer="defer">
 //<!--
 /* the onclick event of links with a class name of "new-window" */
@@ -98,12 +106,13 @@ addEvent(window, 'load', getNewWindowLinks);
 [% header_js %]
 //-->
 </script>
-    [% END %]
-    [%+ IF header_css %]
+[% #END %]
+
+[%+ IF header_css %]
 <style type="text/css">
 [% header_css %]
 </style>
-    [% END %]
+[% END %]
   </head>
 
   <body[% IF onload %] onload="[% onload %]"[% END %]>
