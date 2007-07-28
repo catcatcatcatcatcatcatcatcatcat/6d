@@ -76,6 +76,7 @@ function show(id) {
   }
   xcol_cur_menu = menu;
   xcol_cur_submenu = submenu;
+  
 }
 
 function subselect(id) {
@@ -83,8 +84,8 @@ function subselect(id) {
   if (!xcol_cur_submenu) { return; }
   var submenulink = xcol_cur_submenu.getElementsByTagName("li").item(id-1).childNodes[0];
   if (!submenulink) { return; }
-  submenulink.style.backgroundColor = "#FFF";
-  submenulink.style.color = "#000";
+  /* submenulink.style.backgroundColor = "#FFF";
+  submenulink.style.color = "#000"; */
 }
 
 function unshow() {
@@ -111,7 +112,7 @@ function xcShowLoginDiv () {
   if (!document.getElementById) return true;
   var notloge = document.getElementById("NotLoggedInDiv");
   var logboxe = document.getElementById("LoginBox");
-  var xcusere = document.getElementById("xc_user");
+  var xcusere = document.getElementById("login_profile_name");
   if (!notloge || !logboxe || !xcusere) return true;
   notloge.style.display = 'none';
   logboxe.style.display = 'block';
