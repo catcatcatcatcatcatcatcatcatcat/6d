@@ -48,8 +48,6 @@ function getNewWindowLinks() {
   }
 }
 
-/* ########################################### */
-
 function change_theme() {
   /* Get the current chosen theme (if none, assume it is at zero index) */
   var current_theme_index = Get_Cookie('theme');
@@ -69,12 +67,18 @@ function change_theme() {
               '/' );
   /* Set this theme in the css itself! */
   document.getElementById('theme').href = '/css/navmenu-' + themes[chosen_theme_index] + '.css';
+  document.getElementById('theme-logo').src = '/images/navigation/' + themes[chosen_theme_index] + '/logo.gif';
 }
 
-/*
-function init_theme() {
-  var chosen_theme_index = Math.floor(Math.random()*themes.length);
-  chosen_theme_index = Get_Cookie('theme');
-  document.getElementById('theme').href = '/css/navmenu-' + themes[chosen_theme_index] + '.css';
+/* This function is currently unused! */
+function getStyle(elem,styleProp) {
+  if (!elem) { return false; }
+  //var x = document.getElementById(elem);
+  var elem_style = null;
+  if (elem.currentStyle)
+    elem_style = elem.currentStyle[styleProp];
+  else if (window.getComputedStyle)
+    //elem_style = document.defaultView.getComputedStyle(elem,null).getPropertyValue(styleProp);
+    elem_style = document.defaultView.getComputedStyle(elem,'').getPropertyValue(styleProp);
+  return elem_style;
 }
-*/
