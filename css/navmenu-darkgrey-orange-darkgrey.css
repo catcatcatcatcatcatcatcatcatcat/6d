@@ -8,28 +8,38 @@ body {
 #NavMenuList a {
   color: #FFF; background-color: #F90;
 }
-#NavMenuList a:hover, #NavMenuList li.Selected a {
+#NavMenuList a:hover,
+#NavMenuList li.Selected a,
+#NavMenuList li a.Selected {
   color: #000; background-color: #FFF;
 }
-#NavMenuList .NavSubMenuList li, #NavMenuList .NavSubMenuList li a {
+#NavMenuList a span.navmenu-attention {
+  color: #FFF; background-color: inherit; 
+  /* This is the problem when we have selected AND attention set.. 
+     but on hovering, it seems to fix it and then fix it in place
+     by setting 'Selected' - maybe selected is being set to another
+     element than the original? */
+}
+#NavMenuList a:hover span.navmenu-attention,
+#NavMenuList .Selected span.navmenu-attention {
+  color: #000; background-color: inherit;
+}
+
+#NavMenuList .NavSubMenuList li,
+#NavMenuList .NavSubMenuList li a {
   color: #FFF; background-color: #333;
 }
-#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+#NavMenuList .NavSubMenuList li a:hover,
+#NavMenuList .NavSubMenuList li.Selected a {
   color: #000; background-color: #FFF;
   border-bottom: 1px solid #333;
   height: 15px;
 }
-#NavMenuList a span.navmenu-attention {
-  color: #FFF; background-color: inherit;
-}
-#NavMenuList a:hover span.navmenu-attention {
-  color: #000; background-color: inherit;
-}
-#NavMenuList .NavSubMenuList a span.navmenu-attention {
+#NavMenuList .NavSubMenuList span.navmenu-attention {
   color: #FAA; background-color: inherit;
 }
 #NavMenuList .NavSubMenuList a:hover span.navmenu-attention {
-  color: #FFF; background-color: inherit;
+  color: #000; background-color: inherit;
 }
 
 #FooterNav, #FooterNav li, #FooterNav li a {
@@ -41,10 +51,6 @@ body {
 
 #Userpic {
   background: url(/images/navigation/white-orange-darkgrey/navbar-right.jpg) no-repeat;
-}
-
-#Logo {
-  background:url(/images/navigation/white-orange-darkgrey/logo.gif) no-repeat;
 }
 
 #LoginBox {
@@ -59,8 +65,8 @@ body {
 #NotLoggedInDiv a {
   color: #FFF; background-color: inherit;
 }
-#NotLoggedInDiv #login_profile_name {
-  background: url(/images/navigation/white-orange-darkgrey/login-icon.gif) no-repeat;
+#LoginBox #login_profile_name {
+  background: #FFF url(/images/navigation/white-orange-darkgrey/login-icon.gif) no-repeat;
 }
 
 #Greeting {

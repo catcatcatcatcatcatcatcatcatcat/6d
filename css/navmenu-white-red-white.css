@@ -8,29 +8,38 @@ body {
 #NavMenuList a {
   color: #FFF; background-color: #F00;
 }
-#NavMenuList a:hover, #NavMenuList li.Selected a {
+#NavMenuList a:hover,
+#NavMenuList li.Selected a,
+#NavMenuList li a.Selected {
   color: #000; background-color: #FFF;
 }
-#NavMenuList .NavSubMenuList li, #NavMenuList .NavSubMenuList li a {
+#NavMenuList a span.navmenu-attention {
+  color: #FFF; background-color: inherit;
+}
+#NavMenuList a:hover span.navmenu-attention,
+
+#NavMenuList .Selected span.navmenu-attention {
+  color: #000; background-color: inherit;
+}
+
+#NavMenuList .NavSubMenuList li,
+#NavMenuList .NavSubMenuList li a {
   color: #333; background-color: #FFF;
 }
 #NavMenuList .NavSubMenuList li a {
   border-style: solid;
   border-color: #FFF;
 }
-#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+#NavMenuList .NavSubMenuList li a:hover,
+
+#NavMenuList .NavSubMenuList li.Selected a {
   color: #FFF; background-color: #F00;
 }
-#NavMenuList a span.navmenu-attention {
-  color: #FFF; background-color: inherit;
-}
-#NavMenuList a:hover span.navmenu-attention {
-  color: #000; background-color: inherit;
-}
-#NavMenuList .NavSubMenuList a span.navmenu-attention {
+#NavMenuList .NavSubMenuList span.navmenu-attention {
   color: #F00; background-color: inherit;
 }
-#NavMenuList .NavSubMenuList a:hover span.navmenu-attention {
+#NavMenuList .NavSubMenuList a:hover span.navmenu-attention,
+#NavMenuList .NavSubMenuList li.Selected span.navmenu-attention {
   color: #FFF; background-color: inherit;
 }
 
@@ -45,10 +54,6 @@ body {
   background: url(/images/navigation/white-orange-darkgrey/navbar-right.jpg) no-repeat;
 }
 
-#Logo {
-  background:url(/images/navigation/white-orange-darkgrey/logo.gif) no-repeat;
-}
-
 #LoginBox {
   color: #000; background-color: #FFF;
 }
@@ -61,8 +66,8 @@ body {
 #NotLoggedInDiv a {
   color: #000; background-color: inherit;
 }
-#NotLoggedInDiv #login_profile_name {
-  background: url(/images/navigation/white-orange-darkgrey/login-icon.gif) no-repeat;
+#LoginBox #login_profile_name {
+  background: #FFF url(/images/navigation/white-orange-darkgrey/login-icon.gif) no-repeat;
 }
 
 #Greeting {
@@ -75,27 +80,27 @@ body {
 
 
 
-/*
+
 h1 {
-  color: #630; background-color: inherit;
+  color: #222; background-color: inherit;
 }
 h2 {
-  color: #630; background-color: inherit;
+  color: #444; background-color: inherit;
 }
 h3 {
-  color: #420; background-color: inherit;
+  color: #A00; background-color: inherit;
 }
 hr {
-  color: #963; background-color: #A74;
+  color: #444; background-color: #F00;
 }
-*/
+
 
 a:link {
-  color: #F20; background-color: inherit;
+  color: #F00; background-color: inherit;
 }
 a:visited {
-  color: #810; background-color: inherit;
+  color: #C00; background-color: inherit;
 }
 a:active {
-  color: #F96; background-color: inherit;
+  color: #F33; background-color: inherit;
 }

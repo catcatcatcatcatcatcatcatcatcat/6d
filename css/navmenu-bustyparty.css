@@ -8,19 +8,24 @@ body {
 #NavMenuList a {
   color: #FFF; background-color: #036;
 }
-#NavMenuList a:hover, #NavMenuList li.Selected a {
-  color: #000; background-color: #FFF;
-}
-#NavMenuList .NavSubMenuList li, #NavMenuList .NavSubMenuList li a {
-  color: #FFF; background-color: #69C;
-}
-#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+#NavMenuList a:hover,
+#NavMenuList li.Selected a,
+#NavMenuList li a.Selected {
   color: #000; background-color: #FFF;
 }
 #NavMenuList a span.navmenu-attention {
   color: #F00; background-color: inherit;
 }
-#NavMenuList .NavSubMenuList a span.navmenu-attention {
+
+#NavMenuList .NavSubMenuList li,
+#NavMenuList .NavSubMenuList li a {
+  color: #FFF; background-color: #69C;
+}
+#NavMenuList .NavSubMenuList li a:hover,
+#NavMenuList .NavSubMenuList li.Selected a {
+  color: #000; background-color: #FFF;
+}
+#NavMenuList .NavSubMenuList span.navmenu-attention {
   color: #F4A; background-color: inherit;
 }
 
@@ -35,15 +40,6 @@ body {
   background: url(/images/navigation/bustyparty/navbar-right.jpg) no-repeat;
 }
 
-#Logo {
-  background:url(/images/navigation/bustyparty/logo.gif) no-repeat;
-}
-#LogoSubText {
-  display: block;
-  background: url(/images/navigation/bustyparty/navbar-logo-subtext.gif) no-repeat;
-  cursor: hand;
-}
-
 #LoginBox {
   color: #FFF; background-color: #69C;
 }
@@ -56,8 +52,8 @@ body {
 #NotLoggedInDiv a {
   color: #FFF; background-color: inherit;
 }
-#NotLoggedInDiv #login_profile_name {
-  background: url(/images/navigation/bustyparty/login-icon.gif) no-repeat;
+#LoginBox #login_profile_name {
+  background: #FFF url(/images/navigation/bustyparty/login-icon.gif) no-repeat;
 }
 
 #Greeting {
