@@ -1,13 +1,9 @@
-  <div id="Logo" onclick="unshow();"><a href="/"><img
-       src="/images/navigation/backpacking/logo.gif" alt="Backpacking Buddies" /></a></div>
-  <!--<div id="LogoSubText" onclick="unshow();"><a href="/"
-     onclick="change_nab_sub_text_to_something_silly('this will be a nice easter egg'); return false;"
-     ><img src="/images/navigation/navbar-logo-subtext.gif" 
-           alt="Easter Egg" /></a></div>-->
+  <div id="Logo" onclick="unshow();"><a href="/"><img id="theme-logo"
+       src="/images/navigation/[% core.themes.${core.theme} %]/logo.gif" alt="Backpacking Buddies" /></a></div>
   [% IF NOT core.user_id %]
-  <div id="Userpic"><img src="/images/navigation/backpacking/navbar-girl-friends.jpg" alt="Backpacking Friends" /></div>
+  <div id="Userpic"></div>
   <div id="NotLoggedInDiv"[% IF core.openloginnav %] style="display:none"[% END %]>
-    <i><a href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]" onclick="return xcShowLoginDiv();">Log in now</a>.</i>
+    <i><a href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]" onclick="return ShowLoginBox();">Log in now</a>.</i>
     <div style="font-size: 12px; margin-top: 0.4em"><i>(<a href="/signup.pl">Sign up</a>)</i></div>
   </div>
   <form id="login" action="/login.pl" method="post">
@@ -18,17 +14,17 @@
       <table>
         <tr>
           <td>
-            <label for="xc_user">Username:</label>
+            <label for="login_profile_name"
+                   style="font-size: 0.9em">Username:</label>
             <input type="text" name="profile_name" size="8" maxlength="20"
-                   tabindex="1" id="xc_user"
-                   [% IF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %]
-                   style="background: url(/images/navigation/backpacking/login-icon.gif) no-repeat; background-color: #fff;
-                          background-position: 0px 1px; padding-left: 18px; color: #00C; font-weight: bold;" />
+                   tabindex="1" id="login_profile_name"
+                   [% IF core.remembered_profile_name %]value="[% core.remembered_profile_name %]"[% END %] />
           </td>
           <td>
-            <label for="xc_password">Password:</label>
+            <label for="login_password"
+                   style="font-size: 0.9em">Password:</label>
             <input type="password" name="password" size="8" maxlength="20"
-                   tabindex="2" id="xc_password" />
+                   tabindex="2" id="login_password" />
           </td>
           <td>
             <input type="submit" value="Go" tabindex="4" id="Login" />
@@ -49,7 +45,8 @@
                          [% IF core.remember_me %]checked="checked"[% END %] />
                   <label for="xc_remember" style="vertical-align: top;">remember me</label>
                 </td>
-                <td style="font:10px Arial, Helvetica, sans-serif; text-align:right; " valign="top">
+                <td style="font:10px Arial, Helvetica, sans-serif; text-align:right; " 
+                    valign="top">
                   <i>(or <a href="/signup.pl">signup</a>)</i>
                 </td>
               </tr>
@@ -65,7 +62,7 @@
                         title="[% core.profile_info.main_photo.caption | html %]"
                         ><img src="/photos/[% core.profile_name %]/[% core.profile_info.main_photo.thumbnail_filename %]"
                         alt="[% core.profile_info.main_photo.caption | html %]"
-                    [% ELSE %]/profile/photo-upload.pl"><img src="/images/navigation/backpacking/navbar-girl-friends.jpg" alt="Backpacking Friends"
+                    [% ELSE %]/profile/photo-upload.pl"><img src="/images/navigation/[% core.themes.${core.theme} %]/navbar-right.jpg" alt="Backpacking Friends"
                     [% END %] /></a></div>
   <form id="Greeting" action="/logout.pl" method="post">
   <fieldset>
@@ -127,8 +124,8 @@
       <li[% IF core.emi == mi_count %] class="Selected"[% END %]
          ><a href="/?emi=[% mi_count %]#account.not_written_yet" onmouseover="show([% mi_count %])"
              onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
-             >[% IF !core.email_validated %]<span class="navmenu-attention"><strong>[% END %]My Account
-             [% IF !core.email_validated %]</strong></span>[% END %]</a>
+             >[% IF !core.email_validated %]<span class="navmenu-attention">[% END %]My Account
+             [% IF !core.email_validated %]</span>[% END %]</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
              ><a href="#/account.not_written_yet?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
@@ -145,7 +142,7 @@
           [% IF !core.email_validated %]
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
              ><a href="/help/resend-activation.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
-                 ><span class="navmenu-attention"><strong>Activate Account</strong></span></a></li>
+                 ><span class="navmenu-attention">Activate Account</span></a></li>
           [% END %]
         </ul>
       </li>
@@ -153,8 +150,8 @@
       <li[% IF core.emi == mi_count %] class="Selected"[% END %]
          ><a href="/profile/view.pl?emi=[% mi_count %]" onmouseover="show([% mi_count %])"
              onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
-             >[% IF !core.profile_info.main_photo_id %]<span class="navmenu-attention"><strong>[% END %]My Profile
-             [% IF !core.profile_info.main_photo_id %]</strong></span>[% END %]</a>
+             >[% IF !core.profile_info.main_photo_id %]<span class="navmenu-attention">[% END %]My Profile
+             [% IF !core.profile_info.main_photo_id %]</span>[% END %]</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
           [% IF core.profile_id %]
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
@@ -170,18 +167,18 @@
             [% END %]
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
                ><a href="/profile/photo-upload.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
-                   >[% IF !core.profile_info.main_photo_id %]<span class="navmenu-attention"><strong>[% END %]Upload Photos
-                   [% IF !core.profile_info.main_photo_id %]</strong></span>[% END %]</a></li>
+                   >[% IF !core.profile_info.main_photo_id %]<span class="navmenu-attention">[% END %]Upload Photos
+                   [% IF !core.profile_info.main_photo_id %]</span>[% END %]</a></li>
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
                ><a href="/profile/friendsandblocks.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
-                   >Manage Friends/Blocks</a></li>
+                   >My Community</a></li>
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
                ><a href="/profile/visitors.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                    >My Visitors</a></li>
           [% ELSE %]
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
                ><a href="/profile/account.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
-                   ><span class="navmenu-attention"><strong>Create Profile</strong></span></a></li>
+                   ><span class="navmenu-attention">Create Profile</span></a></li>
           [% END %]
         </ul>
       </li>
@@ -246,7 +243,7 @@
     <!--<li><a href="#">Legal Information</a></li>-->
     <li><a href="#/help/sitemap.pl">Site Map</a></li>
     <li><a href="#/help/stylechange.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]"
-           onclick="popup('/help/stylechange.pl?popup=1'); return false; "
+           onclick="change_theme(); return false; "
            >I Don't Like This Colour!</a></li>
     <li><a href="/garbageman.pl">I'm Feeling Lucky!</a></li>
   </ul>
