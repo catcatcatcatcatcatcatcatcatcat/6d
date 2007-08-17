@@ -5,10 +5,10 @@ body {
 }
 
 
-/* The 90% width keeps the menubar from wrapping prematurely, 
-but overlays the upgrade button in some browsers. Still
-looking for a good fix. 
-100% stretches the bar and creates a horizontal scroll. Suckage. */
+/* The 90% width keeps the menubar from wrapping prematurely, but 
+   overlays the upgrade button in some browsers.  Still looking for a
+   good fix.  100% stretches the bar and creates a horizontal scroll. :( */
+
 #NavMenuList {
   font: 80% Arial, Geneva, Helvetica, sans-serif;
   /* padding: 3px; margin-left: 40px; */
@@ -35,7 +35,8 @@ looking for a good fix.
   float: left; display: block;
   border-top: 1px solid #FFF;
 }
-#NavMenuList a:hover, #NavMenuList li.Selected a {
+#NavMenuList a:hover,
+#NavMenuList li.Selected a {
   color: #FFF; background-color: #000;
 }
 #NavMenuList .NavSubMenuList {
@@ -59,10 +60,12 @@ looking for a good fix.
   float: left;
   z-index: 2;
 }
-#NavMenuList .NavSubMenuList li a:hover, #NavMenuList .NavSubMenuList li.Selected a {
+#NavMenuList .NavSubMenuList li a:hover,
+#NavMenuList .NavSubMenuList li.Selected a {
   color: #FFF; background-color: #000;
 }
-#NavMenuList a span.navmenu-attention, #NavMenuList .NavSubMenuList a span.navmenu-attention {
+#NavMenuList a span.navmenu-attention,
+#NavMenuList .NavSubMenuList span.navmenu-attention {
   font-weight: bold;
   color: #F70; background-color: inherit;
 }
@@ -118,51 +121,25 @@ div#Content { width: auto; }
 #Userpic {
   display: block;
   position: absolute;
-  left: auto; right: -1px; top: 0;
+  left: auto; right: 0; top: 0;
   width: 100px; height: 100px;
   text-align: right;
   /* background: url(/images/navigation/bustyparty/navbar-right.jpg) no-repeat; */
   z-index: 2;
   margin: 0; padding: 0;
 }
-/*
-#Userpic img {
-  display: inline;
-  width: 100px; height: 100px;
-  color: #000; background-color: #FFF;
-  border: 0;
-}
-*/
 
 
 #Logo {
   position: absolute;
   left: 0; top: 0;
   height: 68px; width: 278px;
-  /* background: url(/images/navigation/bustyparty/logo.gif) no-repeat;
-  cursor: hand; */
+  z-index: 10;
 }
-/*
 #Logo img {
   border: 0;
 }
-*/
-#LogoSubText {
-  position: absolute;
-  left: 100px; top: 50px;
-  height: 5px; border: 0;
-  margin: 0; padding: 0;
-  color: #FFF; background-color: #69C;
-  display: none;
-  /* background: url(/images/navigation/white-orange-darkgrey/navbar-logo-subtext.gif) no-repeat;
-  cursor: hand; */
-}
-/*
-#LogoSubText img {
-  border: 0;
-  float: left;
-}
-*/
+
 
 #Greeting {
   position: absolute;
@@ -183,7 +160,7 @@ div#Content { width: auto; }
 }
 
 #login_profile_name {
-  background: url(/images/navigation/bustyparty/login-icon.gif) no-repeat;
+  /* background: url(/images/navigation/bustyparty/login-icon.gif) no-repeat; */
   color: #00C; background-color: #FFF;
   background-position: 0px 1px;
   padding-left: 18px;
@@ -233,7 +210,7 @@ div#Content { width: auto; }
   color: #000;  background-color: inherit;
   font-weight: normal;
 }
-#NotLoggedInDiv #login_profile_name {
+#LoginBox #login_profile_name {
   color: #000; background-color: #FFF;
 }
 
@@ -268,6 +245,7 @@ p#notification {
   width: 100%; height: 25px;
   text-align: left; vertical-align: middle;
   margin: 0; padding: 0;
+  overflow: hidden;
 }
 p#notification a {
   margin: 0;
@@ -279,6 +257,7 @@ p#notification a {
   width: auto; height: 19px;
   text-decoration: none;
   font-weight: normal;
+  white-space: nowrap;
 }
 p#notification a:hover, p#notification a.hover {
   background: #4995ED url(/images/icons/popup-blocked-over.gif) no-repeat 3px;
