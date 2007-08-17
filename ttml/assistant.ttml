@@ -15,7 +15,7 @@ If you receive any new messages you will be alerted here.</p>
    onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a><br />&nbsp;<br />
 <a href="/assistant.pl">Refresh</a><br />&nbsp;<br />
 <a href="javascript:window.close();">Close</a><br />&nbsp;<br />
-<a href="/logout.pl?comingfrommyass=1" class="_blank"
+<a href="/logout.pl?comingfrommyass=1"
    onclick="setMainFrameHref('/logout.pl?comingfrommyass=1'); window.close();">Logout</a>
 <hr />
 
@@ -59,7 +59,7 @@ No favourites online.
 <ul style="line-height:1.0em;">
 [% FOREACH visit = recent_visits.visits %]
   <li style="float: left; padding-right:5px;"><a style="font-weight:normal"
-         href="/profile/view.pl?profile_name=[% visit.profile_name %]"
+   href="/profile/view.pl?profile_name=[% visit.profile_name %]"
    title="Visited: [% visit.time %]"
    class="_blank">[% visit.profile_name %]</a></li>
 [% END %]
