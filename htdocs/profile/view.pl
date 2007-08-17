@@ -247,7 +247,7 @@ if ($profile->{faves} = $rusty->getAllFaves($profile->{'profile_id'}, 5)) {
 
 if ($profile->{own_profile}) {
   $query = <<ENDSQL
-SELECT v.visit_id, v.visitor_profile_id, up.profile_name, up.main_photo_id,
+SELECT v.visitor_profile_id, up.profile_name, up.main_photo_id,
   CONCAT_WS(' ',
     IF(DATE(v.time) = CURRENT_DATE(), '',
       IF(DATE(v.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
@@ -260,7 +260,7 @@ SELECT v.visit_id, v.visitor_profile_id, up.profile_name, up.main_photo_id,
 FROM `user~profile~visit` v
 INNER JOIN `user~profile` up ON up.profile_id = v.profile_id
 WHERE v.profile_id = ?
-ORDER BY v.visit_id DESC
+ORDER BY v.time DESC
 LIMIT 10
 ENDSQL
 ;
@@ -275,18 +275,6 @@ ENDSQL
   if (@visitors) {
     $profile->{last_visitor}->{profile_name} = $visitors[0]->{profile_name};
     $profile->{last_visitor}->{main_photo} = $rusty->getPhotoInfo($visitors[0]->{main_photo_id});
-    
-#    # Delete all visits stored since the 10th oldest (last retrieved) to keep
-#    # this database table nice and sparse!  We don't care after 10 per user..
-#    $query = <<ENDSQL
-#DELETE FROM `user~profile~visit`
-#WHERE profile_id = ?
-#  AND visit_id < ?
-#ENDSQL
-#;
-#    $sth = $rusty->DBH->prepare_cached($query);
-#    $sth->execute($profile->{'profile_id'}, $visitors[$#visitors]->{visit_id});
-#    $sth->finish;
     $profile->{visitors} = \@visitors;
   }
 }
