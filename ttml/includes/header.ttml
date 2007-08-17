@@ -33,28 +33,12 @@
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
     <link rel="stylesheet" type="text/css" href="/css/sweetTitles.css" />
     
-    <!-- Apply the stylesheet to any version of IE whose version 
-         number starts with 5 to work around IE5's broken box model -->
-    <!--[if lt IE 6]>
-    <link rel="stylesheet" type="text/css" href="/css/ie-5.0+5.5.css" />
-    <![endif]-->
-    <!--[if IE 7]>
-    <link rel="stylesheet" type="text/css" href="/css/ie-7.css" />
-    <![endif]-->
-
 [% #core.no_nav_links = 1 %]
 
 [% UNLESS core.no_nav_links %]
     
     <link rel="stylesheet" type="text/css" href="/css/navmenu.css" />
     <link id="theme" rel="stylesheet" type="text/css" href="/css/navmenu-[% core.themes.${core.theme} %].css" />
-    
-  [%# IF core.emi && (core.emi > 0) %]
-    [%# SET onload = onload _ "show(" _ core.emi _ ");" %]
-    [%# IF core.esmi && (core.esmi > 0) %]
-      [%# SET onload = onload _ "subselect(" _ core.esmi _ ");" %]
-    [%# END %]
-  [%# END %]
   
   [% #js.push("/js/navmenu.js") %]
   <!-- no defer="defer"!  this must be loaded before page is rendered.. -->
@@ -71,8 +55,8 @@
   [% SET onload = onload _ "CloseAssistant();" %]
 [% END %]
 
-[% js.push("/js/common.js") %]
-[% js.push("/js/addEvent.js") %]
+[%# js.push("/js/common.js") %]
+[%# js.push("/js/addEvent.js") %]
 [% js.push("/js/sweetTitles.js") %]
 
 
@@ -80,6 +64,18 @@
 [% FOREACH stylesheet = css %]
   <link rel="stylesheet" type="text/css" href="[% stylesheet %]" />
 [%+ END %]
+
+    <!-- Apply the stylesheet to any version of IE whose version 
+         number starts with 5 to work around IE5's broken box model -->
+    <!--[if lt IE 6]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-5.0+5.5.css" />
+    <![endif]-->
+    <!--[if IE 6]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-6.css" />
+    <![endif]-->
+    <!--[if IE 7]>
+    <link rel="stylesheet" type="text/css" href="/css/ie-7.css" />
+    <![endif]-->
 
 [%+ IF (js AND (js.size > 0)) OR header_js %]
 <!-- The script 'defer="defer"' attribute provides a hint to the user agent 
@@ -94,19 +90,21 @@ var themes = new Array( '[% core.themes.join("',\n'") %]' );
 //-->
 </script>
 
+<script type="text/javascript" src="/js/addEvent.js"></script>
+<script type="text/javascript" src="/js/common.js"></script>
 [% FOREACH javascript = js %]
   <script type="text/javascript" src="[% javascript %]" defer="defer"></script>
 [% END %]
 
-[%+ #IF header_js %]
+[%+# IF header_js %]
 <script type="text/javascript" defer="defer">
 //<!--
-/* the onclick event of links with a class name of "new-window" */
+/* the onclick event of links with a class name of "_blank" */
 addEvent(window, 'load', getNewWindowLinks);
 [% header_js %]
 //-->
 </script>
-[% #END %]
+[%# END %]
 
 [%+ IF header_css %]
 <style type="text/css">
