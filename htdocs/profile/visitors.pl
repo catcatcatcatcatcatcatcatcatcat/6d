@@ -58,8 +58,8 @@ sub list {
   
   if ($rusty->{core}->{'profile_id'}) {
       $rusty->{data}->{recent_visitors} =
-        $rusty->getRecentProfileVisitors($rusty->{core}->{'profile_id'},
-                                         101);
+        $rusty->getRecentProfileVisitorsDetailed($rusty->{core}->{'profile_id'},
+                                                 101);
   }
   
   $rusty->{data}->{countries} = [
