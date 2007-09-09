@@ -35,29 +35,8 @@ function OpenAssistant() {
   // If that didn't work (we have no popup handle),
   // show the 'oops, popup blocked' message
   if (!ass) {
-    //p = document.getElementById('popups_blocked_alert');
-    p = document.getElementById('notification');
-    p_href = document.getElementById('notification_href');
-    if (p) {
-      //p.style.zIndex = 0;
-      p.style.overflow = 'hidden';
-      //bg_col_above = document.getElementById("NavMenuList").getElementsByTagName("ul").item(0).getElementsByTagName("li").item(0).getElementsByTagName("a").item(0);
-      orig_bg_col = p_href.style.backgroundColor;
-      orig_col = p_href.style.color;
-      p_href.style.backgroundColor = '#333'; //bg_col_above.style.backgroundColor;
-      p_href.style.color = '#333';
-      orig_height = 0;
-      p.style.marginTop = -20 + 'px';
-      cur_height = -20;
-      intervalId = window.setInterval('cur_height = cur_height + 1; if (cur_height > orig_height) { p_href.style.backgroundColor = orig_bg_col; p_href.style.color = orig_col; window.clearInterval(intervalId) }; p.style.marginTop = cur_height + \'px\'; ', 50)
-      count = 0;
-      intervalId2 = window.setInterval('count = count + 1; if (count > 12) { p_href.className = \'\'; window.clearInterval(intervalId2) } else if (count > 2) { if ((count % 2) == 1) { p_href.className = \'hover\' } else { p_href.className = \'\' } }; ', 500)
-      //p_href.style.backgroundColor = orig_bg_col;
-      //orig_height = 20;
-      //p.style.height = 0;// + 'px';
-      //cur_height = 0;
-      //intervalId = window.setInterval('cur_height = cur_height + 1; alert(cur_height); if (cur_height > orig_height) { window.clearInterval(intervalId) }; p.style.height = cur_height + \'px\'; ',50)
-    }
+    p = document.getElementById('popups_blocked_alert');
+    p.style.display = 'block';
   }
   return false;
 }
