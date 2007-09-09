@@ -36,35 +36,44 @@
     <span id="notification-close" onclick="document.getElementById('notification').style.display='none'; return false;"></span>
     </a>
   </p>
+[% BLOCK ignore %]
+<script type="text/javascript" defer="defer">
+//<!--
+addEvent(window, 'load', slide_down_notification());
+//-->
+</script>
+[% END %]
 [% END %]
 
 
 
-[% PERL %]
-    if (defined $stash->get('benchmark')) {
-      $stash->get('benchmark')->stop('total');
-      $stash->get('benchmark')->stop('template');
-    }
-    # Calculate a simple line for the total.
-    $stash->get('core')->{benchmarktotal} = "total: "
-      . sprintf('%0.3fms', $stash->get('benchmark')->result('total') * 1000);
-    $stash->get('core')->{benchmark} = $stash->get('benchmark')->reports();
-    # Remove the total report from our list of benchmark reports.
-    $stash->get('core')->{benchmark} =~ s/^.+ of total .+\n//o;
-    # Change the output format to a more concise listing.
-    $stash->get('core')->{benchmark} =~ s/^(\d+) trials? of (\w+) \(([\d\.]+.?s) total\)$/$1 x $2: $3/mgo;
-    $stash->get('core')->{benchmark} = $stash->get('core')->{benchmark}
-                                     . $stash->get('core')->{benchmarktotal}
-                                     . "\n";
-    
-[% END %]
-
-[% IF core.benchmark %]
-  <pre style="padding: 1px; margin: 5px; clear: both; float: left;
-              font-size: 0.8em;
-              border: 2px dashed #F2EEEE; background-color: #FAF8F8; color: #401"
-       title="benchmark before processing template (which can be the biggest lag!)"
-  >[% core.benchmark %]</pre>
+[% IF core.env == 'testing' %]
+  [% PERL %]
+      if (defined $stash->get('benchmark')) {
+        $stash->get('benchmark')->stop('total');
+        $stash->get('benchmark')->stop('template');
+      }
+      # Calculate a simple line for the total.
+      $stash->get('core')->{benchmarktotal} = "total: "
+        . sprintf('%0.3fms', $stash->get('benchmark')->result('total') * 1000);
+      $stash->get('core')->{benchmark} = $stash->get('benchmark')->reports();
+      # Remove the total report from our list of benchmark reports.
+      $stash->get('core')->{benchmark} =~ s/^.+ of total .+\n//o;
+      # Change the output format to a more concise listing.
+      $stash->get('core')->{benchmark} =~ s/^(\d+) trials? of (\w+) \(([\d\.]+.?s) total\)$/$1 x $2: $3/mgo;
+      $stash->get('core')->{benchmark} = $stash->get('core')->{benchmark}
+                                       . $stash->get('core')->{benchmarktotal}
+                                       . "\n";
+      
+  [% END %]
+  
+  [% IF core.benchmark %]
+    <pre style="padding: 1px; margin: 5px; clear: both; float: left;
+                font-size: 0.8em;
+                border: 2px dashed #F2EEEE; background-color: #FAF8F8; color: #401"
+         title="benchmark before processing template (which can be the biggest lag!)"
+    >[% core.benchmark %]</pre>
+  [% END %]
 [% END %]
 
 [% UNLESS core.no_nav_links %]
@@ -137,12 +146,15 @@
   <a style="font-weight: normal; "
      href="/help/contact-us.pl?dept=suggestions&amp;problem=other&amp;ref=[% core.self_url_escaped %]">Get in touch!</a>
   <br />
-  <span style="color:#AAA">Doorways: 
-  <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
-  <a style="color:#AAA; font-weight: normal; " href="/intro/hostels/">Hostels</a> | 
-  <a style="color:#AAA; font-weight: normal; " href="/intro/friends/">Friends</a> | 
-  <a style="color:#AAA; font-weight: normal; " href="/intro/travels/">Travels</a>
-  </span>
+  
+  [% IF core.env == 'testing' %]
+    <span class="testing_todo_list" style="color:#AAA">Doorways: 
+      <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
+      <a style="color:#AAA; font-weight: normal; " href="/intro/hostels/">Hostels</a> | 
+      <a style="color:#AAA; font-weight: normal; " href="/intro/friends/">Friends</a> | 
+      <a style="color:#AAA; font-weight: normal; " href="/intro/travels/">Travels</a>
+    </span>
+  [% END %]
 </p>
 
 [% END %]
