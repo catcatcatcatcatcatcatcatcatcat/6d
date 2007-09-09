@@ -364,7 +364,7 @@ sub compose {
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=reply"
                                        . "&tray=".$rusty->{data}->{tray}
-                                       . "&success=0&reason=badmessageid" );
+                                       . "&success=0&reason=badmessageidlinked" );
       $rusty->exit;
       
     }
@@ -388,7 +388,7 @@ sub compose {
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=forward"
                                        . "&tray=".$rusty->{data}->{tray}
-                                       . "&success=0&reason=badmessageid" );
+                                       . "&success=0&reason=badmessageidlinked" );
       $rusty->exit;
       
     }
@@ -621,10 +621,10 @@ sub send {
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=".$rusty->{params}->{mode} # compose, reply or forward
+                                       . "?mode=editdraft&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
-                                       . "&success=0&reason=badmessageid"
+                                       . "&success=0&reason=badmessageidlinked"
                                        . $extra_query_string_params);
       $rusty->exit;
       
