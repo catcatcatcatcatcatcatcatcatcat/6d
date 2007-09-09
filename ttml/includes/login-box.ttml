@@ -5,7 +5,7 @@
     <input type="hidden" name="mode" value="login" />
     <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
     <div class="container">
-    <h2>Existing customers <span>Sign in here</span></h2>
+    <h2>Existing users <span>Log in here</span></h2>
     <p>
       <label for="profile_name">Username:</label>
       <input type="text" class="text" id="profile_name" tabindex="5" name="profile_name"
