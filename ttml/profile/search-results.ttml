@@ -37,7 +37,8 @@
   [% END %]
   <h1 style="margin-bottom:0; ">Search Results: [% search_string %]</h1>
   <h5 style="margin-left:15px;margin-top:0;">Snapshot created [% search_date %]
-<!--
+[% IF core.env == 'testing' %]
+<span class="testing_todo_list">
 put this here if the search date is over a minute old or something like that..
 and get it to add any new profiles found on this search criteria and add them to
 the end of this search results set then take user back to this page with a msg
@@ -48,10 +49,11 @@ make sure we take the user back to the profile that is
 on the start of this page or the first one that still exists when we remove
 profiles as the offset may leave us looking at things way ahead of where we were
 in the search results..
--->
-    <a href="#this_is_another_option">Append new online</a> |
-    <a href="#as_is_this">Remove offline</a> |
-    <a href="#oooh.._with_all_of_these,_the_ordering_will_be_messed_up_(see_comment_above)!">Update (Both)</a>
+</span>
+    <a class="testing_todo_list" href="#this_is_another_option">Append new online</a> |
+    <a class="testing_todo_list" href="#as_is_this">Remove offline</a> |
+    <a class="testing_todo_list" href="#oooh.._with_all_of_these,_the_ordering_will_be_messed_up_(see_comment_above)!">Update (Both)</a>
+[% END %]
   </h5>
   <h5 style="margin-left:30px;margin-top:0;">Showing [% offset + 1 %] - [% offset + profiles.size %]
                                              from [% num_results %] matching profiles.</h5>
@@ -88,7 +90,7 @@ in the search results..
                   z-index:1; ">
         <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1"
            class="thumbnail-shadow"
-           title="[% caption %] :: Other info like age:[% IF p.age %][% p.age %][% ELSE %]Unspecified[% END %]">
+           title="[% caption %] :: Location: [% IF p.subentity %][% p.subentity %], [% END %][% p.country %]">
           <!-- <img src="[% p.photo.thumbnail %][% IF p.photo.thumbnail.search('\?') %]&[% ELSE %]?[% END %]nc=1" -->
           <img src="[% photo_link %]"
                style="width:[% p.photo.tnnc_width %]px;
