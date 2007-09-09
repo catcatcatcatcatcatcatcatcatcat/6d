@@ -109,7 +109,7 @@ breadcrumbs.push("$title")
 [% END %]
 
 <h1 style="clear:left;">My Community</h1>
-<p style="font-size: 0.8em; color: #555; ">This section allows you to manage your 
+<p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">This section allows you to manage your 
 friends, favourite profiles, blocked profiles and notes attached to profiles.</p>
 
 [% UNLESS core.profile_id %]
@@ -127,11 +127,14 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
 
 <h3>My Friends</h3>
 [% UNLESS friend_links %]
-  <p>You currently have no friends (aww). You can add a friend by clicking on
-  &quot;Add friend&quot; on their profile page or by entering the profile name below.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">You currently have no friends (aww).&nbsp; 
 [% ELSE %]
-  <p>Your friends are listed below. Click on their name to view their
-     profile, or on &quot;delete&quot; to unlink your profiles.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">Your friends are listed below.&nbsp; Click on their name to view their
+     profile, or on &quot;delete&quot; to unlink your profiles.&nbsp;
+[% END %]
+     You can add a friend by clicking on &quot;Add friend&quot; 
+     on their profile page or by entering the profile name below.</p>
+[% IF friend_links %]
   <ol>
   [% FOREACH link = friend_links %]
     [% real_photo_link = "/photos/${link.profile_name}/${link.thumbnail_filename}" %]
@@ -204,11 +207,14 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
 
 <h3>My Favourites</h3>
 [% UNLESS fave_links %]
-  <p>You currently have no favourites. You can add a favourites by clicking on
-  &quot;Add favourite&quot; on their profile page or by entering the profile name below.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">You currently have no favourites.&nbsp;
 [% ELSE %]
-  <p>Your favourites are listed below. Click on their name to view their
-     profile, or on &quot;delete&quot; to delete them from your favourites.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">Your favourites are listed below.&nbsp; Click on their name to view their
+     profile, or on &quot;delete&quot; to delete them from your favourites.&nbsp;
+[% END %]
+     You can add a favourites by clicking on &quot;Add favourite&quot; 
+     on their profile page or by entering the profile name below.</p>
+[% IF fave_links %]
   <ol>
   [% FOREACH link = fave_links %]
     [% real_photo_link = "/photos/${link.profile_name}/${link.thumbnail_filename}" %]
@@ -261,15 +267,17 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
 
 <h3>My Blocks</h3>
 [% UNLESS block_links %]
-  <p>You currently have no blocks (aren't you a nice person?).
-  You can add a block by clicking on
-  &quot;Block this person&quot; on their profile page or by entering the profile name below.<br />
-  Don't worry - they won't know you've blocked them, it just stops them from contacting you.
-  If you decide to unblock them at a later stage,
-    you will see all of the messages they sent to you while you had blocked them.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">You currently have no blocks (aren't you a nice person?).&nbsp;
 [% ELSE %]
-  <p>Your blocked profiles are listed below. Click on their name to view their
-     profile, or on &quot;unblock&quot; to unblock their profile.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">Your blocked profiles are listed below.&nbsp; Click on their name to view their
+     profile, or on &quot;unblock&quot; to unblock their profile.&nbsp;
+[% END %]
+  You can add a block by clicking on &quot;Block this person&quot; 
+  on their profile page or by entering the profile name below.&nbsp;
+  Don't worry - they won't know you've blocked them, it just stops them from contacting you.&nbsp;
+  If you decide to unblock them at a later stage,
+  you will see all of the messages they sent to you while you had blocked them.</p>
+[% IF block_links %]
   <ol>
   [% FOREACH block = block_links %]
     [% real_photo_link = "/photos/${block.profile_name}/${block.thumbnail_filename}" %]
@@ -314,11 +322,13 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
 
 <h3>My Notes</h3>
 [% UNLESS notes %]
-  <p>You currently have no notes attached to profiles. You can add a note by clicking on
-  &quot;Add Note&quot; on their profile page.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">You currently have no notes attached to profiles.&nbsp;
 [% ELSE %]
-  <p>Your notes attached to profiles are listed below. Hover over their name to see the attached note,
-  click on their name to view their profile, or on &quot;edit&quot; or &quot;delete&quot; to edit/delete your note.</p>
+  <p style="font-size: 0.75em; line-height: 1.25em; color: #666; ">Your notes attached to profiles are listed below.&nbsp; Hover over their name to see the attached note,
+  click on their name to view their profile, or on &quot;edit&quot; or &quot;delete&quot; to edit/delete your note.&nbsp;
+[% END %]
+You can add/edit a profile note by clicking on &quot;Add Note&quot; on their profile page.</p>
+[% IF notes %]
   <ol>
   [% FOREACH note = notes %]
     [% real_photo_link = "/photos/${note.profile_name}/${note.thumbnail_filename}" %]
@@ -346,7 +356,6 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
     </li>
   [% END %]
   </ol>
-  <p>To add a note to a new profile, visit their profile and click "Add Note".</p>
 [% END %]
 
 [% INCLUDE includes/footer.ttml %]
