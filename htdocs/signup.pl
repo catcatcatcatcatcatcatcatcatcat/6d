@@ -61,7 +61,8 @@ $rusty->{param_info} = {
 };
 
 
-my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
+my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'}
+  unless $rusty->{params}->{'ref'} eq '/';
 
 if (!$rusty->{params}->{passphrase_id}) {
   
@@ -358,24 +359,47 @@ ENDSQL
                   $rusty->{params}->{profile_name});
     $sth->finish;
     
+    # Get the profile id of the profile we just created
+    my $profile_id = $dbh->{mysql_insertid};
+    
+    # Create reference to profile_id in the user table
+    # (I know, we're duplicating key references, but
+    # it REALLY speeds up a lot of lookups and removes
+    # one table from all of these lookup's joins.. :)
+    $query = <<ENDSQL
+UPDATE `user`
+SET profile_id = ?
+WHERE user_id = ?
+ENDSQL
+;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute($profile_id, $user_id);
+    $sth->finish;
+    
     # Create some basic user info
     $query = <<ENDSQL
 INSERT INTO `user~info`
-( user_id, real_name, gender, sexuality, dob, country_id, subentity_id )
+( user_id, real_name, gender, sexuality, dob, age, country_id, subentity_id )
 VALUES
-( ?, ?, ?, ?, ?, ?, ? )
+( ?, ?, ?, ?, ?, ?, ?, ? )
 ENDSQL
 ;
-    my $dob = join '-', $rusty->{params}->{dob_year},
-                        $rusty->{params}->{dob_month},
-                        $rusty->{params}->{dob_day};
+    my $dob = sprintf("%4d-%02d-%02d",
+                      $rusty->{params}->{dob_year},
+                      $rusty->{params}->{dob_month},
+                      $rusty->{params}->{dob_day});
+    
+    my @localtime = localtime();
+    my $age = (($localtime[5]+1900) - $rusty->{params}->{dob_year}) -
+                (int(($localtime[4]+1).sprintf("%02d",$localtime[3])) < 
+                 int($rusty->{params}->{dob_month}.sprintf("%02d",$rusty->{params}->{dob_day})));
     
     $sth = $dbh->prepare_cached($query);
     $sth->execute($user_id,
                   $rusty->{params}->{real_name},
                   $rusty->{params}->{gender},
                   $rusty->{params}->{sexuality},
-                  $rusty->{params}->{dob},
+                  $dob, $age,
                   $rusty->{params}->{country_id},
                   $rusty->{params}->{subentity_id});
     $sth->finish;
@@ -399,7 +423,7 @@ ENDSQL
       . "?email=" . URI::Escape::uri_escape($rusty->{params}->{email})
       . "&profile=" . $rusty->{params}->{profile_name}
       . "&validation=$email_validation_code";
-      
+    
     my $textmessage = <<ENDEMAIL
 Hi $rusty->{params}->{real_name},
 Welcome to BackpackingBuddies.com!
