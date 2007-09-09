@@ -393,10 +393,10 @@ ENDSQL
       . "?email=" . URI::Escape::uri_escape($rusty->{params}->{email})
       . "&profile=" . $rusty->{params}->{profile_name}
       . "&validation=$email_validation_code";
-      
+    
     my $textmessage = <<ENDEMAIL
 Hi $rusty->{params}->{real_name},
-Welcome to X.com!
+Welcome to BackpackingBuddies.com!
 Someone, hopefully you, signed up with this email address
 Here are your login details for future reference:
 
@@ -405,13 +405,6 @@ Here are your login details for future reference:
 
 To activate your account and gain full access to the site, click here:
 $activation_link
-
-If you want to remove yourself, you can do so here:
-[PAGE WHICH ASKS FOR USERNAME AND PASSWORD TO REMOVE
-USER WHICH ALSO LINKS TO PAGES WHICH SEND LOGIN DETAILS
-TO A USERNAME OR PASSWORD SPECIFIED (NOT NEEDED IN THIS
-CASE, BUT IS FOR ON THE SPOT REQUESTS]
-
 ENDEMAIL
 ;
     
