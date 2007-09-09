@@ -149,7 +149,7 @@ while (my $expired_session = $sth->fetchrow_hashref) {
   }
   
   push @{$rusty->{data}->{messages}},
-    "Updated user '".$expired_session->{'user_id'}."' as "
+    "Updated user as "
   . "last online at ".$expired_session->{'updated'}." with "
   . $expired_session->{'mins_online'}." more mins online &amp; "
   . $expired_session->{'clicks'}." clicks, thanks to session '"
