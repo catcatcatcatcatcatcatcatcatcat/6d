@@ -1,5 +1,12 @@
 [% css = ['/css/login_form.css'] %]
 [% title = 'Login' %]
+[% IF remembered_profile_name;
+     core.remembered_profile_name = remembered_profile_name;
+     core.remember_me = 1;
+   ELSIF forget_profile_name;
+     core.remembered_profile_name = undef; 
+     core.remember_me = undef;
+   END %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push("$title") %]
 
