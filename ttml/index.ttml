@@ -6,16 +6,16 @@ if (window.attachEvent)
 if (window.addEventListener)
     window.addEventListener("load", showWelcome, false);
 [% END %]
-
+[% css = ['/css/login_form.css'] %]
 [% INCLUDE includes/header.ttml %]
 
 
 [% # Let's cheat a little bit! :) %]
-[% site_stats.signups = site_stats.signups + 1234567 %]
-[% site_stats.logins  = site_stats.logins  + 54321 %]
-[% site_stats.online  = site_stats.online  + 123 %]
+[% #site_stats.signups = site_stats.signups + 1234567 %]
+[% #site_stats.logins  = site_stats.logins  + 54321 %]
+[% #site_stats.online  = site_stats.online  + 123 %]
   
-  <div style="width:150px; float:right; margin:0 0 20px 20px">
+  <div style="width:150px; float:right; margin:0 0 10px 15px">
     <table style="margin-top: 4px; background-color: #ddd; color: inherit; border: 0; width: 100%; " cellpadding="1" cellspacing="0">
       <tr style="background-color: #ddd; color: inherit; ">
         <td style="background-color: #ddd; color: inherit; "><b>&nbsp;<a href="#">Website Stats</a></b></td>
@@ -81,13 +81,11 @@ if (window.addEventListener)
 
 [% IF core.user_id %]
   [% IF welcome %]
-    This is the welcome page you should get just after you sign up..<br />
-    There should be some decent content in here and a tour but there isn't yet!<br />
-    [% IF core.ref %]For now you can go back to
-      <a href="[% core.ref %]">the place you came from before you signed up</a>.[% END %]
+    <h3>Thanks again for signing up and making a profile!</h3>
+    <p>Now go <a href="/profile/search.pl">find some people</a> to play with. :)</p>
   [% ELSE %]
-    [% IF user_stats.mins_online > 0 && user_stats.last_session_end %]
-    <p>You have logged in [% user_stats.num_logins.chunk(-3).join(',') %] times,
+    <h1>Wanna see some boring statistics?</h1>
+    <p>You've logged in [% user_stats.num_logins.chunk(-3).join(',') %] times,
        spending
        [% IF user_stats.time_online.years %][% user_stats.time_online.years %] year[% IF user_stats.time_online.years > 1 %]s[% END %], [% END %]
        [% IF user_stats.time_online.months %][% user_stats.time_online.months %] month[% IF user_stats.time_online.months > 1 %]s[% END %],
@@ -97,21 +95,64 @@ if (window.addEventListener)
        [% user_stats.time_online.mins %] minute[% IF user_stats.time_online.mins > 1 %]s[% END %]
        online
        visiting [% user_stats.num_clicks.chunk(-3).join(',') %] pages
-       since you joined at [% user_stats.joined %].<br />
-       That's [% (user_stats.num_clicks / user_stats.mins_online) * 60 FILTER format('%.1f') %]
-       clicks every hour - you can do better than that!
+       since you joined at [% user_stats.joined %] - 
+       that's [% cph = (user_stats.num_clicks / user_stats.mins_online) * 60; cph FILTER format('%.1f') %]
+       clicks per hour - [% IF cph < 3 %]you soft tart.
+                         [% ELSIF cph < 5 %]you can do better than that!
+                         [% ELSIF cph < 10 %]you're getting better..
+                         [% ELSIF cph < 20 %]not too bad..
+                         [% ELSIF cph < 40 %]ooh, i'm impressed!
+                         [% ELSIF cph < 60 %]hoorah!
+                         [% ELSIF cph < 100 %]doesn't that hurt?!
+                         [% ELSIF cph < 200 %]holy crap! slow down!
+                         [% ELSIF cph < 300 %]now you're just playing with me..
+                         [% ELSIF cph >= 300 %]GRRRRRRRRRRRRRR!!!
+                         [% END %]
     </p>
-    <p>You were last online at [% user_stats.last_session_end %]
+    <h3>More?!</h3>
+    <p>[% IF user_stats.last_session_end %]You were last online at [% user_stats.last_session_end %]
        and you have looked at [% user_stats.unique_visited_count.chunk(-3).join(',') %] different profiles
        a total of [% user_stats.total_visited_count.chunk(-3).join(',') %] times.
+       [% ELSE %]You'll need to log in again before you get any more interesting statistics.&nbsp; Sorry! ;)[% END %]
     </p>
-    [% END %]
+    
   [% END %]
 [% ELSE %]
   [% IF core.logged_out %]
     <h2 class="success">You are now logged out.</h2>
     <h1> &nbsp; &nbsp; &nbsp; Please come back soon!</h1>
   [% ELSE %]
+  <div id="signin" style="float: left; width: auto; margin: 0 15px 10px 0; ">
+    [% INCLUDE 'includes/registration-box.ttml' %]
+  </div>
+    <h1>Welcome!</h1>
+    <h2>What is BackpackingBuddies.com?</h2>
+    <p>
+      Backpacking Buddies is a new website where you can find other
+      backpackers in your area while you are travelling
+      or get in contact with travellers who are
+      still planning their trip and join in with their travel plans!
+    </p>
+    <h3>Oh Really?</h3>
+    <p>
+      It's a place to make friends with other travellers before you arrive somewhere
+      or meet people who live where you're going to and get them to be your
+      own personal tour guide! (maybe in return for lunch or some beers ;)
+    </p>
+    <h3>But Why?</h3>
+    <p>
+      It's been hand-built by a backpacker who couldn't find any decent places
+      online to meet other travellers and make backpacking friends before
+      you get somewhere - and who loved the idea of letting people who wanted to
+      backpack with a group and didn't know anyone else who wanted to go to the
+      same places at the same time.. GRRR!
+    </p>
+    <h3>Hoorah!</h3>
+    <p>
+      Meet your travelling friends here!  Before, during and after you travel - 
+      with locals and backpackers!
+    </p>
+    [% BLOCK old_description_for_employers %]
     <h1>Welcome!</h1>
     <h3>What is BackpackingBuddies.com?</h3>
     <p>
@@ -176,6 +217,7 @@ if (window.addEventListener)
       And yes, the 'website stats' figures on this page have been massaged.&nbsp;
       But it's more fun that way.
     </p>
+    [% END %]
   [% END %]
 [% END %]
 
