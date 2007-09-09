@@ -1,73 +1,83 @@
 [% IF firstopen %][% SET onload = "setTimeout('self.focus()', 50); " %][% END %]
 [% SET core.no_nav_links = 1 %]
 [% title = 'Assistant' %]
+[% header_css = BLOCK %]
+#Content {
+  margin: 0;
+  padding: 0;
+}
+[% END %]
 [% INCLUDE includes/header.ttml %]
-<div style="text-align:center; ">
+<div style="height: 246px; width: 146px;
+            padding: 2px;
+            font-size: 0.8em; text-align:center; ">
 
-<h2>Assistant</h2>
-<hr />
-[% IF core.user_id %]<p>This assistant ensures you remain connected to Backpackingbuddies
-but allows you to browse other sites.&nbsp;
-If you receive any new messages you will be alerted here.</p>
-<hr />
+<h2>Assistant <img src="/images/icons/questionmark.gif"
+                   alt="This assistant ensures you remain connected to Backpackingbuddies
+but allows you to browse other sites.
+If you receive any new messages you will be alerted here."
+                   title="This assistant ensures you remain connected to Backpackingbuddies
+but allows you to browse other sites.
+If you receive any new messages you will be alerted here." /></h2>
+<hr style="width: 100%; height: 2px; " />
+[% IF core.user_id %]
 
 <a href="/" class="_blank"
-   onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a><br />&nbsp;<br />
-<a href="/assistant.pl">Refresh</a><br />&nbsp;<br />
-<a href="javascript:window.close();">Close</a><br />&nbsp;<br />
+   onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a> |
+<a href="/assistant.pl">Refresh</a><br />
+<a href="javascript:window.close();">Close</a> |
 <a href="/logout.pl?comingfrommyass=1"
    onclick="setMainFrameHref('/logout.pl?comingfrommyass=1'); window.close();">Logout</a>
-<hr />
+<hr style="width: 100%; height: 1px; " />
 
-<h3>Messages:</h3>
+<h3 style="margin: 0px; ">Messages:</h3>
 [% IF new_messages_count && new_messages_count > 0 %]
 <a href="/profile/message.pl?mode=list&amp;tray=inbox" 
    class="_blank">[% new_messages_count %] new message[% IF new_messages_count > 1 %]s[% END %]</a>.
 [% ELSE %]
 No new messages.
 [% END %]
-<hr />
+<hr style="width: 100%; height: 1px; " />
 
-<h3>Friends:</h3>
+<h3 style="margin: 0px; ">Friends:</h3>
 [% IF friends_online && friends_online > 0 %]
-<ul style="line-height:1.0em; ">
-[% FOREACH friend = friends_online %]
-  <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% friend %]"
-   class="_blank">[% friend %]</a></li>
-[% END %]
-</ul>
+  <ul style="line-height:1.0em; ">
+  [% FOREACH friend = friends_online %]
+    <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% friend %]"
+     class="_blank">[% friend %]</a></li>
+  [% END %]
+  </ul>
 [% ELSE %]
 No friends online.
 [% END %]
-<hr />
+<hr style="width: 100%; height: 1px; " />
 
-<h3>Favourites:</h3>
+<h3 style="margin: 0px; ">Favourites:</h3>
 [% IF faves_online && faves_online > 0 %]
-<ul style="line-height:1.0em; ">
-[% FOREACH fave = faves_online %]
-  <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% fave %]"
-   class="_blank">[% fave %]</a></li>
-[% END %]
-</ul>
+  <ul style="line-height:1.0em; ">
+  [% FOREACH fave = faves_online %]
+    <li style="float: left; padding-right:5px;"><a href="/profile/view.pl?profile_name=[% fave %]"
+     class="_blank">[% fave %]</a></li>
+  [% END %]
+  </ul>
 [% ELSE %]
 No favourites online.
 [% END %]
-<hr />
+<hr style="width: 100%; height: 1px; " />
 
-<h3>Visitors:</h3>
+<h3 style="margin: 0px; ">Visitors:</h3>
 [% IF recent_visits && recent_visits > 0 %]
-<ul style="line-height:1.0em;">
-[% FOREACH visit = recent_visits.visits %]
-  <li style="float: left; padding-right:5px;"><a style="font-weight:normal"
-   href="/profile/view.pl?profile_name=[% visit.profile_name %]"
-   title="Visited: [% visit.time %]"
-   class="_blank">[% visit.profile_name %]</a></li>
-[% END %]
-</ul>
+  <ul style="line-height:1.0em;">
+  [% FOREACH visit = recent_visits %]
+    <li style="float: left; padding-right:5px;"><a style="font-weight:normal"
+     href="/profile/view.pl?profile_name=[% visit.profile_name %]"
+     title="Visited: [% visit.time %]"
+     class="_blank">[% visit.profile_name %]</a></li>
+  [% END %]
+  </ul>
 [% ELSE %]
 Nobody has visited your profile!
 [% END %]
-<hr style="clear: left; " />
 
 [% ELSIF session_cookie %]
 <p class="err">Your session has expired due to inactivity.</p>
