@@ -13,7 +13,7 @@
 
 <h1>Upload Photos</h1>
 
-[% IF num_photos >= 50 %]
+[% IF num_photos && num_photos >= 50 %]
   <p class="err">You are at your photo storage limit.&nbsp;
                  Please delete some images before trying to upload any more.</p>
   [% INCLUDE includes/footer.ttml %]
@@ -49,7 +49,6 @@
                 position:absolute;
                 top: 50%; margin-top:-[% (photo_info.tnnc_height+15) / 2 %]px;
                 left: 50%; margin-left:-[% (photo_info.tnnc_width+15) / 2 %]px;">
-      <!-- <img src="/profile/photo.pl?id=[% photo_info.photo_id %]&a=1&nc=1" -->
       <img src="/photos/[% core.profile_name %]/[% photo_info.thumbnail_filename %]"
            style="width:[% photo_info.tnnc_width %]px;
                   height:[% photo_info.tnnc_height %]px;"
