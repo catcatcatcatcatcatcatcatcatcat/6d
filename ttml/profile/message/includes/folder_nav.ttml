@@ -4,7 +4,7 @@
     [% IF new_message_alert %]<span style="font-weight: bold; color: #F00;">CLICK TO UPDATE:</span> [% END %]
     <a href="/profile/message.pl?mode=inbox"
        [% IF new_message_alert %]style="background-color: #FDD; padding:2px; border: 2px solid #F99;"[% END %]>[% END %]<img
-      src="/images/icons/message/special_message.gif"
+      src="/images/icons/message/inbox.gif"
       alt="Inbox" />[% IF tray_count.inbox.flagged_as_unread > 0 %]<span 
         style="font-weight: bold;">[% END %] Inbox[% IF tray_count.inbox.total > 0 %]
           ([% IF tray_count.inbox.flagged_as_unread > 0 %][% tray_count.inbox.flagged_as_unread %] unread </span>/[% END %][% tray_count.inbox.total %])[% END %]
@@ -12,14 +12,14 @@
   
   <li class="opt">[% UNLESS mode == list && tray == "sent" %]
     <a href="/profile/message.pl?mode=sent">[% END %]<img
-      src="/images/icons/message/special_message.gif"
+      src="/images/icons/message/sent.gif"
       alt="Sent Items" /> Sent[% IF tray_count.sent.total > 0 %] ([% tray_count.sent.total %])[% END %]
     [% UNLESS mode == list && tray == "sent" %]</a>[% END %]</li>
   
   <li class="opt">[% UNLESS mode == list && tray == "drafts" %]
     <a href="/profile/message.pl?mode=drafts"
        [% IF tray_count.drafts.total > 0 %] style="font-weight: bold;"[% END %]>[% END %]<img
-      src="/images/icons/message/special_message.gif"
+      src="/images/icons/message/drafts.gif"
       alt="Drafts" /> Drafts[% IF tray_count.drafts.total > 0 %] ([% tray_count.drafts.total %])[% END %]
     [% UNLESS mode == list && tray == "drafts" %]</a>[% END %]</li>
   
@@ -29,3 +29,33 @@
       alt="Compose New Message" /> Compose New Message[% UNLESS mode == "compose" %]</a>[% END %]</li>
   
 </ul>
+
+
+[% IF prev_action %]
+  [% IF success == 1 %]
+  <p class="success">
+    [% IF prev_action == "send" %]Your message has been sent successfully.
+    [% ELSE %]Your previous action was completed successfully.
+    [% END %]
+  </p>
+  [% ELSE %]
+  <p class="err">
+    [% IF prev_action == "send" %]Your message could not be sent.
+    [% ELSE %]Your previous action could not be completed.
+    [% END %]<br />
+    Reason:
+    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist.
+    [% ELSIF reason == "badprofileid" %]The profile specified does not exist.
+    [% ELSIF reason == "noprofileidorname" %]No profile was specified.
+    [% ELSIF reason == "noprofile" %]You have not created a profile.
+    [% ELSIF reason == "notposted" %]You did not submit the form correctly.  Hmmmm.. Bad spammer!
+    [% ELSIF reason == "badmessageid" %]The message did not belong to you.
+    [% ELSIF reason == "badmessageidlinked" %]The message you are replying to/forwarding does not belong to you.
+    [% ELSIF reason == "alreadyresponded" %]You have already responded to this message.
+    [% ELSIF reason == "alreadysubmittedasspam" %]You have already submitted this message as spam.
+    [% ELSE %]An unknown error occured.
+    [% END %]
+  </p>
+  [% END %]
+[% END %]
+
