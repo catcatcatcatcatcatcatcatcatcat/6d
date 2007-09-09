@@ -4,13 +4,23 @@
 [% breadcrumbs.push('<a href="/profile/view.pl">My Profile</a>'); %]
 [% breadcrumbs.push("$title") %]
 
-[% IF core.profile_id;
+[% IF core.profile_info.created;
      PROCESS 'profile/includes/admin-navigation.ttml';
      display_navigation('account');
    END %]
 
 
 <h1>My Profile</h1>
+
+[% IF welcome %]
+<h3>Thanks for signing up!</h3>
+<p>Now create a profile so people can find out more about you.&nbsp;
+   You don't have to fill all of it out - just the bits you want to.&nbsp;
+   If you just fill out the basics, it'll be very quick and painless! ;)</p>
+[% IF core.ref %]Alternatively, go back to
+  <a href="[% core.ref %]">the place you came from before you signed up</a>
+  without creating a profile.&nbsp; Boo hoo.&nbsp; :([% END %]
+[% END %]
 
 [% IF core.profile_info.deleted_date %]
 <p class="err">
@@ -22,7 +32,7 @@ deleting it every now and then) or do we get them to create a new profile (but t
 we could have people messing around and creating loads!  Put a time-limit on it and warn
 them of this when they press the delete button?  They might just sign up again..) Hmm!
 </p>
-[% ELSIF core.profile_id %]
+[% ELSIF core.profile_info.created %]
 <p>Your profile can be found at
 <a href="/profile/view.pl?profile_name=[% profile_name %]">
 [% core.server_name %]/[% profile_name %]</a>
@@ -64,10 +74,7 @@ and remember to upload a photo of yourself when you've finished!</p>
 
 <input type="hidden" name="submitting" id="submitting" value="1" />
 [% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref | html %]" />[% END %]
-
-[% IF core.profile_id %]
-<input type="hidden" name="profile_id" id="profile_id" value="[% core.profile_id %]" />
-[% END %]
+[% IF welcome %]<input type="hidden" name="welcome" value="1" />[% END %]
 
 <h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">About Me</h3>
 
@@ -454,7 +461,7 @@ and remember to upload a photo of yourself when you've finished!</p>
 
 
 <p style="margin-top:32px;margin-bottom:32px">
-  <input type="submit" name="submit" value="[% IF core.profile_id %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px" />
+  <input type="submit" name="submit" value="[% IF core.profile_info.created %]Update[% ELSE %]Create[% END %] my profile" style="font-size:1.2em;font-weight:bold;padding:8px" />
 </p>
 
 </div>
