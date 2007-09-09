@@ -165,7 +165,7 @@ sub getMainPhoto($) {
   # otherwise get earliest uploaded photo.
   
   my $query = <<ENDSQL
-SELECT up.profile_name,
+SELECT SQL_CACHE up.profile_name,
        upp.photo_id, up.main_photo_id,
        upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
        upp.kilobytes, upp.width, upp.height,
@@ -183,6 +183,13 @@ ORDER BY up.main_photo_id DESC, upp.uploaded_date ASC
 LIMIT 1
 ENDSQL
 ;
+  # Only use the sql result cache if we're logged in and
+  # requesting our own photo (on every request for a logged-in user)
+  # Otherwise, it's a profile view or simply irrelevant.
+  if (!$self->{core}->{'profile_id'} ||
+      $self->{core}->{'profile_id'} != $profile_id) {
+    $query =~ s/^SELECT SQL_CACHE /SELECT /o;
+  }
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id);
   my $photo_info = $sth->fetchrow_hashref;
