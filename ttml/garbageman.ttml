@@ -6,6 +6,13 @@
 
 <h1>Garbageman:</h1>
 
+<h2>Ooh! You found a hidden easter egg..&nbsp; You silly goose!</h2>
+
+<h3>Now we run some fun statistics and cleanup stale data - thanks
+    for coming here..&nbsp; We'd be a lot more messy behind the scenes without people like you! ;)</h3>
+
+<hr>
+
 [% FOREACH msg = messages %]
 <p>[%msg%]</p>
 [% END %]
