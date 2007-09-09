@@ -129,7 +129,7 @@
         [% END %]
         <select name="age_min" id="age_min" style="min-width:7em"
           onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
-          onchange="if (document.getElementById('age_max').selectedIndex < this.selectedIndex) document.getElementById('age_max').options[this.selectedIndex].selected = true; ">
+          onchange="if ((document.getElementById('age_max').selectedIndex > 0) && (document.getElementById('age_max').selectedIndex < this.selectedIndex)) document.getElementById('age_max').options[this.selectedIndex].selected = true; ">
           <option value="any"[% IF age_min == "any" %] selected="selected"[% END %]>Any</option>
           [% ages = [16..99]; FOREACH a = ages %]<option value="[% a %]"[% IF age_min == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
         </select>
