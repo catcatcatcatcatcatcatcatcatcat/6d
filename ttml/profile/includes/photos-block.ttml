@@ -56,13 +56,12 @@
                     z-index:1;">
           <a
           [% IF photo_info.photo_id && photo_info.checked_date && !photo_info.adult %]
-             href="photo-display.pl?ph=[% photo_id %]&amp;pr=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+             href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
           [% ELSE %]
              href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]"
           [% END %]
              class="thumbnail-shadow"
              title="[% full_caption %] :: Uploaded:[% photo_info.uploaded_date %]">
-            <!-- <img src="photo.pl?id=[% photo_id %]&nc=1" -->
             <img src="[% photo_link %]"
                  style="width:[% photo_info.tnnc_width %]px;
                         height:[% photo_info.tnnc_height %]px;
@@ -73,7 +72,7 @@
       </div>
       <p style="text-align:right; padding-right:4px; max-width:115px">
       [% IF adult_pass || (photo_info.photo_id && photo_info.checked_date && !photo_info.adult) %]
-        <a href="photo-display.pl?ph=[% photo_id %]&amp;pr=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+        <a href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
            title="[% full_caption %]">
       [% ELSE %]
         <a href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]"
@@ -101,14 +100,13 @@
                     z-index:1; ">
           <a
           [% IF adult_pass || (photo_info.photo_id && photo_info.checked_date && !photo_info.adult) %]
-             href="photo-display.pl?ph=[% photo_id %]&amp;pr=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+             href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
              [% photo_link = real_photo_link %]
           [% ELSE %]
              href="upgrade-buy.pl[% IF search_id %]?search_id=[% search_id %][% END %]"
           [% END %]
              class="thumbnail-shadow"
              title="[% full_caption %] :: Uploaded:[% photo_info.uploaded_date %]">
-            <!-- <img src="photo.pl?id=[% photo_id %]&nc=1" -->
             <img src="[% photo_link %]"
                  style="width:[% photo_info.tnnc_width %]px;
                         height:[% photo_info.tnnc_height %]px;
@@ -119,7 +117,7 @@
       </div>
       <p style="text-align:right; padding-right:4px; max-width:115px">
       [% IF adult_pass || (photo_info.photo_id && photo_info.checked_date && !photo_info.adult) %]
-        <a href="photo-display.pl?ph=[% photo_id %]&amp;pr=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+        <a href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
            title="[% full_caption %]">
       [% ELSE %]
         <a href="upgrade-buy.pl[% IF search_id %]&amp;search_id=[% search_id %][% END %]"
@@ -146,7 +144,6 @@
           <a href="/profile/photo-admin.pl?mode=setmainphoto&amp;photo_id=[% photo_id %]"
        class="thumbnail-shadow"
              title="[% full_caption %] :: Uploaded:[% photo_info.uploaded_date %]">
-            <!-- <img src="photo.pl?id=[% photo_id %]&a=1&nc=1" -->
             <img src="[% photo_link %]"
                  style="width:[% photo_info.tnnc_width %]px;
                         height:[% photo_info.tnnc_height %]px;
@@ -163,7 +160,6 @@
              title="[% full_caption %] :: Uploaded:[% photo_info.uploaded_date %]
              [% IF photo_info.photo_id && photo_info.checked_date %]<i>Checked:[% photo_info.checked_date %]</i>
              [% END %]">
-            <!-- <img src="photo.pl?id=[% photo_id %]&a=1" -->
             <img src="[% photo_link %]"
                  alt="[% full_caption %]"
                  style="border:2px solid #ff3399; margin:-2px;" />
@@ -189,7 +185,7 @@
           <a class="thumbnail-status" title="Pending Approval..">P?</a></li>
           [% END %]
         <li class="opt">
-          <a title="Enlarge to full size" href="photo-display.pl?ph=[% photo_id %]&amp;pr=[% core.profile_id %]&amp;a=1"
+          <a title="Enlarge to full size" href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% core.profile_id %]&amp;a=1"
           ><img src="/images/icons/photo/enlarge_photo.gif" alt="Enlarge to full size" /></a></li>
         <li class="opt">
           <a title="Edit caption" href="photo-admin.pl?mode=editcaption&amp;photo_id=[% photo_id %]"
