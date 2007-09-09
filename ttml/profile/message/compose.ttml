@@ -102,7 +102,7 @@ END;
       [% recurse_level = recurse_level + 1 %]
       [% IF is_reply %]
         <div style="border-left: 3px solid #00[% 16 - recurse_level FILTER format('%x') %]; padding-left: 3px; ">
-          <h3>Original Message:</h3>
+          <h3>In Reply To:</h3>
           <b>From:</b> <a href="/[% message.sender_profile_name %]">[% this_msg.sender_profile_name %]</a><br />
           <b>To:</b> <a href="/[% message.recipient_profile_name %]">[% this_msg.recipient_profile_name %]</a><br />
           <b>Date:</b> [% this_msg.sent_date %]<br />
@@ -111,7 +111,7 @@ END;
           [% this_msg.body FILTER html_entity FILTER replace("\n","<br />\n") %]<br />
       [% ELSIF is_forward %]
         <div style="border-left: 3px solid #0[% 16 - recurse_level FILTER format('%x') %]0; padding-left: 3px; ">
-          <h3>Original Message:</h3>
+          <h3>Forwarded Message:</h3>
           <b>From:</b> <a href="/[% message.sender_profile_name %]">[% this_msg.sender_profile_name %]</a><br />
           <b>To:</b> <a href="/[% message.recipient_profile_name %]">[% this_msg.recipient_profile_name %]</a><br />
           <b>Date:</b> [% this_msg.sent_date %]<br />
