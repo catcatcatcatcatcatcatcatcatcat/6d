@@ -185,15 +185,14 @@ LEFT JOIN `user~profile` up_sender ON up_sender.profile_id = upm.sender_profile_
 LEFT JOIN `user~profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
 SET
 upm.sender_main_photo_id = up_sender.main_photo_id,
-upm.recipient_main_photo_id = up_recipient.main_photo_id
+upm.recipient_main_photo_id = up_recipient.main_photo_id,
 ENDSQL
 ;
   $query .=  (defined($params{recipient_hidden_from}) ? "upm.recipient_hidden_from = ?,\n" : "")
            . (defined($params{sender_hidden_from}) ? "upm.sender_hidden_from = ?,\n" : "")
            . (defined($params{reply_id}) ? "upm.reply_id = ?,\n" : "")
            . (defined($params{flag}) ? "upm.flag = ?,\n" : "")
-           . "WHERE upm.message_id = ?\n"
-           . "LIMIT 1\n";
+           . "WHERE upm.message_id = ?\n";
   my @params;
   push @params, $params{recipient_hidden_from} if defined($params{recipient_hidden_from});
   push @params, $params{sender_hidden_from} if defined($params{sender_hidden_from});
@@ -253,7 +252,7 @@ sub getNewMessagesCount($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-SELECT COUNT(*)
+SELECT SQL_CACHE COUNT(*)
 FROM `user~profile~message`
 WHERE recipient_profile_id = ?
   AND recipient_deleted_date IS NULL
@@ -367,9 +366,9 @@ ENDSQL
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id, $profile_id, $profile_id, $profile_id, $profile_id);
   
-  my $traycount = { 'inbox'  => { 'read' => 0, 'total' => 0, 'unread' => 0 },
-                    'sent'   => { 'read' => 0, 'total' => 0, 'unread' => 0 },
-                    'drafts' => { 'read' => 0, 'total' => 0, 'unread' => 0 }
+  my $traycount = { 'inbox'  => { 'read' => 0, 'total' => 0, 'unread' => 0, 'flagged_as_unread' => 0 },
+                    'sent'   => { 'read' => 0, 'total' => 0, 'unread' => 0, 'flagged_as_unread' => 0 },
+                    'drafts' => { 'read' => 0, 'total' => 0, 'unread' => 0, 'flagged_as_unread' => 0 }
                   };
   while (my $messages = $sth->fetchrow_hashref) {
     $traycount->{$messages->{tray}} = { 'read' => $messages->{read_count},
@@ -563,6 +562,12 @@ ENDSQL
   $sth->execute($profile_id, $tray);
   my $msg_results_cache = $sth->fetchrow_hashref;
   
+  if ($msg_results_cache->{result_cache_count} == 0) {
+    return { messages => undef,
+             count => $msg_results_cache->{result_cache_count},
+             cache_date => $msg_results_cache->{result_cache_date} };
+  }
+  
   my @msg_ids = split /,/, $msg_results_cache->{result_cache};  
   my @desired_msg_ids = splice(@msg_ids, $offset, $limit);
   my $desired_msg_ids_string = join ',', @desired_msg_ids;
@@ -596,13 +601,18 @@ LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
 ENDSQL
   ;
   }
-  $query .= <<ENDSQL
-WHERE upm.message_id IN ( $desired_msg_ids_string )
-ENDSQL
-  ;
-  # Not prepare_cached as query is always changing!
-  $sth = $dbh->prepare($query);
-  $sth->execute();
+  
+  # If only one ID, no need to do an 'IN' and can cache query..
+  if (@desired_msg_ids == 1) {
+    $query .= "WHERE upm.message_id = $desired_msg_ids[0]\n";
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute($desired_msg_ids[0]);
+  } else {
+    $query .= "WHERE upm.message_id IN ( $desired_msg_ids_string )\n";
+     # Not prepare_cached as query is always changing!
+    $sth = $dbh->prepare($query);
+    $sth->execute();
+  }
   my %msg_details;
   while (my $msg_detail = $sth->fetchrow_hashref) {
     $msg_details{$msg_detail->{message_id}} = $msg_detail;
@@ -877,8 +887,17 @@ ENDSQL
     push @query_params, $params{sender_profile_id};
     
   }
-  # Not prepare_cached as query is always changing!
-  my $sth = $dbh->prepare($query);
+  
+  my $sth;
+  # If query has only one id in the 'IN', change the query and add param
+  if ($query =~ s/message_id IN \( \d+ \)/message_id = \?/o) {
+    unshift @query_params, ${$params{message_ids}}[0];
+    $sth = $dbh->prepare_cached($query);
+  } else {
+    # Not prepare_cached as query is always changing!
+    $sth = $dbh->prepare($query);
+  }
+  
   # Now we're do an WHERE message_id IN (1, 2, 3..).
   # This syntax is faster but could go bump more easily..
   # Previously we were looping over the message_ids
@@ -970,15 +989,22 @@ WHERE message_id IN ( $message_ids_string )
   AND recipient_profile_id = ?
   AND recipient_read_flag != 1
   AND read_date IS NOT NULL
-
 ENDSQL
 ;
   if ($params{user_action}) {
     $query .= "  AND flag != 'LINKEDFRIEND'\n";
   }
-  # Not prepare_cached as query is always changing!
-  my $sth = $dbh->prepare($query);
-  my $rows = $sth->execute($params{recipient_profile_id});
+  
+  my ($sth, $rows);
+  # If query has only one id in the 'IN', change the query and add param
+  if ($query =~ s/message_id IN \( \d+ \)/message_id = \?/o) {
+    $sth = $dbh->prepare_cached($query);
+    $rows = $sth->execute(${$params{message_ids}}[0], $params{recipient_profile_id});
+  } else {
+    # Not prepare_cached as query is always changing!
+    $sth = $dbh->prepare($query);
+    $rows = $sth->execute($params{recipient_profile_id});
+  }
   $sth->finish;
   
   return ($rows eq '0E0' ? 0 : $rows);
@@ -1010,9 +1036,17 @@ ENDSQL
   if ($params{user_action}) {
     $query .= "  AND flag != 'LINKEDFRIEND'\n";
   }
-  # Not prepare_cached as query is always changing!
-  my $sth = $dbh->prepare($query);
-  my $rows = $sth->execute($params{recipient_profile_id});
+  
+  my ($sth, $rows);
+  # If query has only one id in the 'IN', change the query and add param
+  if ($query =~ s/message_id IN \( \d+ \)/message_id = \?/o) {
+    $sth = $dbh->prepare_cached($query);
+    $rows = $sth->execute(${$params{message_ids}}[0], $params{recipient_profile_id});
+  } else {
+    # Not prepare_cached as query is always changing!
+    $sth = $dbh->prepare($query);
+    $rows = $sth->execute($params{recipient_profile_id});
+  }
   $sth->finish;
   
   return ($rows eq '0E0' ? 0 : $rows);
