@@ -45,7 +45,6 @@ END %]
 <!-- Access control should have been figured out from within photo-display.pl -->
 
 <p style="clear:both;margin-left:16px">
-<!-- <img src="/profile/photo.pl?id=[% photo.photo_id %]&f=1[% IF adminmode %]&a=1[% END %]" -->
 <img src="[% photo_link %]"
      alt="[% photo.caption FILTER html_entity %]" style="margin-top:8px" /></p>
 <p>[% photo.caption FILTER html_entity %]</p>
