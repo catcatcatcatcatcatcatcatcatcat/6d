@@ -34,6 +34,7 @@ body {
   text-decoration: none;
   float: left; display: block;
   border-top: 1px solid #FFF;
+  z-index: 4;
 }
 #NavMenuList a:hover,
 #NavMenuList li.Selected a {
@@ -58,7 +59,7 @@ body {
   border-width: 1px 0 0 0;
   border-style: solid;
   float: left;
-  z-index: 2;
+  z-index: 5;
 }
 #NavMenuList .NavSubMenuList li a:hover,
 #NavMenuList .NavSubMenuList li.Selected a {
@@ -134,7 +135,7 @@ div#Content { width: auto; }
   position: absolute;
   left: 0; top: 0;
   height: 68px; width: 278px;
-  z-index: 10;
+  z-index: 1;
 }
 #Logo img {
   border: 0;
