@@ -14,7 +14,7 @@
         width:25em;
 }
 #signin fieldset .container {
-        height:355px;
+        height:290px;
 }
 #signin fieldset label {
         display:block;
@@ -25,10 +25,10 @@
         font-weight:bold;
 }
 #signin fieldset.new {
-        border:2px solid #00209F;
+        border:2px solid #335;
 }
 #signin fieldset.exist {
-        border:2px solid #dd0000;
+        border:2px solid #533;
         margin:0;
         margin-right:15px;
         float: left;
@@ -49,12 +49,12 @@
 #signin fieldset.exist h2 {
         background:#FFF1F5 url(/images/login/signup_background.jpg) no-repeat top right;
         color:#950027;
-        border-bottom:2px solid #dd0000;
+        border-bottom:2px solid #755;
 }
 #signin fieldset.new h2 {
         background:#F5F6FB url(/images/login/register_background.jpg) no-repeat top right;
-        color:#003399;
-        border-bottom:2px solid #00209F;
+        color:#336;
+        border-bottom:2px solid #557;
 }
 #signin fieldset h2 span {
         display:block;
@@ -70,11 +70,11 @@
         padding-left: 5px;
 }
 #signin fieldset.exist ul {
-        border-top:2px solid #dd0000;
+        border-top:2px solid #866;
 }
 
 #signin fieldset.new ul {
-        border-top:2px solid #00209F;
+        border-top:2px solid #668;
         clear:both;
 }
 
