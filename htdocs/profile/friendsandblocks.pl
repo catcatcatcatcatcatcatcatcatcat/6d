@@ -242,7 +242,7 @@ ENDMSG
                                       to      => $rusty->{data}->{friend_profile_id},
                                       subject => $subject,
                                       body    => $message,
-                                      flag => "LINKEDFRIEND" );
+                                      flag    => "LINKEDFRIEND" );
     
     unless ($msg_id) {
       print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
@@ -337,9 +337,9 @@ sub delfriend {
   my $success = $rusty->deleteFriendLink($existing_friend_link->{friend_link_id});
   
   # Now delete the invitation message if it is still undecided
-  if ($existing_friend_link->{status} !~ /^(?:un)?read$/o) {
-    $rusty->deleteMessage( recipient_profile_id => $rusty->{core}->{'profile_id'},
-                           message_ids => [ $existing_friend_link->{message_id} ] );
+  if ($existing_friend_link->{status} =~ /^(?:un)?read$/o) {
+    $rusty->deleteMessages( recipient_profile_id => $rusty->{core}->{'profile_id'},
+                            message_ids => [ $existing_friend_link->{message_id} ] );
   }
     
   print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
