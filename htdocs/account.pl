@@ -349,21 +349,27 @@ ENDSQL
     # Create some basic user info
     $query = <<ENDSQL
 INSERT INTO `user~info`
-( user_id, real_name, gender, sexuality, dob, country_id, subentity_id )
+( user_id, real_name, gender, sexuality, dob, age, country_id, subentity_id )
 VALUES
 ( ?, ?, ?, ?, ?, ?, ? )
 ENDSQL
 ;
-    my $dob = join '-', $rusty->{params}->{dob_year},
-                        $rusty->{params}->{dob_month},
-                        $rusty->{params}->{dob_day};
+    my $dob = sprintf("%4d-%02d-%02d",
+                      $rusty->{params}->{dob_year},
+                      $rusty->{params}->{dob_month},
+                      $rusty->{params}->{dob_day});
+    
+    my @localtime = localtime();
+    my $age = (($localtime[5]+1900) - $rusty->{params}->{dob_year}) -
+                (int(($localtime[4]+1).sprintf("%02d",$localtime[3])) < 
+                 int($rusty->{params}->{dob_month}.sprintf("%02d",$rusty->{params}->{dob_day})));
     
     $sth = $dbh->prepare_cached($query);
     $sth->execute($user_id,
                   $rusty->{params}->{real_name},
                   $rusty->{params}->{gender},
                   $rusty->{params}->{sexuality},
-                  $rusty->{params}->{dob},
+                  $dob, $age,
                   $rusty->{params}->{country_id},
                   $rusty->{params}->{subentity_id});
     $sth->finish;
