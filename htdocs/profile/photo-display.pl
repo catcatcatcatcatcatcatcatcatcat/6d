@@ -39,8 +39,8 @@ sub display_single_photo {
   
   $rusty->{ttml} = "profile/photo-display.ttml";
   
-  my $profile_id = $rusty->{params}->{pr};
-  my $photo_id = $rusty->{params}->{ph};
+  $rusty->{data}->{profile_id} = $rusty->{params}->{profile_id};
+  $rusty->{data}->{photo_id} = $rusty->{params}->{photo_id};
   $rusty->{data}->{adminmode} = $rusty->{params}->{a};
   
   my $query = <<ENDSQL
@@ -62,13 +62,13 @@ LIMIT 1
 ENDSQL
 ;
   $sth = $rusty->DBH->prepare_cached($query);
-  $sth->execute($photo_id);
+  $sth->execute($rusty->{data}->{photo_id});
   $rusty->{data}->{photo} = $sth->fetchrow_hashref;
   $sth->finish;
   
   # If the photo id requested does not exist, go crazy!
   if (!$rusty->{data}->{photo}->{photo_id}) {
-    warn "photo id requested simply does not exist (photo id: $photo_id)";
+    warn "photo id requested simply does not exist (photo id: $rusty->{data}->{photo_id})";
     $rusty->{data}->{error} = "Photo not found";
     $rusty->process_template;
     $rusty->exit;
@@ -80,15 +80,16 @@ ENDSQL
   if ($rusty->{data}->{adminmode}) {
     if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
       warn "admin mode requested for photo that isn't theirs: "
-         . " profile id '$rusty->{core}->{profile_id}' and photo id '$photo_id'.";
+         . " profile id '$rusty->{core}->{profile_id}' and photo id "
+         . "'$rusty->{data}->{photo_id}'.";
       delete $rusty->{data}->{adminmode};
     }
   }
   
   
-  if ($profile_id ne $rusty->{data}->{photo}->{'profile_id'}) {
+  if ($rusty->{data}->{profile_id} ne $rusty->{data}->{photo}->{'profile_id'}) {
     
-    warn "photo id $photo_id requested for non-matching profile id $profile_id"
+    warn "photo id $rusty->{data}->{photo_id} requested for non-matching profile id $rusty->{data}->{profile_id}"
        . " instead of correct profile id $rusty->{data}->{photo}->{'profile_id'}";
     $rusty->{data}->{error} = "Profile id and photo id do not match";
     $rusty->process_template;
@@ -108,7 +109,7 @@ LIMIT 1
 ENDSQL
 ;
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($photo_id);
+    $sth->execute($rusty->{data}->{photo_id});
     $sth->finish;
     
     $rusty->{data}->{photo}->{total_visit_count}++;
