@@ -338,20 +338,24 @@ my $thumbnail_nocrop = $resized->Clone();
 # Resize larger images without mashing them up
 # (to within a the specified geometry, maintaining aspect ratio
 #  but only if the image is larger than the specified geometry).
-$err = $resized->Resize( geometry => '>'.MAX_IMAGE_WIDTH.'x'.MAX_IMAGE_HEIGHT );
+$err = $resized->Resize( geometry => '>' . MAX_IMAGE_WIDTH
+                                   . 'x' . MAX_IMAGE_HEIGHT );
 warn $err if $err;
 
 
 
+######################################
+#
 # Add watermark
-
-my $overlay;
-if (!$overlay) {
-  $overlay = Image::Magick->new;
-  $overlay->Read( 'png:' . $rusty->photo_upload_directory . '/watermark.png' );
-}
-$resized->Composite( image => $overlay, compose => 'over', gravity => 'SouthWest');
-
+# Taken out for now until we can make a
+# new watermark for the new site name/branding!
+#my $overlay;
+#if (!$overlay) {
+#  $overlay = Image::Magick->new;
+#  $overlay->Read( 'png:' . $rusty->photo_upload_directory . '/watermark.png' );
+#}
+#$resized->Composite( image => $overlay, compose => 'over', gravity => 'SouthWest');
+#
 ######################################
 
 
