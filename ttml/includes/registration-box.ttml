@@ -5,7 +5,7 @@
   <input type="hidden" name="mode" value="reg" />
   <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
     <div class="container">
-      <h2>New customers <span><strong>Register</strong> here</span></h2>
+      <h2>New peeps <span><strong>Signup</strong> here</span></h2>
       <p>
         <label for="email">Email address: </label><input name="email" value="" class="ip" type="text" id="email" />
       </p>
@@ -32,8 +32,7 @@
         <input type="image" alt="Register" name="confirm-register" src="/images/login/register_button.gif" />
       </p>
       <ul>
-        <li class="o"><a href="#notwrittenyet"
-                         onclick="openWindow(this.href + '&amp;popup=1', 'registerHelp', 700, 500, 'yes');return false;"
+        <li class="o"><a href="/help/contact-us.pl?dept=support&amp;problem=signup"
                       >Need help registering?</a></li>
       </ul>
     </div>
