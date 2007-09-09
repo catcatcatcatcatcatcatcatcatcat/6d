@@ -170,7 +170,6 @@ END;
          class="thumbnail-shadow"
          title="[% caption %] :: Photo Album:[% photo_count %] photos">
 [% END %]
-        <!-- <img src="[% main_photo.thumbnail %][% IF main_photo.thumbnail.search('\?') %]&[% ELSE %]?[% END %]nc=1" -->
         <img src="[% photo_link %]"
              style="width:[% main_photo.tnnc_width %]px;
                     height:[% main_photo.tnnc_height %]px;
@@ -462,6 +461,9 @@ END;
 
 [% IF showfriends && linked_friends && linked_friends.size > 0 %]
 <h3>Linked Friends</h3>
+[% IF own_profile %]
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all friends</a><br / >
+[% END %]
 <a href="/[% random_friend.profile_name %]">
 [% IF random_friend.main_photo.adult && !adult_pass;
      photo_link = "/photos/adult.png";
@@ -489,6 +491,9 @@ END;
 
 [% IF showfaves && faves && faves.size > 0 %]
 <h3 style="clear:left;padding-top:32px">Favourites</h3>
+[% IF own_profile %]
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all faves</a><br / >
+[% END %]
 <a href="/[% random_fave.profile_name %]">
 [% IF random_fave.main_photo.adult && !adult_pass;
      photo_link = "/photos/adult.png";
@@ -516,6 +521,9 @@ END;
 
 [% IF visitors && visitors.size > 0 %]
 <h3 style="clear:left;padding-top:32px">Recent visitors</h3>
+[% IF own_profile %]
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/visitors.pl">See all visitors</a><br / >
+[% END %]
 <a href="/[% last_visitor.profile_name %]">
 [% IF last_visitor.main_photo.adult && !adult_pass;
      photo_link = "/photos/adult.png";
