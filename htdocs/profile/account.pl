@@ -85,7 +85,7 @@ $rusty->{param_info} = {
 $rusty->{data}->{param_info} = $rusty->{param_info};
 
 my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
-
+$rusty->{data}->{'welcome'} = $rusty->{params}->{'welcome'};
 
 
 
@@ -180,109 +180,23 @@ if ($rusty->{params}->{'submitting'}) {
     $rusty->{params}->{email_alert} ||= 0;
     $rusty->{params}->{hide_empty_info} ||= 0;
     
-    if (!$existing_profile->{'profile_id'}) {
-      
-      # New profile - create new profile..
-      $rusty->{data}->{msg} = "Your profile has been added successfully";
-      
-      $query = <<ENDSQL
-INSERT INTO `user~profile`
-(created, updated,
- email_alert, weight,
- hair, eye_colour_id,
- website, profession,
- ethnic_origin_id, perfect_partner,
- smoker_id, drinker_id,
- drug_user_id, relationship_status_id,
- bad_habits, happy,
- sad, own_words,
- height, waist,
- starsign_id, interests,
- weight_type, body_type_id,
- body_hair_id, fave_food,
- fave_music, fave_tvshow,
- fave_author, fave_movie,
- fave_club_bar, fave_animal,
- fave_person, fave_website,
- fave_place, fave_thing,
- thought_type_id, thought_text,
- hide_empty_info, showfriends,
- showfaves, user_id)
-VALUES
-(NOW(), NOW(),
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?,
- ?, ?)
-ENDSQL
-;
-      $sth = $rusty->DBH->prepare_cached($query);
-      $sth->execute(
-        $rusty->{params}->{email_alert},      $weight_in_grams,
-        $rusty->{params}->{hair},             $rusty->{params}->{eye_colour_id},
-        $rusty->{params}->{website},          $rusty->{params}->{profession},
-        $rusty->{params}->{ethnic_origin_id}, $rusty->{params}->{perfect_partner},
-        $rusty->{params}->{smoker_id},        $rusty->{params}->{drinker_id},
-        $rusty->{params}->{drug_user_id},     $rusty->{params}->{relationship_status_id},
-        $rusty->{params}->{bad_habits},       $rusty->{params}->{happy},
-        $rusty->{params}->{sad},              $rusty->{params}->{own_words},
-        $rusty->{params}->{height},           $rusty->{params}->{waist},
-        $rusty->{params}->{starsign_id},      $rusty->{params}->{interests},
-        $rusty->{params}->{weight_type},      $rusty->{params}->{body_type},
-        $rusty->{params}->{body_hair},        $rusty->{params}->{fave_food},
-        $rusty->{params}->{fave_music},       $rusty->{params}->{fave_tvshow},
-        $rusty->{params}->{fave_author},      $rusty->{params}->{fave_movie},
-        $rusty->{params}->{fave_club_bar},    $rusty->{params}->{fave_animal},
-        $rusty->{params}->{fave_person},      $rusty->{params}->{fave_website},
-        $rusty->{params}->{fave_place},       $rusty->{params}->{fave_thing},
-        $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
-        $rusty->{params}->{hide_empty_info},  $rusty->{params}->{showfriends},
-        $rusty->{params}->{showfaves},        $rusty->{core}->{'user_id'}
-      );
-
-      my $inserted_profile_id = $rusty->DBH->{'mysql_insert_id'};
-      if ($inserted_profile_id > 0) {
-	  $query = <<ENDSQL
-UPDATE `user` SET profile_id = ? WHERE user_id = ? LIMIT 1
-ENDSQL
-;
-	  my $sth_update_profile_id_in_user_table = $rusty->DBH->prepare_cached($query);
-	  $sth_update_profile_id_in_user_table->execute($inserted_profile_id, $rusty->{core}->{'user_id'});
-	  $sth_update_profile_id_in_user_table->finish;
-      }
-      $sth->finish;
-      
-      if ($ref) {
-        # If we had somewhere that they were redirected here from, take them back there! :)
-        require URI::Escape;
-        print $rusty->CGI->redirect( -url => $ref );
-        $rusty->exit;
-      }
-      
-    } else {
-      
-      # Existing profile - update details..
-      $rusty->{data}->{msg} = "Your profile has been updated successfully";
-      
-      $query = <<ENDSQL
+    
+    # Get on with creating/updating profile now..
+    $rusty->{data}->{msg} = "Your profile has been " .
+    (!$existing_profile->{'created'} ? "created" : "updated") .
+    " successfully";
+    
+    $query = <<ENDSQL
 UPDATE `user~profile` SET
 updated = NOW(),
+ENDSQL
+;
+    
+    if (!$existing_profile->{'created'}) {
+      $query .= "created = NOW(),\n"
+    }
+    
+    $query .= <<ENDSQL
 email_alert = ?, weight = ?,
 hair = ?, eye_colour_id = ?,
 website = ?, profession = ?,
@@ -307,31 +221,33 @@ WHERE
 user_id = ?
 ENDSQL
 ;
-      $sth = $rusty->DBH->prepare_cached($query);
-      $sth->execute(
-        $rusty->{params}->{email_alert},      $weight_in_grams,
-        $rusty->{params}->{hair},             $rusty->{params}->{eye_colour_id},
-        $rusty->{params}->{website},          $rusty->{params}->{profession},
-        $rusty->{params}->{ethnic_origin_id}, $rusty->{params}->{perfect_partner},
-        $rusty->{params}->{smoker_id},        $rusty->{params}->{drinker_id},
-        $rusty->{params}->{drug_user_id},     $rusty->{params}->{relationship_status_id},
-        $rusty->{params}->{bad_habits},       $rusty->{params}->{happy},
-        $rusty->{params}->{sad},              $rusty->{params}->{own_words},
-        $rusty->{params}->{height},           $rusty->{params}->{waist},
-        $rusty->{params}->{starsign_id},      $rusty->{params}->{interests},
-        $rusty->{params}->{weight_type},      $rusty->{params}->{body_type},
-        $rusty->{params}->{body_hair},        $rusty->{params}->{fave_food},
-        $rusty->{params}->{fave_music},       $rusty->{params}->{fave_tvshow},
-        $rusty->{params}->{fave_author},      $rusty->{params}->{fave_movie},
-        $rusty->{params}->{fave_club_bar},    $rusty->{params}->{fave_animal},
-        $rusty->{params}->{fave_person},      $rusty->{params}->{fave_website},
-        $rusty->{params}->{fave_place},       $rusty->{params}->{fave_thing},
-        $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
-        $rusty->{params}->{hide_empty_info},  $rusty->{params}->{showfriends},
-        $rusty->{params}->{showfaves},        $rusty->{core}->{'user_id'}
-      );
-      $sth->finish;
-    }
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute(
+      $rusty->{params}->{email_alert},      ($weight_in_grams || undef),
+      $rusty->{params}->{hair},             $rusty->{params}->{eye_colour_id},
+      $rusty->{params}->{website},          $rusty->{params}->{profession},
+      $rusty->{params}->{ethnic_origin_id}, $rusty->{params}->{perfect_partner},
+      $rusty->{params}->{smoker_id},        $rusty->{params}->{drinker_id},
+      $rusty->{params}->{drug_user_id},     $rusty->{params}->{relationship_status_id},
+      $rusty->{params}->{bad_habits},       $rusty->{params}->{happy},
+      $rusty->{params}->{sad},              $rusty->{params}->{own_words},
+      $rusty->{params}->{height},           $rusty->{params}->{waist},
+      $rusty->{params}->{starsign_id},      $rusty->{params}->{interests},
+      $rusty->{params}->{weight_type},      $rusty->{params}->{body_type},
+      $rusty->{params}->{body_hair},        $rusty->{params}->{fave_food},
+      $rusty->{params}->{fave_music},       $rusty->{params}->{fave_tvshow},
+      $rusty->{params}->{fave_author},      $rusty->{params}->{fave_movie},
+      $rusty->{params}->{fave_club_bar},    $rusty->{params}->{fave_animal},
+      $rusty->{params}->{fave_person},      $rusty->{params}->{fave_website},
+      $rusty->{params}->{fave_place},       $rusty->{params}->{fave_thing},
+      $rusty->{params}->{thought_type_id},  $rusty->{params}->{thought_text},
+      $rusty->{params}->{hide_empty_info},  $rusty->{params}->{showfriends},
+      $rusty->{params}->{showfaves},        $rusty->{core}->{'user_id'}
+    );
+    $sth->finish;
+    
+    # This is a kludge to ensure we give the correct options post-creation.
+    $rusty->{core}->{profile_info}->{created} = 1;
     
     # Put the existing data we got from the DB into the form values
     # (we want to make sure that the fields are filled out with the
@@ -340,17 +256,26 @@ ENDSQL
     # into the fields so they can try again! No? :)
     #$rusty->{params} = { %{$rusty->{params}}, %{$existing_profile} };
     
+    # If making new profile, take the user back to where they wanted to go
+    # (if they were sent here from somewhere else that needed a profile)..
+    if (!$existing_profile->{'created'} && $ref) {
+      print $rusty->CGI->redirect( -url => $ref );
+      $rusty->exit;
+    } elsif ($rusty->{data}->{'welcome'}) {
+      print $rusty->CGI->redirect( -url => '/?welcome=1' );
+      $rusty->exit;
+    }
   }
 }
 
 # If we had errors in a submit, we should not get any new values from the DB
-#if (!$param_errors) {
 # Only get new values if we're on first call to the page (easier, eh?)
+#if (!$param_errors) {
 if (!$rusty->{params}->{'submitting'}) {
   
   $existing_profile = $rusty->getProfileInfo($rusty->getProfileIdFromUserId($rusty->{core}->{'user_id'}));
   
-  if ($existing_profile->{'profile_id'}) {
+  if ($existing_profile->{'created'}) {
     ###############################################################
     # Put the existing data we got from the DB into the form values
     # (by merging the existing data hash into the hash of params).
@@ -363,6 +288,7 @@ if (!$rusty->{params}->{'submitting'}) {
     # refresh.. We need to overwrite them with the stored values in every case.
     ###############################################################
     #$rusty->{params}->{ keys %{$existing_profile} } = values %{$existing_profile};
+    
     $rusty->{params} = { %{$rusty->{params}}, %{$existing_profile} };
   }
 
@@ -370,7 +296,6 @@ if (!$rusty->{params}->{'submitting'}) {
 
 #$rusty->{data}->{ keys %{$rusty->{params}} } = values %{$rusty->{params}};
 $rusty->{data} = { %{$rusty->{data}}, %{$rusty->{params}} };
-
 
 $rusty->{data}->{starsigns} =
   [{ value => 0,  name => "Rather not say", },
