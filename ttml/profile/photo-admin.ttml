@@ -62,7 +62,7 @@
 
 
 <p style="clear:both;margin-bottom:32px">
-[% IF main_photo_id && main_photo_id > 0 %]
+[% IF main_photo_id %]
 Your main photo is shown below with a pink border.&nbsp;
 This is the photo that appears at the top of your profile, 
 and is the one people will see when you appear in a search listing.&nbsp;
@@ -74,13 +74,14 @@ You can still <a href="/profile/photo-upload.pl">upload more photos</a>!
 [% END %]
 </p>
 
-[% BLOCK ignore %]
-Usage: [% total_kilobytes / 1000 | format('%.1f') %]MB ([% total_kilobytes / 30 | format('%02i') %]% used).
-[% END %]
-<em>Usage: [% photos.size %] / 50</em><br />
-
 [% SET photo_album_mode = "admin";
    INCLUDE "profile/includes/photos-block.ttml" %]
 
+<p style="clear: both; font-size: 0.7em; color: #666; ">
+[% BLOCK ignore %]
+Usage: [% total_kilobytes / 1000 | format('%.1f') %]MB ([% total_kilobytes / 30 | format('%02i') %]% used).
+[% END %]
+Usage: [% photos.size %] / 50
+</p>
 
 [% INCLUDE includes/footer.ttml %]
