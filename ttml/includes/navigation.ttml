@@ -127,12 +127,14 @@
              >[% IF !core.email_validated %]<span class="navmenu-attention">[% END %]My Account
              [% IF !core.email_validated %]</span>[% END %]</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
+          [% IF core.env == 'testing' %]
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
              ><a href="#/account.not_written_yet?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                  ><span style="text-decoration: line-through; ">Update Details</span></a></li>
           <!-- Have taken out the link since target="_blank" attribute is deprecated in strict XHTML markup
                and we can't have anyone without javascript being taken to the assistant page in this window..
                They would just get confused and cry - they will have to live without the assistant working. -->
+          [% END %]
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
              ><a href="#" onclick="OpenAssistant(); return false;"
                  >Open Assistant</a></li>
@@ -153,7 +155,7 @@
              >[% IF !core.profile_info.main_photo_id %]<span class="navmenu-attention">[% END %]My Profile
              [% IF !core.profile_info.main_photo_id %]</span>[% END %]</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
-          [% IF core.profile_id %]
+          [% IF core.profile_info.created %]
             <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
                ><a href="/profile/account.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                    >Update</a></li>
@@ -219,18 +221,22 @@
            onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
            >Help</a>
       <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
+        [% IF core.env == 'testing' %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="#/livesupport/?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                ><span style="text-decoration: line-through; ">Ask a Question</span></a></li>
+        [% END %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/help/faq.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                ><abbr title="Frequently Asked Questions">FAQ</abbr></a></li>
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/help/forgotten-login-details.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                >Lost Username or Password</a></li>
+        [% IF core.env == 'testing' %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="#/help/sitemap.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                ><span style="text-decoration: line-through; ">Site Map</span></a></li>
+        [% END %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/help/contact-us.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                >Contact&nbsp;Us</a></li>
@@ -238,9 +244,6 @@
   </ul>
   
   <ul id="FooterNav">
-    <!--<li><a href="#">Terms of Service</a></li>-->
-    <!--<li><a href="#">Privacy Policy</a></li>-->
-    <!--<li><a href="#">Legal Information</a></li>-->
     <li><a href="#/help/sitemap.pl">Site Map</a></li>
     <li><a href="#/help/stylechange.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]"
            onclick="change_theme(); return false; "
