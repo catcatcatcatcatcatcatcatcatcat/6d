@@ -195,43 +195,17 @@ ENDSQL
     delete $rusty->{params}->{sexuality};
   }
   
-  #if ($rusty->{params}->{age_range} ne "any") {
-    #if ($rusty->{params}->{age_range} eq "41plus") {
-    #  $rusty->{params}->{age_min} = 41;
-    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 41 ";
-    #  push @search_params, "41+";
-    #} else {
-    #  $rusty->{params}->{age_min} = substr($rusty->{params}->{age_range}, 0, 2);
-    #  $rusty->{params}->{age_min} = 18 # Make sure nobody can be rude!
-    #    if $rusty->{params}->{age_min} < 18;
-    #  $rusty->{params}->{age_max} = substr($rusty->{params}->{age_range}, 2);
-    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
-    #  $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-    #          . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
-    #  
-    #  push @bind_vars, ($rusty->{params}->{age_min}, $rusty->{params}->{age_max});
-    #  push @search_params, $rusty->{params}->{age_min}."-".$rusty->{params}->{age_max};
-    #}
-  #}
   if ($rusty->{params}->{age_min} eq "any" &&
       $rusty->{params}->{age_max} eq "any") {
     
     undef $rusty->{params}->{age_min};
     undef $rusty->{params}->{age_max};
     
-    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 16 ";
-            
   } elsif ($rusty->{params}->{age_min} eq "any") {
     
     undef $rusty->{params}->{age_min};
     
-    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= 16 "
-            . " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
+    $query .= " AND age <= ? \n";
     
     push @bind_vars, $rusty->{params}->{age_max};
     push @search_params, "<".$rusty->{params}->{age_max};
@@ -240,28 +214,29 @@ ENDSQL
     
     undef $rusty->{params}->{age_max};
     
-    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
+    $query .= " AND age >= ? \n";
     
     push @bind_vars, $rusty->{params}->{age_min};
     push @search_params, $rusty->{params}->{age_min}."+";
     
   } else {
     
-    $rusty->{params}->{age_min} = 16 # Make sure nobody can be rude!
-      if $rusty->{params}->{age_min} < 16;
-    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) >= ? ";
-    $query .= " AND (YEAR(CURDATE())-YEAR(ui.dob)) - "
-            . "     (RIGHT(CURDATE(),5)<RIGHT(ui.dob,5)) <= ? ";
+    $rusty->{params}->{age_min} = 18
+      if $rusty->{params}->{onlyadult} && $rusty->{params}->{age_min} < 18;
+    $query .= " AND age >= ? \n";
+    $query .= " AND age <= ? \n";
     
     push @bind_vars, ($rusty->{params}->{age_min}, $rusty->{params}->{age_max});
     push @search_params, $rusty->{params}->{age_min}."-".$rusty->{params}->{age_max};
   }
-
+  
+  # Make sure nobody can be rude (although these profiles shouldn't exist either!)
+  if ($rusty->{params}->{onlyadult}) {
+    $query .= " AND age >= 18 \n";
+  }
   
   if ($rusty->{params}->{relationship_status_id} ne "any") {
-    $query .= " AND up.relationship_status_id = ? ";
+    $query .= " AND up.relationship_status_id = ? \n";
     push @bind_vars, $rusty->{params}->{relationship_status_id};
     push @search_params, ucfirst($relationship_statuses->{$rusty->{params}->{relationship_status_id}});
   } else {
@@ -332,7 +307,7 @@ ENDSQL
 ;
   $query .= "LIMIT " . ($MAX_RESULTS + 1);
   
-  #warn "query:\n$query\n\nvars:\n".join(', ',@bind_vars);
+  #warn "query: $query\n\nvars: ".join(', ',@bind_vars);
   $sth = $rusty->DBH->prepare($query);
   $sth->execute(@bind_vars);
   my $count = 0;
@@ -425,10 +400,9 @@ ENDSQL
   } elsif ($rusty->{core}->{'visitor_id'}) {
     
     $query = <<ENDSQL
-INSERT INTO `visitor~stats`
-SET visitor_id = ?, num_profile_searches = 1
-ON DUPLICATE KEY
-UPDATE num_profile_searches = num_profile_searches + 1
+UPDATE `visitor~stats`
+SET num_profile_searches = num_profile_searches + 1
+WHERE visitor_id = ?
 ENDSQL
 ;
     $sth = $rusty->DBH->prepare_cached($query);
@@ -609,10 +583,22 @@ ENDSQL
   my @desired_profile_ids = splice(@profile_ids, $rusty->{params}->{offset}, $page_limit);
   
   $query = <<ENDSQL
-SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality,
-(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age
+SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality, ui.age,
+lco.name AS country, lcs.subentity_name AS subentity,
+#up.height, up.weight, up.waist,
+#up.hair, up.website, up.profession,
+#up.perfect_partner, up.bad_habits,
+#up.happy, up.sad, up.own_words,
+#up.interests, up.weight_type,
+#up.fave_food, up.fave_music, up.fave_tvshow,
+#up.fave_author, up.fave_movie, up.fave_club_bar,
+#up.fave_animal, up.fave_person, up.fave_website,
+#up.fave_place, up.fave_thing,
+#up.thought_text
 FROM `user~profile` up
 INNER JOIN `user~info` ui ON ui.user_id = up.user_id
+LEFT JOIN `lookup~country` lco ON lco.country_id = ui.country_id
+LEFT JOIN `lookup~country~subentity` lcs ON lcs.subentity_id = ui.subentity_id
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 AND up.profile_id = ?
@@ -663,32 +649,6 @@ ENDSQL
   $rusty->process_template;
   $rusty->exit;
   
-#} elsif ($rusty->{params}->{'rand'}) {
-#  
-#  # Perform a default search for non-users
-#  # (return random set of 10 users with photos).
-#  $rusty->{ttml} = "profile/search-results.ttml";
-#  $rusty->{data}->{random_selection} = 1;
-#  $query = <<ENDSQL
-#SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality,
-#(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age
-#FROM `user~profile`
-#INNER JOIN `user~info` ui ON ui.user_id = up.user_id
-#AND up.main_photo_id != 0
-#ORDER BY RAND() LIMIT 10
-#ENDSQL
-#;
-#  $sth = $rusty->DBH->prepare_cached($query);
-#  $sth->execute();
-#  while (my $profile = $sth->fetchrow_hashref) {
-#    $profile->{photo} = $rusty->getMainPhoto($profile->{'profile_id'});
-#    $profile->{adult} = $rusty->hasAdultPics($profile->{'profile_id'});
-#    push @{$rusty->{data}->{profiles}}, $profile;
-#  }
-#  $sth->finish;
-#  $rusty->process_template;
-#  $rusty->exit;
-
 } else {
   
   # Initial call to page - just get lookups and show search form.
@@ -713,7 +673,8 @@ ENDSQL
   
   populate_common_data();
   
-  if ($rusty->{data}->{search_prefs}->{remember_previous_search}) {
+  if ($rusty->{data}->{search_prefs}->{remember_previous_search} ||
+      !$rusty->{data}->{search_prefs}->{search_id}) {
     $rusty->{data}->{remember} = 1;
   } else {
     delete $rusty->{data}->{remember};
