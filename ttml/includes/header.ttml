@@ -153,11 +153,11 @@ addEvent(window, 'load', getNewWindowLinks);
     </div>
   </noscript>
 [% END %]
-  
+
 [% IF core.nocookies %]
   <!-- This only gets set on login if login couldn't create and find the test cookie
        (user gets sent back to the page they logged in from with nocookies=1 in query string!) -->
-  <div id="popups_blocked_alert" class="error-box">
+  <div id="no_cookies_alert" class="error-box">
     <span class="error-box-title">You appear to have a problem with cookies! ( munch, munch =)</span>
     Basically, we store a little bit of information on your computer to let us
     know that you really are who you say you are and to check that you are logged in..&nbsp;
