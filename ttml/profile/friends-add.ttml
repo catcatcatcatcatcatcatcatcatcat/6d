@@ -54,7 +54,6 @@ breadcrumbs.push("$title");
        title="Go to [% friend_profile_name %]'s profile."
        class="thumbnail-shadow"
        [% END %]>
-      <!-- <img src="[% friend_main_photo.thumbnail %]&amp;nc=1" -->
       <img src="[% photo_link %]"
            style="width:[% friend_main_photo.tnnc_width %]px;
                   height:[% friend_main_photo.tnnc_height %]px;
