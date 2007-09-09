@@ -70,7 +70,38 @@ function change_theme() {
   document.getElementById('theme-logo').src = '/images/navigation/' + themes[chosen_theme_index] + '/logo.gif';
 }
 
+/* Not working properly on FF atm so commenting out for the time being! */
+/*
+function slide_down_notification(p,p_href) {
+  
+  var p = document.getElementById('notification');
+  var p_href = document.getElementById('notification_href');
+  
+  if (p && p_href) {
+    //p.style.zIndex = 0;
+    p.style.overflow = 'hidden';
+    //bg_col_above = document.getElementById("NavMenuList").getElementsByTagName("ul").item(0).getElementsByTagName("li").item(0).getElementsByTagName("a").item(0);
+    orig_bg_col = p_href.style.backgroundColor;
+    orig_col = p_href.style.color;
+    p_href.style.backgroundColor = '#333'; //bg_col_above.style.backgroundColor;
+    p_href.style.color = '#333';
+    orig_height = 0;
+    cur_height = -20;
+    //p.style.marginTop = cur_height + 'px';
+    intervalId = window.setInterval('cur_height = cur_height + 1; if (cur_height > orig_height) { p_href.style.backgroundColor = orig_bg_col; p_href.style.color = orig_col; window.clearInterval(intervalId) }; p.style.marginTop = cur_height + \'px\'; ', 50);
+    count = 0;
+    intervalId2 = window.setInterval('count = count + 1; if (count > 12) { p_href.className = \'\'; window.clearInterval(intervalId2) } else if (count > 2) { if ((count % 2) == 1) { p_href.className = \'hover\' } else { p_href.className = \'\' } }; ', 500)
+    //p_href.style.backgroundColor = orig_bg_col;
+    //orig_height = 20;
+    //p.style.height = 0;// + 'px';
+    //cur_height = 0;
+    //intervalId = window.setInterval('cur_height = cur_height + 1; alert(cur_height); if (cur_height > orig_height) { window.clearInterval(intervalId) }; p.style.height = cur_height + \'px\'; ',50)
+  }
+}
+*/
+
 /* This function is currently unused! */
+/*
 function getStyle(elem,styleProp) {
   if (!elem) { return false; }
   //var x = document.getElementById(elem);
@@ -82,3 +113,4 @@ function getStyle(elem,styleProp) {
     elem_style = document.defaultView.getComputedStyle(elem,'').getPropertyValue(styleProp);
   return elem_style;
 }
+*/
