@@ -24,7 +24,6 @@
   <input type="submit" value="Ok" />
 </fieldset>
 </form>
-<!-- <img src="/profile/photo.pl?id=[% photo_info.photo_id %]&f=1&a=1" -->
 <img src="/photos/[% core.profile_name %]/[% photo_info.resized_filename %]"
      alt="[% photo_info.caption FILTER html_entity %]" style="margin-top:8px" />
 <br />
