@@ -628,3 +628,19 @@ a:hover div.linkboxes {
   border: 2px solid #F55;
   background-color: #FCC;
 }
+
+p.testing_todo_list,
+span.testing_todo_list {
+  display: block;
+  background-color: #FF0;
+  color: #F44;
+  border: 1px dashed #3F3;
+}
+
+a.testing_todo_list,
+a:visited.testing_todo_list,
+.testing_todo_list a,
+.testing_todo_list a:visited {
+  color: #F44;
+  border: 1px dashed #3F3;
+}
