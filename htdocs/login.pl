@@ -57,6 +57,27 @@ if ($mode eq 'login') {
     $rusty->exit;
   }
   
+  if ($rusty->{params}->{remember_me}) {
+    # Does this person want to be remembered after this login?  If so,
+    # set him a nice cookie to do so and make sure is stays for a while!
+    push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "forgetmenot",
+                                                    -value   => $profile_name,
+                                                    -expires => '+10y' );
+    # These values will override the core values in the ttml when we can play with cores..
+    $rusty->{data}->{remembered_profile_name} = $profile_name;
+    
+  } elsif ($rusty->{core}->{remembered_profile_name}) {
+    # If profile name is already being remembered, (this variable is set
+    # on object creation from the remembered profile name) -
+    # they have chosen to unset it so let's deletify it! :)
+    push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "forgetmenot",
+                                                    -value   => '',
+                                                    -expires => '-1d' );
+    # These values will override the core values in the ttml when we can play with cores..
+    $rusty->{data}->{forget_profile_name} = 1;
+    
+  }
+  
   if (!$profile_name) {
     $rusty->{data}->{'invalid_login'} = "1";
     $rusty->{data}->{'no_username'} = "1";
@@ -217,21 +238,6 @@ ENDSQL
   $sth->execute($session_id, $user_id, $ip_address);
   $sth->finish;
   
-  if ($rusty->{params}->{remember_me}) {
-    # Does this person want to be remembered after this login?  If so,
-    # set him a nice cookie to do so and make sure is stays for a while!
-    push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "forgetmenot",
-                                                    -value   => $profile_name,
-                                                    -expires => '+10y' );
-  } elsif ($rusty->{core}->{remembered_profile_name}) {
-    # If profile name is already being remembered, (this variable is set
-    # on object creation from the remembered profile name) -
-    # they have chosen to unset it so let's deletify it! :)
-    push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "forgetmenot",
-                                                    -value   => '',
-                                                    -expires => '-1d' );
-  }
-  
   # Create the session cookie with just session id contained.
   push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "test",
                                                   -value   => $session_id );
@@ -302,7 +308,6 @@ ENDSQL
     
     print $rusty->CGI->redirect( -url => $ref );
     $rusty->exit;
-
     
   } else {
     
@@ -312,7 +317,8 @@ ENDSQL
     
     $query = <<ENDSQL
 UPDATE `user~session`
-SET created = NOW()
+SET created = NOW(),
+    updated = NOW()
 WHERE session_id = ?
   AND ip_address = ?
   AND created IS NULL
@@ -390,7 +396,7 @@ ENDSQL
     
     if ($mode eq 'signup_test') {
       
-      $ref = "/?welcome=1&ref=" . URI::Escape::uri_escape($rusty->{params}->{ref});
+      $ref = "/profile/account.pl?welcome=1&ref=" . URI::Escape::uri_escape($rusty->{params}->{ref});
       
     } elsif ($ref) {
       
