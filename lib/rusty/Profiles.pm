@@ -250,7 +250,7 @@ sub gramsToSt($) {
     return unless $field =~ /^(user_id|profile_id|profile_name)$/o;
     
     my $query = <<ENDSQL
-SELECT *
+SELECT SQL_CACHE *
 FROM `user~profile`
 WHERE $field = ?
 LIMIT 1
@@ -424,9 +424,49 @@ sub getRecentProfileVisitors($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
+SELECT upv.visitor_profile_id, up.profile_name, up.main_photo_id,
+  CONCAT_WS(' ',
+    IF(DATE(upv.time) = CURRENT_DATE(), '',
+      IF(DATE(upv.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
+        IF(DATE(upv.time) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK), DATE_FORMAT(upv.time, '%W, %e/%c, '),
+          DATE_FORMAT(upv.time, '%e/%c/%y')
+        )
+      )
+    ), DATE_FORMAT(upv.time, '%H:%i')
+  ) AS time
+FROM `user~profile~visit` upv
+INNER JOIN `user~profile` up ON up.profile_id = upv.visitor_profile_id
+WHERE upv.profile_id = ?
+ORDER BY upv.time DESC
+LIMIT ?
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id, $limit);
+  my @visits = ();
+  while (my $visit_info = $sth->fetchrow_hashref) {
+    push @visits, $visit_info;
+  }
+  $sth->finish;
+  
+  return @visits ? \@visits : undef;
+}
+
+
+sub getRecentProfileVisitorsDetailed($$) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  my $limit = shift;
+  $limit ||= 10;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
 SELECT up.profile_name,
-ui.gender, ui.sexuality, ui.subentity_id, ui.country_id,
-(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age,
+ui.gender, ui.sexuality, ui.subentity_id, ui.country_id, ui.age,
   CONCAT_WS(' ',
     IF(DATE(upv.time) = CURRENT_DATE(), '',
       IF(DATE(upv.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
