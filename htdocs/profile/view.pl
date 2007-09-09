@@ -83,8 +83,7 @@ if (!$rusty->{params}->{'profile_name'}) {
 
 $query = <<ENDSQL
 SELECT up.user_id, up.profile_id, up.profile_name,
-ui.gender, ui.sexuality,
-(YEAR(CURDATE()) - YEAR(ui.dob)) - (RIGHT(CURDATE(), 5) < RIGHT(ui.dob, 5)) AS age,
+ui.gender, ui.sexuality, ui.age,
 lco.name AS country, lcs.subentity_name AS subentity,
 us.joined, us.last_session_end, us.num_logins, us.mins_online, us.num_clicks,
 usess.updated AS online_now,
@@ -246,36 +245,13 @@ if ($profile->{faves} = $rusty->getAllFaves($profile->{'profile_id'}, 5)) {
 
 
 if ($profile->{own_profile}) {
-  $query = <<ENDSQL
-SELECT v.visitor_profile_id, up.profile_name, up.main_photo_id,
-  CONCAT_WS(' ',
-    IF(DATE(v.time) = CURRENT_DATE(), '',
-      IF(DATE(v.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
-        IF(DATE(v.time) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK), DATE_FORMAT(v.time, '%W, %e/%c, '),
-          DATE_FORMAT(v.time, '%e/%c/%y')
-        )
-      )
-    ), DATE_FORMAT(v.time, '%H:%i')
-  ) AS time
-FROM `user~profile~visit` v
-INNER JOIN `user~profile` up ON up.profile_id = v.profile_id
-WHERE v.profile_id = ?
-ORDER BY v.time DESC
-LIMIT 10
-ENDSQL
-;
-  $sth = $rusty->DBH->prepare_cached($query);
-  $sth->execute($profile->{'profile_id'});
-  my @visitors;
-  while (my $visitor = $sth->fetchrow_hashref) {
-    push @visitors, $visitor;
-  }
-  $sth->finish;
   
-  if (@visitors) {
-    $profile->{last_visitor}->{profile_name} = $visitors[0]->{profile_name};
-    $profile->{last_visitor}->{main_photo} = $rusty->getPhotoInfo($visitors[0]->{main_photo_id});
-    $profile->{visitors} = \@visitors;
+  my $visitors = $rusty->getRecentProfileVisitors($rusty->{core}->{profile_id}, 10);
+  
+  if (@$visitors) {
+    $profile->{last_visitor}->{profile_name} = ${$visitors}[0]->{profile_name};
+    $profile->{last_visitor}->{main_photo} = $rusty->getPhotoInfo(${$visitors}[0]->{main_photo_id});
+    $profile->{visitors} = $visitors;
   }
 }
 
