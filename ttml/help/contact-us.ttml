@@ -5,12 +5,12 @@
 
 <h1>Contact Us</h1>
 
-<!-- ONLY DISPLAY THIS IF SOMEONE IS ONLINE READY TO TALK!! -->
-<p>Impatient?&nbsp;
+[% IF core.env == 'testing' %]
+<p class="testing_todo_list">TO ADD (WHEN PEEPS ARE ONLINE): Impatient?&nbsp;
 Talk to one of us on
-<a href="#/livesupport/">Live Support</a>
+<a class="testing_todo_list" href="#/livesupport/">Live Support</a>
 and get help right now.</p>
-<!-- -->
+[% END %]
 
 [% IF not_posted %]
   <h2>Request method was not POST</h2>
