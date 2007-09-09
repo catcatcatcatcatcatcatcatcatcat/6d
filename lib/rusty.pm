@@ -157,11 +157,21 @@ sub new() {
   tie %_core, 'rusty::TiedHash::core';
   $self->{core} = \%_core;
   
-  # Let's do a bit of benchmarking..
-  require Benchmark::Timer;
-  $self->{benchmark} = Benchmark::Timer->new;
-  $self->benchmark->start('total');
-  $self->benchmark->start('birth');
+  # Find out which vhost we're in - testing or prod!
+  #$self->{core}->{env} = $ENV{ENV};
+  if ($ENV{SERVER_NAME} =~ /^(?:testing|local)\./) {
+    $self->{core}->{env} = 'testing';
+  } elsif ($ENV{SERVER_NAME} =~ /^www\./) {
+    $self->{core}->{env} = 'production';
+  }
+  
+  # Let's do a bit of benchmarking (if we're in testing env)..
+  if ($self->{core}->{env} eq 'testing') {
+    require Benchmark::Timer;
+    $self->{benchmark} = Benchmark::Timer->new;
+    $self->benchmark->start('total');
+    $self->benchmark->start('birth');
+  }
   
   $self->{params} = $self->get_utf8_params();
   
@@ -280,12 +290,14 @@ sub new() {
                                 'darkgrey-beige-darkgrey',
                                 'grey-green-grey',
                                 'lightgrey-green-lightgrey',
-                                'beige-orange-darkgrey', #similar to orange-black!
-                                'bustyparty',
+                                'beige-orange-darkgrey',
+                                #'bustyparty',
                                 #'empty', #empty theme just to allow simple theme framework to show through
                                 ];
   
-  $self->benchmark->stop('birth');
+  if ($self->{core}->{env} eq 'testing') {
+    $self->benchmark->stop('birth');
+  }
   
   # Use this for testing text-only mode (dev)
   #$self->{core}->{no_nav_links} = 1; 
@@ -527,8 +539,25 @@ sub get_utf8_params {
   #}
   
   # Now we also want to make sure that our utf-8 encoded form data is stored as perl's internal utf8.
+  my $secret_number = 1020348;
   foreach (%params) {
     utf8::decode($params{$_}) unless utf8::is_utf8($params{$_});
+    
+    # We need to decode any IDs (eg. user_id, profile_id, photo_id, link_id etc.)
+    if ($_ =~ /_id$/o && # If this is an 'bla_id' param name
+        $params{$_} =~ /^!1\d+?5\d$/o) { # and the param has the encoded signature (could be faked)
+      (my $decoded = $params{$_}) =~ s/^!1(\d+?)5(\d)$/$1$2/o; # remove signature..
+      $decoded = sprintf('%lx', $decoded); # Decode encoded id string: Convert to hex,
+      $decoded =~ s/^9//o; # Remove leading 9 added to help encode zero leading nums,
+      $decoded = # Reverse, convert back to number and subtract secret number..
+        hex(scalar(reverse($decoded)))-$secret_number;
+      if ($decoded =~ s/^123//o) { # Remove the internal (very hard to detect) signature
+        $params{$_} = $decoded; # If it really was one of our encoded strings, allow it to be decoded
+      } else {
+        warn "param: $_ was not properly encoded - decoded = $decoded!\n";
+        warn " and..: " . hex(scalar(reverse(sprintf('%lx', $decoded))))-$secret_number . "\n";
+      }
+    }
   }
   
   return \%params;
@@ -606,10 +635,10 @@ sub get_utf8_params {
     my %header_opts;
     #if ($opts->{nocache}) {
       %header_opts = ( -expires       => '-10y', # 'Expires' in the past
-           -last_modified => sprintf("%s, %s %s %s %s GMT", (split(/\s+/, gmtime))[0,2,1,4,3]), # Always modified
+                       -last_modified => sprintf("%s, %s %s %s %s GMT", (split(/\s+/, gmtime))[0,2,1,4,3]), # Always modified
                        -cache_control => 'no-store, no-cache, must-revalidate, '
                                        . 'post-check=0, pre-check=0', # HTTP/1.1
-           -pragma        => 'no-cache', # HTTP/1.0
+                       -pragma        => 'no-cache', # HTTP/1.0
            );
     #}
     if ($opts->{refresh}) {
@@ -620,7 +649,7 @@ sub get_utf8_params {
     }
     print $self->CGI->header(%header_opts) unless $opts->{noheader};
     
-    if (defined $self->benchmark) {
+    if (defined $self->{benchmark}) {
       #$self->benchmark->stop('total'); || 
       $self->benchmark->start('template');
     }
@@ -628,7 +657,7 @@ sub get_utf8_params {
     
     $_template = _init_template() unless $_template;
     
-    foreach (%$data) { _dfs_on_anything($_) } # Set utf8 flag where appropriate (see below)
+    foreach (keys(%$data)) { _dfs_on_anything($data->{$_},$_) } # Set utf8 flag where appropriate (see below)
     
     # If we have a referring page set, also set a uri escaped version
     # so we can use it in urls as well as hidden form fields! :)
@@ -665,7 +694,9 @@ sub get_utf8_params {
     $data->{breadcrumbs} = [];
     
     # Copy the benchmark object for the template to use.
-    $data->{benchmark} = $self->benchmark;
+    if (defined $self->{benchmark}) {
+      $data->{benchmark} = $self->{benchmark};
+    }
     
     $_template->process($filename, $data)
       || die $_template->error(), "\n";
@@ -708,29 +739,48 @@ sub get_utf8_params {
   # But we don't do comparisons like that in the code, do we?  Any searching should
   # be left up to mysql 'LIKE' as it can perform expansions on the UTF8-Unicode encoding
   # and that allows for some very clever seeming languagey search functionality! :)
-  sub _dfs_on_anything($); # Prototype to keep -w happy with the recursive calls!
-  sub _dfs_on_anything($) {
+  # NEW: Also pass through the second arg of any hash KEYs found along the way so that the
+  # values underneath each hash key have that key as a param to check whether the data
+  # pertains to a '*_id' param and needs encoding before hitting the public..
+  # EXTRA NEW: don't encode hash keys - they'll be written from the code - just do the vals.
+  sub _dfs_on_anything($@); # Prototype to keep -w happy with the recursive calls!
+  sub _dfs_on_anything($@) {
     
     sub _decode_if_utf8($) { utf8::decode($_[0]) unless utf8::is_utf8($_[0]) }
+    sub _encode_id_param($) {
+      # We need to encode any IDs (eg. user_id, profile_id, photo_id, link_id etc.)
+      return unless $_[0] =~ /^\d+$/o;
+      my $secret_number = 1020348; # Matches the above num used to decode params :P
+      # Add the internal signature of a '123' prefix to the original number, add secret number
+      # Then convert to hex, reverse, add leading '9' to help nums which, when reversed
+      # have leading zeros (as these would normally be dropped/ignored) and convert back to number
+      $_[0] = hex('9'.scalar(reverse(sprintf('%lx', ('123'.$_[0])+$secret_number))));
+      # Add the visible (easily faked param signature of a '!1' prefix and '5' before last digit
+      $_[0] =~ s/^(\d+?)(\d)$/!1${1}5$2/o;
+    }
     
     my $reftype = ref($_[0]);
     if (!$reftype) {
       _decode_if_utf8($_[0]);
+      _encode_id_param($_[0])
+        if $_[1] && $_[1] =~ /_id$/o;
     } elsif ($reftype eq 'SCALAR') {
       _decode_if_utf8(${$_[0]});
+      _encode_id_param(${$_[0]})
+        if $_[1] && $_[1] =~ /_id$/o;
     } elsif ($reftype eq 'ARRAY') {
-      foreach my $e (@$_[0]) {
+      foreach my $el (@{$_[0]}) {
         # check each element as if it could be anything!
-        _dfs_on_anything($e);
+        _dfs_on_anything($el, $_[1]);
       }
     } elsif ($reftype eq 'HASH') {
-      foreach my $e (keys %{$_[0]}) {
+      foreach my $key (keys %{$_[0]}) {
         # check each element as if it could be anything!
-        _dfs_on_anything($e);
+        _dfs_on_anything(${$_[0]}{$key}, $key); # Send optional second arg of the param id
       }
     } elsif ($reftype eq 'REF') {
       # check this element as if it could be a ref to anything!
-      _dfs_on_anything($$_[0]);
+      _dfs_on_anything($$_[0], $_[1]);
     } else {
       # We cannot and will not decode utf8 of CODE, GLOB or bespoke objects!
     }
@@ -983,7 +1033,7 @@ ENDSQL
       
       # Get the visitor id of the visitor we just created.
       my $visitor_id = $dbh->{mysql_insertid};
-
+      
       # Create stats for visitor (when they first visited).
       $query = <<ENDSQL
 INSERT INTO `visitor~stats`
@@ -1140,7 +1190,8 @@ sub update_page_clicks($) {
     
     my $query = <<ENDSQL
 UPDATE `user~session`
-SET clicks = clicks + 1
+SET clicks = clicks + 1,
+    updated = NOW()
 WHERE session_id = ?
   AND updated > DATE_SUB(NOW(), INTERVAL 31 MINUTE)
   AND created IS NOT NULL
@@ -1205,7 +1256,7 @@ ENDSQL
     my $user_id = shift;
     
     my $query = <<ENDSQL
-SELECT user_id, email, email_validated
+SELECT SQL_CACHE user_id, email, email_validated
 FROM `user`
 WHERE user_id = ?
 LIMIT 1
@@ -1319,7 +1370,7 @@ sub get_lookup_hash($@) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-SELECT $params->{id}, $params->{data}
+SELECT SQL_CACHE $params->{id}, $params->{data}
 FROM `$params->{table}`
 ENDSQL
 ;
@@ -1350,7 +1401,7 @@ sub get_ordered_lookup_list($@) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-SELECT $params->{id}, $params->{data}
+SELECT SQL_CACHE $params->{id}, $params->{data}
 FROM `$params->{table}`
 ENDSQL
 ;
@@ -1737,7 +1788,8 @@ ENDSQL
     $query = <<ENDSQL
 UPDATE `user~session`
 SET created = ?,
-    clicks = clicks + ?
+    clicks = clicks + ?,
+    updated = NOW()
 WHERE session_id = ?
   AND created > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 LIMIT 1
@@ -1818,7 +1870,7 @@ sub populate_user_stats() {
 SELECT DATE_FORMAT(stats.joined, "%l%p on %a %D %b %y") AS joined,
        DATE_FORMAT(stats.last_session_end, "%l%p on %a %D %b %y") AS last_session_end,
        stats.num_logins,
-       sess.clicks + stats.num_clicks AS num_clicks, 
+       sess.clicks + stats.num_clicks AS num_clicks,
        IFNULL(FLOOR((UNIX_TIMESTAMP(sess.updated) - UNIX_TIMESTAMP(sess.created)) / 60), 0)
          + stats.mins_online AS mins_online,
        stats.total_visited_count,
