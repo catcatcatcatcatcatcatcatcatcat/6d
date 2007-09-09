@@ -53,34 +53,6 @@ breadcrumbs.push(ucfirst_tray);
 %]
 
 
-[% IF prev_action %]
-  [% IF success == 1 %]
-  <p class="success">
-    [% IF prev_action == "send" %]Your message has been sent successfully.
-    [% ELSE %]Your previous action was completed successfully.
-    [% END %]
-  </p>
-  [% ELSE %]
-  <p class="err">
-    [% IF prev_action == "send" %]Your message could not be sent.
-    [% ELSE %]Your previous action could not be completed.
-    [% END %]<br />
-    Reason:
-    [% IF reason == "badprofilename" %]The profile name <strong>[% friend_profile_name %]</strong> does not exist.
-    [% ELSIF reason == "badprofileid" %]The profile specified does not exist.
-    [% ELSIF reason == "noprofileidorname" %]No profile was specified.
-    [% ELSIF reason == "noprofile" %]You have not created a profile.
-    [% ELSIF reason == "notposted" %]You did not submit the form correctly.  Hmmmm.. Bad spammer!
-    [% ELSIF reason == "badmessageid" %]The message did not belong to you.
-    [% ELSIF reason == "alreadyresponded" %]You have already responded to this message.
-    [% ELSIF reason == "alreadysubmittedasspam" %]You have already submitted this message as spam.
-    
-    [% ELSE %]An unknown error occured.
-    [% END %]
-  </p>
-  [% END %]
-[% END %]
-
 [% IF tray_count.$tray.total > message_cache_count;
 # If we have a new message (one has landed since we've been scrolling
 # back and forth through this folder's message list), make it clear!
