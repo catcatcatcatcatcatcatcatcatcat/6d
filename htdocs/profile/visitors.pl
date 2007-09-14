@@ -64,7 +64,7 @@ sub list {
   
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
-      table => "lookup~country",
+      table => "lookup~continent~country",
       id    => "country_id",
       data  => "name",
       order => "name",
