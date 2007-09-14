@@ -129,7 +129,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   my $countries =
     $rusty->get_lookup_hash(
-      table => "lookup~country",
+      table => "lookup~continent~country",
       id    => "country_id",
       data  => "name" );
   
@@ -137,7 +137,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   if ($rusty->{params}->{country_id} =~ /^\w{2}$/ ) {
     $subentities =
       $rusty->get_lookup_hash(
-        table => "lookup~country~subentity",
+        table => "lookup~continent~country~subentity",
         id    => "subentity_id",
         data  => "subentity_name",
         where => "country_id = '".$rusty->{params}->{country_id}."'" );
@@ -583,8 +583,9 @@ ENDSQL
   my @desired_profile_ids = splice(@profile_ids, $rusty->{params}->{offset}, $page_limit);
   
   $query = <<ENDSQL
-SELECT DISTINCT(up.profile_name), up.profile_id, ui.gender, ui.sexuality, ui.age,
-lco.name AS country, lcs.subentity_name AS subentity,
+SELECT DISTINCT(up.profile_name) AS profile_name, up.profile_id,
+ui.gender, ui.sexuality, ui.age,
+lco.name AS country, lcs.subentity_name AS subentity
 #up.height, up.weight, up.waist,
 #up.hair, up.website, up.profession,
 #up.perfect_partner, up.bad_habits,
@@ -597,8 +598,8 @@ lco.name AS country, lcs.subentity_name AS subentity,
 #up.thought_text
 FROM `user~profile` up
 INNER JOIN `user~info` ui ON ui.user_id = up.user_id
-LEFT JOIN `lookup~country` lco ON lco.country_id = ui.country_id
-LEFT JOIN `lookup~country~subentity` lcs ON lcs.subentity_id = ui.subentity_id
+LEFT JOIN `lookup~continent~country` lco ON lco.country_id = ui.country_id
+LEFT JOIN `lookup~continent~country~subentity` lcs ON lcs.subentity_id = ui.subentity_id
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 AND up.profile_id = ?
@@ -693,7 +694,7 @@ sub populate_common_data() {
   
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
-      table => "lookup~country",
+      table => "lookup~continent~country",
       id    => "country_id",
       data  => "name",
       order => "name",
@@ -710,7 +711,7 @@ sub populate_common_data() {
   if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'any') {
     my $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
