@@ -870,16 +870,12 @@ sub get_utf8_params {
         #BENCHMARK->autoflush(1);
         $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
                                              $self->benchmark->result('template') );
-      } else {
-        warn "oooooooooooooh fuckers!!\n";
       }
     } elsif ($self->{core}->{benchmark}) {
       #print BENCHMARK "$caller:\n" . $self->{core}->{benchmark} . "=====\n";
       #BENCHMARK->autoflush(1);
       $self->_write_db_benchmark( $caller, $self->benchmark->result('total') +
                                            $self->benchmark->result('template') );
-    } else {
-      warn "oooooooooooooh arse holes!!\n";
     }
     
     sub _write_db_benchmark() {
