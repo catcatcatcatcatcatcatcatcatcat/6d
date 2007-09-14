@@ -10,4 +10,4 @@ use Exporter;
 
 ## Mailing configuration ##
 our $SMTP = 'localhost'; #'mailhost.zen.co.uk';
-our $FROM = 'Mailing script <noreply@rustypea.com>';
+our $FROM = 'Mailing script <noreply@backpackingbuddies.com>';
