@@ -174,7 +174,7 @@ ENDMSG
   
   my $htmlmessage = Email::create_html_from_text($textmessage);
   
-  Email::send_email( 'To'          => [ "$dept\@rustypea.com", ],
+  Email::send_email( 'To'          => [ "$dept\@backpackingbuddies.com", ],
                      'Reply-To'    => [ "$name <$email>", ],
                      'Subject'     => "Support Request ($problem): $subject",
                      'TextMessage' => $textmessage,
