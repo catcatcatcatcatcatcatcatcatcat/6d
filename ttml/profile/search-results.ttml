@@ -91,7 +91,6 @@ in the search results..
         <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1"
            class="thumbnail-shadow"
            title="[% caption %] :: Location: [% IF p.subentity %][% p.subentity %], [% END %][% p.country %]">
-          <!-- <img src="[% p.photo.thumbnail %][% IF p.photo.thumbnail.search('\?') %]&[% ELSE %]?[% END %]nc=1" -->
           <img src="[% photo_link %]"
                style="width:[% p.photo.tnnc_width %]px;
                       height:[% p.photo.tnnc_height %]px;
