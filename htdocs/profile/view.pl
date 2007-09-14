@@ -122,8 +122,8 @@ LEFT JOIN `lookup~smoker` ls ON up.smoker_id = ls.smoker_id
 LEFT JOIN `lookup~starsign` lst ON up.starsign_id = lst.starsign_id
 LEFT JOIN `lookup~thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
 LEFT JOIN `user~info` ui ON up.user_id = ui.user_id
-LEFT JOIN `lookup~country` lco ON ui.country_id = lco.country_id
-LEFT JOIN `lookup~country~subentity` lcs ON ui.subentity_id = lcs.subentity_id
+LEFT JOIN `lookup~continent~country` lco ON ui.country_id = lco.country_id
+LEFT JOIN `lookup~continent~country~subentity` lcs ON ui.subentity_id = lcs.subentity_id
 
 WHERE up.profile_name = ?
 LIMIT 1
