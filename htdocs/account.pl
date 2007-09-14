@@ -61,7 +61,8 @@ $rusty->{param_info} = {
 };
 
 
-my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
+my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'}
+  unless $rusty->{params}->{'ref'} eq '/';
 
 if (!$rusty->{params}->{passphrase_id}) {
   
@@ -80,7 +81,7 @@ if (!$rusty->{params}->{passphrase_id}) {
     
     $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
@@ -171,7 +172,7 @@ ENDSQL
   if (not exists $rusty->{param_errors}->{profile_name}) {
     
     # Check that profile name isn't already in use.
-    $query = "SELECT user_id FROM `user` WHERE profile_name = ? LIMIT 1";
+    $query = "SELECT user_id FROM `user~profile` WHERE profile_name = ? LIMIT 1";
     $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{profile_name});
     (my $profile_exists) = $sth->fetchrow_array();
@@ -331,14 +332,13 @@ ENDSQL
     
     $query = <<ENDSQL
 INSERT INTO `user`
-( profile_name, password, email, email_validation_code )
+( password, email, email_validation_code )
 VALUES
-( ?, ?, ?, ? )
+( ?, ?, ? )
 ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
-    $sth->execute($rusty->{params}->{profile_name},
-                  $rusty->{params}->{password1},
+    $sth->execute($rusty->{params}->{password1},
                   $rusty->{params}->{email},
                   $email_validation_code);
     $sth->finish;
@@ -346,12 +346,42 @@ ENDSQL
     # Get the user id of the user we just created
     my $user_id = $dbh->{mysql_insertid};
     
+    # Insert the profile_name into empty profile entry
+    $query = <<ENDSQL
+INSERT INTO `user~profile`
+( user_id, profile_name )
+VALUES
+( ?, ? )
+ENDSQL
+;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute($user_id,
+                  $rusty->{params}->{profile_name});
+    $sth->finish;
+    
+    # Get the profile id of the profile we just created
+    my $profile_id = $dbh->{mysql_insertid};
+    
+    # Create reference to profile_id in the user table
+    # (I know, we're duplicating key references, but
+    # it REALLY speeds up a lot of lookups and removes
+    # one table from all of these lookup's joins.. :)
+    $query = <<ENDSQL
+UPDATE `user`
+SET profile_id = ?
+WHERE user_id = ?
+ENDSQL
+;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute($profile_id, $user_id);
+    $sth->finish;
+    
     # Create some basic user info
     $query = <<ENDSQL
 INSERT INTO `user~info`
 ( user_id, real_name, gender, sexuality, dob, age, country_id, subentity_id )
 VALUES
-( ?, ?, ?, ?, ?, ?, ? )
+( ?, ?, ?, ?, ?, ?, ?, ? )
 ENDSQL
 ;
     my $dob = sprintf("%4d-%02d-%02d",
@@ -401,7 +431,7 @@ Someone, hopefully you, signed up with this email address
 Here are your login details for future reference:
 
     Username: $rusty->{params}->{profile_name}
-    Password: $rusty->{params}->{password}
+    Password: $rusty->{params}->{password1}
 
 To activate your account and gain full access to the site, click here:
 $activation_link
@@ -527,7 +557,7 @@ sub get_signup_select_options() {
   
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
-      table => "lookup~country",
+      table => "lookup~continent~country",
       id    => "country_id",
       data  => "name",
       order => "name",
@@ -544,7 +574,7 @@ sub get_signup_select_options() {
   if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'select') {
     my $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
