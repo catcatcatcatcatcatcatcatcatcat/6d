@@ -765,7 +765,7 @@ ENDMSG
     
     my $htmlmessage = Email::create_html_from_text($textmessage);
     
-    Email::send_email( 'To'          => [ "spam\@rustypea.com", ],
+    Email::send_email( 'To'          => [ "spam\@backpackingbuddies.com", ],
                        'Reply-To'    => [ "$rusty->{core}->{profile_name} <$rusty->{core}->{email}>", ],
                        'Subject'     => "Spam message submitted",
                        'TextMessage' => $textmessage,
