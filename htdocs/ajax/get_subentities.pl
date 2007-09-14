@@ -20,7 +20,7 @@ my $params = rusty::get_utf8_params();
 
 my $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
