@@ -81,7 +81,7 @@ if (!$rusty->{params}->{passphrase_id}) {
     
     $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
@@ -379,7 +379,7 @@ ENDSQL
     # Create some basic user info
     $query = <<ENDSQL
 INSERT INTO `user~info`
-( user_id, real_name, gender, sexuality, dob, age, country_id, subentity_id )
+( user_id, real_name, gender, dob, age, sexuality, country_id, subentity_id )
 VALUES
 ( ?, ?, ?, ?, ?, ?, ?, ? )
 ENDSQL
@@ -398,8 +398,8 @@ ENDSQL
     $sth->execute($user_id,
                   $rusty->{params}->{real_name},
                   $rusty->{params}->{gender},
-                  $rusty->{params}->{sexuality},
                   $dob, $age,
+                  $rusty->{params}->{sexuality},
                   $rusty->{params}->{country_id},
                   $rusty->{params}->{subentity_id});
     $sth->finish;
@@ -557,7 +557,7 @@ sub get_signup_select_options() {
   
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
-      table => "lookup~country",
+      table => "lookup~continent~country",
       id    => "country_id",
       data  => "name",
       order => "name",
@@ -574,7 +574,7 @@ sub get_signup_select_options() {
   if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'select') {
     my $query = <<ENDSQL
 SELECT subentity_id, subentity_name
-FROM `lookup~country~subentity`
+FROM `lookup~continent~country~subentity`
 WHERE country_id = ?
 ORDER BY subentity_name
 ENDSQL
