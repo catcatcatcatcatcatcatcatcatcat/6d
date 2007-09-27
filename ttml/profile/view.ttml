@@ -142,12 +142,12 @@ END;
    main_photo.tnnc_height = 100;
    END %]
 [% real_photo_link = "/photos/${profile_name}/${main_photo.thumbnail_nocrop_filename}" %]
-[% IF main_photo.adult && !own_profile && !adult_pass;
-     photo_link = "/photos/adult.png";
-   ELSIF !main_photo.checked_date && !own_profile && !adult_pass;
-     photo_link = "/photos/pending.png";
-   ELSIF !main_photo.photo_id;
+[% IF !main_photo.photo_id;
      photo_link = "/photos/default.png";
+   ELSIF main_photo.photo_id && main_photo.adult && !own_profile && !adult_pass;
+     photo_link = "/photos/adult.png";
+   ELSIF main_photo.photo_id && !main_photo.checked_date && !own_profile && !adult_pass;
+     photo_link = "/photos/pending.png";
    ELSE;
      photo_link = real_photo_link;
   END %]
