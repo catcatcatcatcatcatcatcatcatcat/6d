@@ -366,7 +366,7 @@ function initialize() {
   map.setCenter(new google.maps.LatLng(0, 0), 1, G_HYBRID_MAP);
   //country_marker = new google.maps.Marker(new google.maps.LatLng(0, 0),{
   //  clickable     : false,
-  //  icon          : licky_down,
+  //  icon          : licky_down
   //});
   //map.addOverlay(country_marker);
   //country_marker.hide();
@@ -377,7 +377,7 @@ function initialize() {
   
   selected_marker = new google.maps.Marker(new google.maps.LatLng(0, 0),{
     clickable     : false,
-    icon          : licky_down,
+    icon          : licky_down
   });
   map.addOverlay(selected_marker);
   selected_marker.hide();
@@ -481,7 +481,7 @@ if (google_maps_enabled)
               new google.maps.Marker(new google.maps.LatLng(valueLabelPair[2], valueLabelPair[3]),{
                 clickable     : false,
                 title         : valueLabelPair[1],
-                icon          : subentity_icon,
+                icon          : subentity_icon
               });
             map.addOverlay(subentity_markers[country_id][subentity_code]);
           }
