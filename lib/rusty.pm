@@ -427,17 +427,13 @@ sub benchmark() { return $_[0]->{benchmark}; }
       #Apache::DBI->setPingTimeOut($_DSN, -1);
       
       
-      # Connect and get a database handle
+      # Connect and get a database handle with UTF-8 enabled for input/output
       if (my $_dbh = DBI->connect( $_DSN,
                            $conf::db_conf::USERNAME,
                            $conf::db_conf::PASSWORD,
                            # These are the defaults: warn errors but don't die!
-                           { RaiseError => 0, PrintError => 1 } )) {
-        
-        ##################################
-        # Hopefully future versions of DBD::mysql will have this option..
-        #$_dbh->{'mysql_enable_utf8'} = 1; # But for now our patched version allows this!
-        ##################################
+                           { 'RaiseError' => 0, 'PrintError' => 1,
+                             'mysql_enable_utf8' => 1 } )) {
         
         # Set up some info about our database (SQL_DBMS_VER)
         $DATABASE_VERSION = $1 if $_dbh->get_info(18) =~ /([\d\.]+)/; 
