@@ -6,7 +6,7 @@
     <i><a href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]" onclick="return ShowLoginBox();">Log in now</a>.</i>
     <div style="font-size: 12px; margin-top: 0.4em"><i>(<a href="/signup.pl">Sign up</a>)</i></div>
   </div>
-  <form id="login" action="/login.pl" method="post">
+  <form id="login_form" action="/login.pl" method="post">
   <fieldset>
     <div id="LoginBox" style="display:[% IF core.openloginnav %]block[% ELSE %]none[% END %]">
     <input type="hidden" name="mode" value="login" />
