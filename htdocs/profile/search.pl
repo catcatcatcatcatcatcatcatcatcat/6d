@@ -123,10 +123,6 @@ if ($rusty->{params}->{'mode'} eq 'search') {
     $rusty->exit;
   }
   
-  
-  
-  # No errors in data and search requested - so perform the search.
-  
   my $countries =
     $rusty->get_lookup_hash(
       table => "lookup~continent~country",
@@ -692,37 +688,36 @@ ENDSQL
 
 sub populate_common_data() {
   
-  $rusty->{data}->{countries} = [
-    $rusty->get_ordered_lookup_list(
-      table => "lookup~continent~country",
-      id    => "country_id",
-      data  => "name",
-      order => "name",
-                                   ),
-                                ];
+  #$rusty->{data}->{countries} = [
+  #  $rusty->get_ordered_lookup_list(
+  #    table => "lookup~continent~country",
+  #    id    => "country_id",
+  #    data  => "name",
+  #    order => "name",
+  #                                 ),
+  #                              ];
+  # Get bounding box info to display countries on a map nicely :)
+  $query = <<ENDSQL
+SELECT SQL_CACHE country_id AS value, name AS name,
+       bounding_box_west AS west,
+       bounding_box_north AS north,
+       bounding_box_east AS east,
+       bounding_box_south AS south
+FROM `lookup~continent~country`
+ORDER BY name
+ENDSQL
+;
+  $sth = $rusty->DBH->prepare_cached($query);
+  $sth->execute();
+  while (my $box = $sth->fetchrow_hashref) {
+    push @{$rusty->{data}->{countries}}, $box;
+  }
   
   # Truncate long country names
   foreach (@{$rusty->{data}->{countries}}) {
     if (length($_->{name}) > 30) {
       $_->{name} = substr($_->{name},0,27) . ' ...';
     }
-  }
-  
-  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'any') {
-    my $query = <<ENDSQL
-SELECT subentity_id, subentity_name
-FROM `lookup~continent~country~subentity`
-WHERE country_id = ?
-ORDER BY subentity_name
-ENDSQL
-    ;
-    my $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{params}->{country_id});
-    $rusty->{params}->{enable_subentities_list} = 1;
-    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
-      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name};
-    }
-    $sth->finish;
   }
   
   $rusty->{data}->{relationship_statuses} =
@@ -732,6 +727,54 @@ ENDSQL
       data  => "name",
       where => "relationship_status_id != 1" )];
   
+  my $country_id = ($rusty->{params}->{country_id} || $rusty->{data}->{country_id});
+  # TODO: don't we zoom in on a place if it has been remembered from a previous search?
+  if ($country_id && $country_id ne 'any') {
+    $query = <<ENDSQL
+SELECT SQL_CACHE subentity_id, name AS subentity_name
+FROM `lookup~continent~country~city1000`
+WHERE countrycode = ?
+ORDER BY subentity_name
+ENDSQL
+    ;
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($country_id);
+    $rusty->{params}->{enable_subentities_list} = 1;
+    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name };
+    }
+    $sth->finish;
+    
+    $query = <<ENDSQL
+SELECT SQL_CACHE name, capital, population,
+                 areaInSqKm, currency, languages,
+                 CONCAT(IF(bounding_box_north>=0,
+                           CONCAT(FORMAT(bounding_box_north,3),'&deg;N'),
+                           CONCAT(FORMAT(bounding_box_north*-1,3),'&deg;S')), ' - ',
+                        IF(bounding_box_south>=0,
+                           CONCAT(FORMAT(bounding_box_south,3),'&deg;N'),
+                           CONCAT(FORMAT(bounding_box_south*-1,3),'&deg;S'))) AS latitude,
+                 CONCAT(IF(bounding_box_east>=0,
+                           CONCAT(FORMAT(bounding_box_east,3),'&deg;E'),
+                           CONCAT(FORMAT(bounding_box_east*-1,3),'&deg;W')), ' - ',
+                        IF(bounding_box_west>=0,
+                           CONCAT(FORMAT(bounding_box_west,3),'&deg;E'),
+                           CONCAT(FORMAT(bounding_box_west*-1,3),'&deg;W'))) AS longitude
+FROM `lookup~continent~country`
+WHERE country_id = ?
+LIMIT 1
+ENDSQL
+;
+    
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($rusty->{params}->{country_id});
+    $rusty->{data}->{country_info} = $sth->fetchrow_hashref;
+    $rusty->{data}->{country_info}->{areaInSqKm} =~ s/\.0$//;
+    $rusty->{data}->{country_info}->{capital} ||= 'N/A';
+    $rusty->{data}->{country_info}->{currency} ||= 'N/A';
+    $rusty->{data}->{country_info}->{languages} ||= 'N/A';
+    $sth->finish;
+  }
 }
 
 
