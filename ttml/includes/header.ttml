@@ -113,7 +113,7 @@ addEvent(window, 'load', getNewWindowLinks);
 [% END %]
   </head>
 
-  <body[% IF onload %] onload="[% onload %]"[% END %]>
+  <body[% IF onload %] onload="[% onload %]"[% END %][% IF onunload %] onunload="[% onunload %]"[% END %]>
 
 
 
