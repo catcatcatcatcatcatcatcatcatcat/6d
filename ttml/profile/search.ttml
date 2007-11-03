@@ -1,4 +1,5 @@
 [% SET js = [ "/js/form.js" ] %]
+[% SET onunload = onunload _ ' google.maps.Unload()' %]
 [% title = 'Search Profiles' %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push("$title") %]
@@ -30,22 +31,26 @@
 <hp class="success">[% msg %]</p>
 [% END %]
 
-<p style="margin-left:16px">Please select the criteria for your search below.</p>
-<form method="post" action="/profile/search.pl">
-<fieldset>
+<div style="float: left; border:1px solid #d6d3d6; margin: 0 0 16px 16px; padding: 16px">
   
+  <p style="margin-left:16px">Please select the criteria for your search below.</p>
+  <form method="post" action="/profile/search.pl">
+  <fieldset>
+    
   <input type="hidden" name="mode" id="mode" value="search" />
   
-  <div style="float:left; border:1px solid #d6d3d6;margin:0 32px 16px 16px;padding:16px">
+  <table style="border: none; ">
     [% input_count = 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="country_id">Country</label></div>
-      <div class="table-right">
-        <select id="country_id" name="country_id" onchange="get_subentities(this.value)"
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="country_id">Country</label></td>
+      <td>
+        <select id="country_id" name="country_id" onchange="get_subentities(this.value); show_country_on_map(this.value, this[this.selectedIndex].className)"
                 onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
                 style="min-width:16em"[% IF enable_subentities_list %] disabled="disabled"[% END %]>
-          <option value="any"[% IF country_id == "any" %] selected="selected"[% END %]>Any</option>
-          [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]</option>
+          <option value="any"[% IF !country_id || country_id == "any" %] selected="selected"[% END %]>Any</option>
+          [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.north.defined %]
+                  class="north__[% c.north %] east__[% c.east %] south__[% c.south %] west__[% c.west %]"[% END %][% IF c.value == country_id %]
+                  selected="selected"[% END %]>[% c.name %]</option>
           [% END %]
         </select>
         [% IF enable_subentities_list %]
@@ -56,22 +61,23 @@
           </fieldset>
         </noscript>
         [% END %]
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="subentity_id">Area</label></div>
-      <div class="table-right">
-        <select id="subentity_id" name="subentity_id"
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="subentity_id">Area</label></td>
+      <td>
+        <select id="subentity_id" name="subentity_id" onchange="show_subentity_on_map(document.getElementById('country_id').value,
+                                                                                      this.value)"
                 onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
                 style="min-width:16em"[% IF !enable_subentities_list %] disabled="disabled"[% END %]>
           [% IF enable_subentities_list && !subentities # If there are no known subentities for the chosen country %]
             <option value="OTHER">Other (Not Listed)</option>
           [% ELSE %]
-            <option value="any"[% IF subentity_id == "any" %] selected="selected"[% END %]>Any</option>
+            <option value="any"[% IF !subentity_id || subentity_id == "any" %] selected="selected"[% END %]>Any</option>
             <option value="OTHER"[% IF subentity_id == "OTHER" %] selected="selected"[% END %]>Other (Not Listed)</option>
-            [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_id %] selected="selected"[% END %]>[% s.name %]</option>
+            [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_id %] selected="selected"[% END %]>[% s.name FILTER html_entity %]</option>
             [% END %]
           [% END %]
         </select>
@@ -82,26 +88,26 @@
           </fieldset>
         </noscript>
         [% END %]
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="gender">Gender</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="gender">Gender</label></td>
+      <td>
         <select name="gender" id="gender" style="min-width:16em"
           onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/">
           <option value="any"[% IF gender == "any" %] selected="selected"[% END %]>Any</option>
           <option value="male"[% IF gender == "male" %] selected="selected"[% END %]>Male</option>
           <option value="female"[% IF gender == "female" %] selected="selected"[% END %]>Female</option>
         </select>
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="sexuality">Sexuality</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="sexuality">Sexuality</label></td>
+      <td>
         <select name="sexuality" id="sexuality" style="min-width:16em"
                 onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/">
           <option value="any"[% IF sexuality == "any" %] selected="selected"[% END %]>Any</option>
@@ -109,13 +115,13 @@
           <option value="gay/lesbian"[% IF sexuality == "gay/lesbian" %] selected="selected"[% END %]>Gay / Lesbian</option>
           <option value="bisexual/curious"[% IF sexuality == "bisexual/curious" %] selected="selected"[% END %]>Bisexual / Curious</option>
         </select>
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="age_min">Age</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="age_min">Age</label></td>
+      <td>
         [% BLOCK ignore %]
         <select name="age_range" id="age_range" style="min-width:16em"
           onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/">
@@ -129,7 +135,7 @@
         [% END %]
         <select name="age_min" id="age_min" style="min-width:7em"
           onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
-          onchange="if ((document.getElementById('age_max').selectedIndex > 0) && (document.getElementById('age_max').selectedIndex < this.selectedIndex)) document.getElementById('age_max').options[this.selectedIndex].selected = true; ">
+          onchange="if ((document.getElementById('age_max').selectedIndex > 0) &amp;&amp; (document.getElementById('age_max').selectedIndex < this.selectedIndex)) document.getElementById('age_max').options[this.selectedIndex].selected = true; ">
           <option value="any"[% IF age_min == "any" %] selected="selected"[% END %]>Any</option>
           [% ages = [16..99]; FOREACH a = ages %]<option value="[% a %]"[% IF age_min == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
         </select>
@@ -139,13 +145,13 @@
           <option value="any"[% IF age_max == "any" %] selected="selected"[% END %]>Any</option>
           [% FOREACH a = ages %]<option value="[% a %]"[% IF age_max == a %] selected="selected"[% END %]>[% a %]</option>[% END %]
         </select>
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="relationship_status_id">Relationship<br />status</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="relationship_status_id">Relationship<br />status</label></td>
+      <td>
         <select name="relationship_status_id" id="relationship_status_id" style="min-width:16em"
                 onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/">
           <option value="any">Any</option>
@@ -153,57 +159,53 @@
           <option value="[% relationship_status.value %]"[% IF relationship_status_id == relationship_status.value %] selected="selected"[% END %]>[% relationship_status.name %]</option>
           [%+ END %]
         </select>
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="profile_name">Profile name</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="profile_name">Profile name</label></td>
+      <td>
         <input type="text" class="text" name="profile_name" id="profile_name" size="20" maxlength="20"
                onfocus="choose([% input_count %]); focusify(this)" onblur="blurify(this)"
                [% IF profile_name %]value="[% profile_name %]" [% END %]
                onkeyup="setTimeout('check_profile_name_exists()', 0)" /><br />
         <span style="font-size: 0.7em; " id="profile_name_check_text"></span>
-      </div>
-    </div>
-    <div class="table-left" style="margin-left:30px;">
-      <a href="/profile/search.pl?[% UNLESS advancedsearch %]advancedsearch=1[% END %][% IF repopulate %][% UNLESS advancedsearch %]&amp;[% END %]repopulate=1[% END %]"
-         onclick="o = document.getElementById('advanced_search');
-            t = document.getElementById('advanced_search_switch');
-            s = document.getElementById('profile_name_search');
-            if (o.style.display == 'block') {
-              o.style.display = 'none';
-              t.innerHTML = 'Show';
-            } else {
-              o.style.display = 'block';
-              t.innerHTML = 'Hide';
-               s.value = 'partial';
-            }
-            choose([% input_count %]);
-            return false" style="font-size:0.8em"><span id="advanced_search_switch">
-          [% IF advancedsearch %]Hide[% ELSE %]Show[% END %]</span>&nbsp;advanced search options</a>
-    </div>
-    <div id="advanced_search" class="table-full"
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="margin-left:30px;">
+        <a href="/profile/search.pl?[% UNLESS advancedsearch %]advancedsearch=1[% END %][% IF repopulate %][% UNLESS advancedsearch %]&amp;[% END %]repopulate=1[% END %]"
+           onclick="o = document.getElementById('advanced_search');
+              t = document.getElementById('advanced_search_switch');
+              s = document.getElementById('profile_name_search');
+              if (o.style.display == 'table-row') {
+                o.style.display = 'none';
+                t.innerHTML = 'Show';
+              } else {
+                o.style.display = 'table-row';
+                t.innerHTML = 'Hide';
+                 s.value = 'partial';
+              }
+              choose([% input_count %]);
+              return false" style="font-size:0.8em"><span id="advanced_search_switch">
+            [% IF advancedsearch %]Hide[% ELSE %]Show[% END %]</span>&nbsp;advanced search options</a>
+      </td>
+    </tr>
+    <tr id="advanced_search"
          [% IF !advancedsearch &&
                ( profile_name_search == "" ||
                  profile_name_search == "partial" ) %]style="display:none"[% END %]>
-      <div class="space-line"></div>
-      [% input_count = input_count + 1 %]
-      <div id="input[% input_count %]" class="input">
-        <div class="table-left"><label for="profile_name_search">Search type</label></div>
-        <div class="table-right">
-          <select name="profile_name_search" id="profile_name_search" style="min-width:16em"
-            onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
-            onchange="check_profile_name_exists(document.getElementById('profile_name'))">
-            <option value="partial"[% IF profile_name_search == "" || profile_name_search == "partial" %] selected="selected"[% END %]>Partial search</option>
-            <option value="full"[% IF profile_name_search == "full" %] selected="selected"[% END %]>Match whole pattern</option>
-            <option value="start"[% IF profile_name_search == "start" %] selected="selected"[% END %]>Match at start</option>
-            <option value="end"[% IF profile_name_search == "end" %] selected="selected"[% END %]>Match at end</option>
-          </select>
-        </div>
-      </div>
-      <div class="table-left" style="margin-left:30px">
+      <td><label for="profile_name_search">Search type</label></td>
+      <td>
+        <select name="profile_name_search" id="profile_name_search" style="min-width:16em"
+          onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/"
+          onchange="check_profile_name_exists(document.getElementById('profile_name'))">
+          <option value="partial"[% IF profile_name_search == "" || profile_name_search == "partial" %] selected="selected"[% END %]>Partial search</option>
+          <option value="full"[% IF profile_name_search == "full" %] selected="selected"[% END %]>Match whole pattern</option>
+          <option value="start"[% IF profile_name_search == "start" %] selected="selected"[% END %]>Match at start</option>
+          <option value="end"[% IF profile_name_search == "end" %] selected="selected"[% END %]>Match at end</option>
+        </select><br />
         <a href="/profile/search.pl?[% UNLESS advancedsearchtips %]advancedsearchtips=1[% ELSE %]advancedsearch=1[% END %][% IF repopulate %]&amp;repopulate=1[% END %]"
            onclick="o = document.getElementById('advanced_search_tips');
         t = document.getElementById('advanced_search_tips_switch');
@@ -216,48 +218,75 @@
         }
         return false" style="font-size:0.8em"><span id="advanced_search_tips_switch">
             [% IF advancedsearchtips %]Hide[% ELSE %]Show[% END %]</span>&nbsp;advanced search tips</a>
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="onlyphotos">Only profiles<br />with photos</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="onlyphotos">Only profiles<br />with photos</label></td>
+      <td>
         <input type="checkbox" class="checkbox" name="onlyphotos" id="onlyphotos" value="1"
                onclick="choose([% input_count %]); /*checkify(this)*/"
          [% IF onlyphotos == 1 %]checked="checked" [% END %] />
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="onlyadult">Only with<br />adult photos</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="onlyadult">Only with<br />adult photos</label></td>
+      <td>
         <input type="checkbox" class="checkbox" name="onlyadult" id="onlyadult" value="1"
                onclick="choose([% input_count %]); /*checkify(this)*/"
          [% IF onlyadult == 1 %]checked="checked" [% END %] />
-      </div>
-    </div>
-    <div class="space-line"></div>
+      </td>
+    </tr>
+    
     [% input_count = input_count + 1 %]
-    <div id="input[% input_count %]" class="input">
-      <div class="table-left"><label for="remember">Rembember<br />this search</label></div>
-      <div class="table-right">
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="remember">Rembember<br />this search</label></td>
+      <td>
         <input type="checkbox" class="checkbox" name="remember" id="remember" value="1"
          [% IF core.user_id || core.visitor_id %]onclick="choose([% input_count %]); /*checkify(this)*/"
            [% IF remember == 1 %]checked="checked" [% END %]
          [% ELSE %]disabled="disabled"[% END %] />
-      </div>
-    </div>
-    <div class="space-line"></div>
-    <div style="clear:both;text-align:right;margin-bottom:0">
-      <input type="submit" class="button" value="Go!"
-             onclick="choose()" />
-    </div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="text-align:right;margin-bottom:0">
+        <input type="submit" class="button" value="Go!"
+               onclick="choose()" />
+      </td>
+    </tr>
+  </table>
+  </fieldset>
+  </form>
 
+</div>
+
+<div id="info_pane" style="float: left; ">
+  <img id="country_flag_image" alt="Country Flag"
+       src="[% IF country_id && country_id != "any" %]/images/country_flags/[% country_id | lower %]_flag.gif[% END %]" height="54" />
+  <div id="country_info_facts" style="border: 1px solid #666; ">
+    <h4>Country Facts: <span id="country_info_name">[% IF country_info %][% country_info.name %][% END %]</span></h4>
+    Capital: <span id="country_info_capital">[% IF country_info %][% country_info.capital %][% END %]</span><br />
+    Population: <span id="country_info_population">[% IF country_info %][% country_info.population %][% END %]</span><br />
+    Area: <span id="country_info_area">[% IF country_info %][% country_info.areaInSqKm %] km&sup2;[% END %]</span><br />
+    Currency: <span id="country_info_currency">[% IF country_info %][% country_info.currency %][% END %]</span><br />
+    Languages: <span id="country_info_languages">[% IF country_info %][% country_info.languages %][% END %]</span><br />
+    Latitude: <span id="country_info_latitude">[% IF country_info %][% country_info.latitude %][% END %]</span><br />
+    Longitide: <span id="country_info_longitude">[% IF country_info %][% country_info.longitude %][% END %]</span><br />
   </div>
-</fieldset>
-</form>
+  <div id="subentity_info_facts" style="border: 1px solid #666; ">
+    <h4>Subentity Facts: <span id="subentity_info_name">[% IF subentity_info %][% subentity_info.name %][% END %]</span></h4>
+    Population: <span id="subentity_info_population">[% IF subentity_info %][% subentity_info.population %][% END %]</span><br />
+    Elevation: <span id="subentity_info_elevation">[% IF subentity_info %][% subentity_info.elevation %][% END %]</span><br />
+    Timezone: <span id="subentity_info_timezone">[% IF subentity_info %][% subentity_info.timezone %][% END %]</span><br />
+    Offset: <span id="subentity_info_timezone_offset">[% IF subentity_info %][% subentity_info.timezone_offset %][% END %]</span><br />
+    Latitude: <span id="subentity_info_latitude">[% IF subentity_info %][% subentity_info.latitude %][% END %]</span><br />
+    Longitide: <span id="subentity_info_longitude">[% IF subentity_info %][% subentity_info.longitude %][% END %]</span><br />
+  </div>
+  <div id="map_canvas" style="width: 500px; height: 500px; clear: left; "></div>
+</div>
 
 <div id="advanced_search_tips"
      style="font-size:0.8em; line-height:1.0em; color:#999[% UNLESS advancedsearchtips %]; display:none[% END %]">
@@ -298,9 +327,82 @@
   </ol>
 </div>
 
+
+
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAmYkY5ykoTVKCJQ64vbYjBhTnbkjcJZuewrE5PCWsc4sP5Rr-uhSXrKCEwtrNVeadQ7qBp_f6r7etag"></script>
+<script type="text/javascript">
+
+var google_maps_enabled = true;
+
+try {
+  google.load("maps", "2.x");
+} catch (e) {
+  google_maps_enabled = false;
+}
+
+var map;
+//var country_marker;
+var subentity_icon;
+var selected_marker;
+var subentity_markers = new Array();
+
+function initialize() {
+  
+  if (!google.maps.BrowserIsCompatible())
+    return -1;
+  
+  map = new google.maps.Map2(document.getElementById("map_canvas"));
+  if (!map)
+    return -1;
+  
+  map.enableDoubleClickZoom();
+  map.enableContinuousZoom();
+  map.addControl(new google.maps.MapTypeControl());
+  
+  licky_down = new google.maps.Icon(G_DEFAULT_ICON, "/images/lick_down.gif");
+  licky_down.iconSize = new google.maps.Size(19,  19);
+  licky_down.shadowSize = new google.maps.Size(25,  25);
+  
+  map.setCenter(new google.maps.LatLng(0, 0), 1, G_HYBRID_MAP);
+  //country_marker = new google.maps.Marker(new google.maps.LatLng(0, 0),{
+  //  clickable     : false,
+  //  icon          : licky_down,
+  //});
+  //map.addOverlay(country_marker);
+  //country_marker.hide();
+  
+  subentity_icon = new google.maps.Icon(G_DEFAULT_ICON, "/images/red_star.png");
+  subentity_icon.iconSize = new google.maps.Size(12,  12);
+  subentity_icon.shadowSize = new google.maps.Size(12,  12);
+  
+  selected_marker = new google.maps.Marker(new google.maps.LatLng(0, 0),{
+    clickable     : false,
+    icon          : licky_down,
+  });
+  map.addOverlay(selected_marker);
+  selected_marker.hide();
+  
+  // initialise the first time! - this will now only work once the map has loaded..
+  if (get_subentities(document.getElementById('country_id').value, '[% subentity_id %]')) {
+    show_country_on_map(document.getElementById('country_id').value,
+                        document.getElementById('country_id')[document.getElementById('country_id').selectedIndex].className);
+  }
+  
+  return;
+}
+
+if (google_maps_enabled)
+  google.setOnLoadCallback(initialize);
+
+</script>
+
+
+
 <script src="/js/xmlhttp.js" type="text/javascript"></script>
 <script type="text/javascript">
 //<!--
+  var ajax_cache = new Array();
+  
   var xmlhttp1 = new_xmlhttp();
   function get_subentities(country_id, selected_subentity_id) {
     subentity_id = document.getElementById('subentity_id');
@@ -310,37 +412,256 @@
       subentity_id.disabled = true;
       return false;
     }
-    url="/ajax/" + "get_subentities." + "pl?country_id=" + country_id + "&random=" + Math.random();
-    xmlhttp1.open('GET',url,true);
-    xmlhttp1.onreadystatechange=function() {
-      if (xmlhttp1.readyState == 4 || xmlhttp1.readyState == "complete") { // Complete
-        if (xmlhttp1.status == 200) { // OK response
-          subentity_id.options.length = 0;
-          textToSplit = xmlhttp1.responseText;
-          subentity_id.disabled = false;
-          if (textToSplit == "") {
-            subentity_id.options[0] = new Option('Other (Not Listed)', 'OTHER');
-          } else {
-            returnElements=textToSplit.split("||");
-            subentity_id.options[0] = new Option('Any', 'any');
-            subentity_id.options[1] = new Option('Other (Not Listed)', 'OTHER');
-            for (var i=0; i<returnElements.length; i++) {
-              valueLabelPair = returnElements[i].split("|");
-              subentity_id.options[i+2] = new Option(valueLabelPair[1], valueLabelPair[0]);
-              if (selected_subentity_id != undefined && valueLabelPair[0] == selected_subentity_id) {
-                subentity_id.options[i+2].selected = true;
-              }
+    
+    if (ajax_cache['subentities'] == undefined) {
+      ajax_cache['subentities'] = new Array();
+      ajax_cache['subentity_info'] = new Array();
+    }
+    
+    var returnElements = new Array();
+    var using_ajax_cache = false;
+    if (ajax_cache['subentities'][country_id] == undefined) {
+      ajax_cache['subentities'][country_id] = new Array();
+      ajax_cache['subentity_info'][country_id] = new Array();
+      url="/ajax/" + "get_subentities_latlong." + "pl?country_id=" + country_id + "&random=" + Math.random();
+      xmlhttp1.open('GET',url,true);
+      xmlhttp1.onreadystatechange=function() {
+        if (xmlhttp1.readyState == 4 || xmlhttp1.readyState == "complete") { // Complete
+          if (xmlhttp1.status == 200) { // OK response
+            textToSplit = xmlhttp1.responseText;
+            if (textToSplit != "") {
+              returnElements = textToSplit.split("||");
             }
+            get_subentities_populate();
+          } else {
+            alert("Bad response by the server");
           }
-        } else {
-          alert("Bad response by the server");
+        }
+      }
+      xmlhttp1.send(null);
+    } else {
+      // Otherwise use the cache :)
+      returnElements = ajax_cache['subentities'][country_id];
+      using_ajax_cache = true;
+      get_subentities_populate();
+    }
+    
+    // specific behaviour for our elements:
+    function get_subentities_populate() {
+      subentity_id.options.length = 0;
+      subentity_id.disabled = false;
+      if (returnElements.length == 0) {
+        subentity_id.options[0] = new Option('Other (Not Listed)', 'OTHER');
+      } else {
+        
+        subentity_markers[country_id] = new Array();
+        
+        subentity_id.options[0] = new Option('Any', 'any');
+        subentity_id.options[1] = new Option('Other (Not Listed)', 'OTHER');
+        for (var i=0; i<returnElements.length; i++) {
+          
+          valueLabelPair = returnElements[i].split("|");
+          
+          if (!using_ajax_cache) {
+            ajax_cache['subentities'][country_id].push(returnElements[i]);
+            ajax_cache['subentity_info'][country_id][valueLabelPair[0]] = valueLabelPair;
+          }
+          
+          subentity_id.options[i+2] = new Option(valueLabelPair[1], valueLabelPair[0]);
+          subentity_id.options[i+2].innerHTML = valueLabelPair[1];
+          // Add latitude and longitude information - not used anymore since we're placing markers..
+          //subentity_id.options[i+2].className = 'latitude__' + valueLabelPair[2] + ' longitude__' + valueLabelPair[3];
+          if (selected_subentity_id != undefined && valueLabelPair[0] == selected_subentity_id) {
+            subentity_id.options[i+2].selected = true;
+          }
+          subentity_code = valueLabelPair[0];
+          // Add marker on the map for this place..
+          if (map) {
+            subentity_markers[country_id][subentity_code] =
+              new google.maps.Marker(new google.maps.LatLng(valueLabelPair[2], valueLabelPair[3]),{
+                clickable     : false,
+                title         : valueLabelPair[1],
+                icon          : subentity_icon,
+              });
+            map.addOverlay(subentity_markers[country_id][subentity_code]);
+          }
         }
       }
     }
-    xmlhttp1.send(null);
+    return true;
   }
   document.getElementById('country_id').disabled = false;
-  get_subentities(document.getElementById('country_id').value, '[% subentity_id %]'); // initialise the first time!
+  
+  var currently_highlighted_subentity;
+  
+  function show_subentity_on_map(country_code, subentity_code) {
+    
+    // Grab cached info for this country..
+    if (ajax_cache['subentity_info'] != undefined) {
+      if ((valueLabelPair = ajax_cache['subentity_info'][country_code][subentity_code]) != undefined) {
+        
+        // Add info on area to page..
+        document.getElementById('subentity_info_population').innerHTML = 
+            valueLabelPair[4];
+        document.getElementById('subentity_info_elevation').innerHTML = 
+            valueLabelPair[5];
+        document.getElementById('subentity_info_timezone').innerHTML = 
+            valueLabelPair[6];
+        document.getElementById('subentity_info_timezone_offset').innerHTML = 
+            valueLabelPair[7];
+        document.getElementById('subentity_info_latitude').innerHTML = 
+            valueLabelPair[8];
+        document.getElementById('subentity_info_longitude').innerHTML = 
+            valueLabelPair[9];
+        
+      }
+    }
+    
+    if (!map)
+      return;
+    
+    if ((subentity_location = subentity_markers[country_code][subentity_code]) == undefined)
+      return;
+    
+    if (country_zoom_level < 10) {
+      zoom_level = 10;
+    } else {
+      zoom_level = zoom_level + 1;
+    }
+    
+    initial_delay = 0;
+    if (country_zoom_level != map.getZoom()) {
+      map.setZoom(country_zoom_level);
+      initial_delay = 1000;
+    }
+    
+    window.setTimeout(function() {
+      if (currently_highlighted_subentity != undefined)
+        subentity_markers[country_code][currently_highlighted_subentity].show();
+      currently_highlighted_subentity = subentity_code;
+      subentity_markers[country_code][subentity_code].hide();
+      subentity_location = subentity_markers[country_code][subentity_code].getLatLng()
+      selected_marker.setLatLng(subentity_location);
+      selected_marker.show();
+      window.setTimeout(function() {
+        map.panTo(subentity_location);
+        window.setTimeout(function() {
+          //selected_marker.hide();
+          map.setZoom(zoom_level);
+        }, 2000)
+      }, 1000);
+    }, initial_delay);
+  }
+  
+  var xmlhttp3 = new_xmlhttp();
+  function show_country_info(country_code) {
+    
+    if (!ajax_cache['country_info'])
+      ajax_cache['country_info'] = new Array();
+    
+    var returnElements = new Array();
+    var using_ajax_cache = false;
+    if (!ajax_cache['country_info'][country_code]) {
+      ajax_cache['country_info'][country_code] = new Array();
+      url="/ajax/" + "get_country_info." + "pl?country_id=" + country_code + "&random=" + Math.random();
+      xmlhttp3.open('GET',url,true);
+      xmlhttp3.onreadystatechange=function() {
+        if (xmlhttp3.readyState == 4 || xmlhttp3.readyState == "complete") { // Complete
+          if (xmlhttp3.status == 200) { // OK response
+            textToSplit = xmlhttp3.responseText;
+            if (textToSplit != "") {
+              returnElements = textToSplit.split("|");
+            }
+            show_country_info_populate();
+          } else {
+            alert("Bad response by the server");
+          }
+        }
+      }
+      xmlhttp3.send(null);
+    } else {
+      // Otherwise use the cache :)
+      returnElements = ajax_cache['country_info'][country_code];
+      using_ajax_cache = true;
+      show_country_info_populate();
+    }
+    
+    // specific behaviour for our elements:
+    function show_country_info_populate() {
+      
+      if (!using_ajax_cache)
+        ajax_cache['country_info'][country_code] = returnElements;
+      
+      document.getElementById('country_flag_image').src =
+        '/images/country_flags/' + country_code.toLowerCase() + '_flag.gif';
+      
+      document.getElementById('country_info_name').innerHTML = 
+          returnElements[0];
+      document.getElementById('country_info_capital').innerHTML = 
+          returnElements[1];
+      document.getElementById('country_info_population').innerHTML = 
+          returnElements[2];
+      document.getElementById('country_info_area').innerHTML = 
+          returnElements[3] + 'km&sup2;';
+      document.getElementById('country_info_currency').innerHTML = 
+          returnElements[4];
+      document.getElementById('country_info_languages').innerHTML = 
+          returnElements[5];
+      document.getElementById('country_info_latitude').innerHTML = 
+          returnElements[6];
+      document.getElementById('country_info_longitude').innerHTML = 
+          returnElements[7];
+    }
+    return true;
+  }
+  
+  var last_viewed_country;
+  var country_zoom_level;
+  function show_country_on_map(country_code, className) {
+    
+    show_country_info(country_code);
+    
+    if (!map)
+      return;
+    
+    if (currently_highlighted_subentity != undefined &&
+        last_viewed_country != undefined) {
+      subentity_markers[last_viewed_country][currently_highlighted_subentity].show();
+      currently_highlighted_subentity = undefined;
+    }
+    last_viewed_country = country_code;
+    selected_marker.hide();
+    // Deselect all previously highlighted subentities!
+    
+    if (!/\bnorth__/.test(className)) {
+      map.setCenter(new google.maps.LatLng(0, 0), 1);
+      return;
+    }
+    north = parseFloat(className.match(/\bnorth__(\-?[\d+\.]+)\b/)[1]);
+    east = parseFloat(className.match(/\beast__(\-?[\d+\.]+)\b/)[1]);
+    south = parseFloat(className.match(/\bsouth__(\-?[\d+\.]+)\b/)[1]);
+    west = parseFloat(className.match(/\bwest__(\-?[\d+\.]+)\b/)[1]);
+    ne = new google.maps.LatLng(north, east);
+    sw = new google.maps.LatLng(south, west);
+    bounds = new google.maps.LatLngBounds(sw, ne);
+    map.setZoom(2);
+    //selected_marker.setLatLng(bounds.getCenter());
+    //selected_marker.show();
+    
+    country_zoom_level = map.getBoundsZoomLevel(bounds);
+    
+    window.setTimeout(function() {
+      map.panTo(bounds.getCenter());
+      //alert('long: ' + bounds.getCenter().lng() + ',  lat: ' + bounds.getCenter().lat() + '  OR  ' +
+      //      'long: ' + bounds.getCenter().lngRadians() + ',  lat: ' + bounds.getCenter().latRadians());
+      window.setTimeout(function() {
+        //map.zoomIn();
+        //selected_marker.hide();
+        map.setZoom(country_zoom_level);
+        map.panTo(bounds.getCenter());
+      }, 1500);
+    }, 1500);
+  }
   
   // The setTimout on the inline call to this AJAX function stops Firefox's calls
   // throwing the exception NS_ERROR_NOT_AVAILABLE - it is documented and this IS the fix!
@@ -384,5 +705,7 @@
   [% IF profile_name %]check_profile_name_exists(); // initialise the first time![% END %]
 //-->
 </script>
+
+
 
 [% INCLUDE includes/footer.ttml %]
