@@ -71,14 +71,14 @@
   [% END %]
 </select>
 
-<label for="country_id">Country:</label>
-<select name="country_id" id="country_id">
-  <option value=""[% IF country_id == "" %] selected="selected"[% END %]>Any</option>
+<label for="country_code">Country:</label>
+<select name="country_code" id="country_code">
+  <option value=""[% IF country_code == "" %] selected="selected"[% END %]>Any</option>
   [% FOREACH c = countries %]
-    [% IF recent_visitors.visitor_stats.country_ids.${c.value} %]
-      <option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]
-        ([% recent_visitors.visitor_stats.country_ids.${c.value} %])</option>
-      [% country_id_hash.${c.value} = c.name %]
+    [% IF recent_visitors.visitor_stats.country_codes.${c.value} %]
+      <option value="[% c.value %]"[% IF c.value == country_code %] selected="selected"[% END %]>[% c.name %]
+        ([% recent_visitors.visitor_stats.country_codes.${c.value} %])</option>
+      [% country_code_hash.${c.value} = c.name %]
     [% END %]
   [% END %]
 </select>
@@ -123,7 +123,7 @@
       </td><td>
         [% visit.age %]
       </td><td>
-        [% country_id_hash.${visit.country_id} %]
+        [% country_code_hash.${visit.country_code} %]
       </td>
     </tr>
     [% END %]
