@@ -69,14 +69,14 @@ ENDSQL
   if (($email, $password, $real_name) = $sth->fetchrow_array()) {
     
     email_login_details();
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=1&profile_name=$profile_name"
                                        . ($popup == 1 ? '&popup=1' : '') );
     $rusty->exit;
     
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=2&profile_name=$profile_name"
                                        . ($popup == 1 ? '&popup=1' : '') );
     $rusty->exit;
@@ -108,14 +108,14 @@ ENDSQL
   if (($profile_name, $password, $real_name) = $sth->fetchrow_array()) {
     
     email_login_details();
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=1&email=$email"
                                        . ($popup == 1 ? '&popup=1' : '') );
     $rusty->exit;
     
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=2&email=$email"
                                        . ($popup == 1 ? '&popup=1' : '') );
     $rusty->exit;
