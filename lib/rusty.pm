@@ -202,7 +202,7 @@ sub new() {
   } elsif ($self->session_cookie) {
     
     # If the user's cookie is still there, then they didn't log
-    # out properly and their session timed out, so kill the cookie.
+    # out properly and their session timed out, kill the cookie.
     push @{$self->{cookies}}, $self->CGI->cookie( -name    => "session",
                                                   -value   => '',
                                                   -expires => '-1d' );
@@ -220,6 +220,9 @@ sub new() {
       $self->{core}->{'remember_me'} = 1;
     }
     
+    ($self->{core}->{'visitor_id'},
+     my $are_they_return_visitors) = $self->_get_visitor_id();
+    
   } else {
     
     if ($self->{core}->{'remembered_profile_name'} = $self->_grab_profile_name_cookie()) {
@@ -236,7 +239,8 @@ sub new() {
     # and the next time it is called, it will create the visitor and
     # initialise stats in the db, returning the visitor id as above..
     # NB. If cookies are disabled, it will never return a visitor id!
-    $self->{core}->{'visitor_id'} = $self->_get_visitor_id();
+    ($self->{core}->{'visitor_id'},
+     my $are_they_return_visitors) = $self->_get_visitor_id();
   }
   
   my $self_url;
@@ -716,6 +720,49 @@ sub get_utf8_params {
     $self->{template_processed} = 1;
   }
   
+  # This function encodes any 'bla_id' fields so that important auto-increment IDs
+  # are not exposed to the user (making it harder to iterate over photos, profiles,
+  # search results, etc. etc. and to not let people know how many searches/new profiles we
+  # get (as they could work out from seeing the increment interval of auto-incremented IDs)
+  sub _encode_id_param($) {
+    # We need to encode any IDs (eg. user_id, profile_id, photo_id, link_id etc.)
+    return unless $_[0] =~ /^\d+$/o;
+    my $secret_number = 1020348; # Matches the above num used to decode params :P
+    # Add the internal signature of a '123' prefix to the original number, add secret number
+    # Then convert to hex, reverse, add leading '9' to help nums which, when reversed
+    # have leading zeros (as these would normally be dropped/ignored) and convert back to number
+    $_[0] = hex('9'.scalar(reverse(sprintf('%lx', ('123'.$_[0])+$secret_number))));
+    # Add the visible (easily faked param signature of a '!1' prefix and '5' before last digit
+    $_[0] =~ s/^(\d+?)(\d)$/!1${1}5$2/o;
+  }
+  
+  # This can be used all over the place to redirect - it alsos handles automagic translations of
+  # 'bla_id' query string params into encoded IDs (see above)..
+  # It tries to take the args as if it were CGI::redirect and pass them through..
+  sub redirect($$) {
+    my $self = shift;
+    my %opts = @_;
+    # The right side of this regex is treated as a expression (via the /e switch)
+    # Doh - can't do this since _encode_id_param modifies the read-only $2.. :(
+    #$opts{'-url'} =~ s/([\?&;][\w\.\-]+?_id=)(\d+)([&;]|$)/$1.&_encode_id_param($2).$3/ge;
+    while ($opts{'-url'} =~ m/([\?&;][\w\.\-]+?_id=)(\d+)([&;]|$)/g) {
+      my ($prefix, $id_value, $suffix) = ($1, $2, $3);
+      my $encoded_id_value = $id_value;
+      _encode_id_param($encoded_id_value);
+      #warn "replacing '$prefix$id_value$suffix' with '$prefix$encoded_id_value$suffix' in url '"."$opts{'-url'}"."'\n";
+      $opts{'-url'} =~ s/\Q$prefix$id_value$suffix\E/$prefix$encoded_id_value$suffix/;
+    }
+    
+    if ($self->{cookies} && ref($self->{cookies}) eq 'ARRAY') {
+      if ($opts{'-cookie'} && ref($opts{'-cookie'}) eq 'ARRAY') {
+        push @{$opts{'-cookie'}}, @{$self->{cookies}};
+      } else {
+        $opts{'-cookie'} = $self->{cookies};
+      }
+    }
+    return $self->CGI->redirect(%opts);
+  }
+  
   # Loop over all of our data and ensure any utf8 scalar elements
   # are found within the structure and have the perl internal utf8
   # flag set (so that the ttml outputs multi-byte characters as one
@@ -743,17 +790,6 @@ sub get_utf8_params {
   sub _dfs_on_anything($@) {
     
     sub _decode_if_utf8($) { utf8::decode($_[0]) unless utf8::is_utf8($_[0]) }
-    sub _encode_id_param($) {
-      # We need to encode any IDs (eg. user_id, profile_id, photo_id, link_id etc.)
-      return unless $_[0] =~ /^\d+$/o;
-      my $secret_number = 1020348; # Matches the above num used to decode params :P
-      # Add the internal signature of a '123' prefix to the original number, add secret number
-      # Then convert to hex, reverse, add leading '9' to help nums which, when reversed
-      # have leading zeros (as these would normally be dropped/ignored) and convert back to number
-      $_[0] = hex('9'.scalar(reverse(sprintf('%lx', ('123'.$_[0])+$secret_number))));
-      # Add the visible (easily faked param signature of a '!1' prefix and '5' before last digit
-      $_[0] =~ s/^(\d+?)(\d)$/!1${1}5$2/o;
-    }
     
     my $reftype = ref($_[0]);
     if (!$reftype) {
@@ -1058,7 +1094,7 @@ ENDSQL
       # Perhaps return some special code too to the caller..
       # So we can let them know it's a new visitor to say "WELCOME!".
       # Oh no, that would really annoy me if i wasn't new but on new comp..  Grr! :)
-      return $visitor_id, 0;
+      return ($visitor_id, 0);
       
     } else {
       
@@ -1166,7 +1202,7 @@ ENDSQL
       # So we can let them know it's an old visitor come back to say "WELCOME BACK!".
       # Perhaps it's worth either upping the time-out or also setting a session
       # cookie that dies when the browser closes?  Hmmm..  Timeouts, timeouts..
-      return $visitor_id, 1;
+      return ($visitor_id, 1);
     }
   }
 }
