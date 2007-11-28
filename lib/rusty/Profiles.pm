@@ -466,7 +466,7 @@ sub getRecentProfileVisitorsDetailed($$) {
   
   my $query = <<ENDSQL
 SELECT up.profile_name,
-ui.gender, ui.sexuality, ui.subentity_id, ui.country_id, ui.age,
+ui.gender, ui.sexuality, ui.subentity_code, ui.country_code, ui.age,
   CONCAT_WS(' ',
     IF(DATE(upv.time) = CURRENT_DATE(), '',
       IF(DATE(upv.time) = DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY), 'Yesterday, ',
@@ -500,8 +500,8 @@ ENDSQL
       if !$visitor_stats->{age_max} ||
          ($visit_info->{age} > $visitor_stats->{age_max});
     $visitor_stats->{genders}->{$visit_info->{gender}}++;
-    $visitor_stats->{country_ids}->{$visit_info->{country_id}}++;
-    #$visitor_stats->{subentity_ids}->{$visit_info->{subentity_id}}++;
+    $visitor_stats->{country_codes}->{$visit_info->{country_code}}++;
+    #$visitor_stats->{subentity_codes}->{$visit_info->{subentity_code}}++;
     #$visitor_stats->{sexualities}->{$visit_info->{sexuality}}++;
     $visitor_stats->{total}++;
     
@@ -511,8 +511,8 @@ ENDSQL
              && $visit_info->{age} > $self->{params}->{age_max}) {
     } elsif ($self->{params}->{gender} && $self->{params}->{gender} ne 'any'
              && $visit_info->{gender} ne $self->{params}->{gender}) {
-    } elsif ($self->{params}->{country_id} && $self->{params}->{country_id} ne 'any'
-             && $visit_info->{country_id} ne $self->{params}->{country_id}) {
+    } elsif ($self->{params}->{country_code} && $self->{params}->{country_code} ne 'any'
+             && $visit_info->{country_code} ne $self->{params}->{country_code}) {
     } else {
       push @visits, $visit_info;
     }
