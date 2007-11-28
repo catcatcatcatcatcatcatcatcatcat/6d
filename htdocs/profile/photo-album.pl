@@ -25,7 +25,7 @@ $rusty->{data}->{'profile_id'} = $rusty->{params}->{'profile_id'};
 
 if (!$rusty->{data}->{'profile_id'}) {
   # No profile id specified..
-  print $rusty->CGI->redirect( -url => "/index.pl" );
+  print $rusty->redirect( -url => "/index.pl" );
   $rusty->exit;
 }
 
@@ -34,7 +34,7 @@ $rusty->{data}->{profile_name} =
 
 if (!$rusty->{data}->{profile_name}) {
   # Profile does not exist (or has no name)..
-  print $rusty->CGI->redirect( -url => "/index.pl" );
+  print $rusty->redirect( -url => "/index.pl" );
   $rusty->exit;
 }
 
@@ -48,11 +48,11 @@ if ($rusty->{core}->{'user_id'}) {
     my $main_photo = $rusty->getMainPhoto($rusty->{data}->{'profile_id'});
     if ($main_photo->{adult} || !$main_photo->{checked_date}) {
       unless ($rusty->hasAdultPass($rusty->{core}->{'user_id'})) {
-        print $rusty->CGI->redirect( -url => "/profile/upgrade-buy.pl" );
+        print $rusty->redirect( -url => "/profile/upgrade-buy.pl" );
         $rusty->exit;
       }
     }
-    print $rusty->CGI->redirect( -url => "/profile/display-photo.pl?ph="
+    print $rusty->redirect( -url => "/profile/display-photo.pl?ph="
                                 . $main_photo->{photo_id} . "&pr="
                                 . $rusty->{data}->{'profile_id'} );
     $rusty->exit;
