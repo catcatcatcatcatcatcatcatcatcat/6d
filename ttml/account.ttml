@@ -1,4 +1,4 @@
-[% title = 'Sign up' %]
+[% IF core.user_id; title = 'Edit Account'; ELSE; title = 'Sign Up'; END %]
 [% INCLUDE includes/header.ttml %]
 [% breadcrumbs.push("$title") %]
 
@@ -24,7 +24,7 @@
 
 
 
-<form method="post" action="/signup.pl">
+<form method="post" action="/account.pl">
 <fieldset>
 
 <input type="hidden" name="submitting" id="submitting" value="1" />
@@ -70,33 +70,33 @@
     </td>
   </tr>
   <tr>
-    <td class="[% IF errors.country_id %]input-error[% ELSE %]input[% END %]">Country</td>
+    <td class="[% IF errors.country_code %]input-error[% ELSE %]input[% END %]">Country</td>
     <td>
-      <select id="country_id" name="country_id" onchange="get_subentities(this.value)"[% IF enable_subentities_list %] disabled="disabled"[% END %]>
-        <option value="select"[% IF country_id == "select" %] selected="selected"[% END %]>Please Select</option>
-        [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]</option>
+      <select id="country_code" name="country_code" onchange="get_subentities(this.value)"[% IF enable_subentities_list %] disabled="disabled"[% END %]>
+        <option value="select"[% IF country_code == "select" %] selected="selected"[% END %]>Please Select</option>
+        [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_code %] selected="selected"[% END %]>[% c.name %]</option>
         [% END %]
       </select>
       [% IF enable_subentities_list %]
       <noscript>
         <fieldset>
-          <input type="hidden" id="country_id" name="country_id" value="[% country_id %]" />
+          <input type="hidden" id="country_code" name="country_code" value="[% country_code %]" />
           <input type="submit" id="changecountry" name="changecountry" value="Change countries" />
-        <fieldset>
+        </fieldset>
       </noscript>
       [% END %]
     </td>
   </tr>
   <tr>
-    <td class="[% IF errors.subentity_id %]input-error[% ELSE %]input[% END %]">Area</td>
+    <td class="[% IF errors.subentity_code %]input-error[% ELSE %]input[% END %]">Area</td>
     <td>
-      <select id="subentity_id" name="subentity_id"[% IF !enable_subentities_list %] disabled="disabled"[% END %]>
+      <select id="subentity_code" name="subentity_code"[% IF !enable_subentities_list %] disabled="disabled"[% END %]>
         [% IF enable_subentities_list && !subentities # If there are no known subentities for the chosen country %]
           <option value="OTHER">Other (Not Listed)</option>
         [% ELSE %]
-          <option value="select"[% IF subentity_id == "select" %] selected="selected"[% END %]>Unspecified</option>
-          <option value="OTHER"[% IF subentity_id == "OTHER" %] selected="selected"[% END %]>Other (Not Listed)</option>
-          [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_id %] selected="selected"[% END %]>[% s.name %]</option>
+          <option value="select"[% IF subentity_code == "select" %] selected="selected"[% END %]>Unspecified</option>
+          <option value="OTHER"[% IF subentity_code == "OTHER" %] selected="selected"[% END %]>Other (Not Listed)</option>
+          [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_code %] selected="selected"[% END %]>[% s.name %]</option>
           [% END %]
         [% END %]
       </select>
@@ -104,7 +104,7 @@
       <noscript>
         <fieldset>
           <input type="submit" id="reloadareas" name="reloadareas" value="Get areas for this country" />
-        <fieldset>
+        </fieldset>
       </noscript>
       [% END %]
     </td>
@@ -115,9 +115,14 @@
   </tr>
   <tr>
     <td class="[% IF errors.profile_name %]input-error[% ELSE %]input[% END %]">Profile Name</td>
-    <td><input id="profile_name" name="profile_name" maxlength="20" type="text" class="text" value="[% profile_name %]"
+    <td>
+[% UNLESS core.user_id %]
+    <input id="profile_name" name="profile_name" maxlength="20" type="text" class="text" value="[% profile_name %]"
                onkeyup="setTimeout('check_profile_name_exists()', 0)" /><br />
         <div style="font-size:0.7em" id="profile_name_check_text" name="profile_name_check_text"></div>
+[% ELSE %]
+    <strong>[% profile_name %]</strong>
+[% END %]
     </td>
   </tr>
   <tr>
@@ -129,22 +134,29 @@
       Spaces, Accents and other punctuation are NOT permitted.</p>
     </td>
   </tr>
+[% IF core.user_id %]
   <tr>
-    <td class="[% IF errors.email %]input-error[% ELSE %]input[% END %]">Email</td>
-    <td><input name="email" maxlength="50" type="text" class="text" value="[% email %]" /></td>
+    <td>Email</td>
+    <td><strong>[% email %]</strong></td>
+  </tr>
+[% END %]
+  <tr>
+    <td class="[% IF errors.email %]input-error[% ELSE %]input[% END %]">[% IF core.user_id %]Change [% END %]Email</td>
+    <td><input name="email" maxlength="50" type="text" class="text" value="[% IF core.user_id %][% newemail %][% ELSE %][% email %][% END %]" /></td>
   </tr>
   <tr>
-    <td class="[% IF errors.email %]input-error[% ELSE %]input[% END %]">Confirm Email</td>
+    <td class="[% IF errors.email %]input-error[% ELSE %]input[% END %]">Confirm [% IF core.user_id %]New [% END %]Email</td>
     <td><input name="confirmemail" maxlength="50" type="text" class="text" value="[% confirmemail %]" /></td>
   </tr>
   <tr>
-    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">Password</td>
+    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">[% IF core.user_id %]Change [% END %]Password</td>
     <td><input name="password1" maxlength="20" type="password" /></td>
   </tr>
   <tr>
-    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">Confirm Password</td>
+    <td class="[% IF errors.passwords %]input-error[% ELSE %]input[% END %]">Confirm [% IF core.user_id %]New [% END %]Password</td>
     <td><input name="password2" maxlength="20" type="password" /></td>
   </tr>
+[% UNLESS core.user_id %]
   <tr>
     <td colspan="2">
       <input name="passphrase_id" value="[% passphrase_id %]" type="hidden" />
@@ -161,6 +173,7 @@
     <td class="[% IF errors.passphrase %]input-error[% ELSE %]input[% END %]">Passphrase</td>
     <td><input name="passphrase" maxlength="10" type="text" class="text" /></td>
   </tr>
+[% END %]
   <tr>
     <td colspan="2" align="center"><input name="submitted" value="Go!" type="submit" /></td>
   </tr>
@@ -174,31 +187,33 @@
 <script type="text/javascript">
 //<!--
   var xmlhttp1 = new_xmlhttp();
-  function get_subentities(country_id, selected_subentity_id) {
-    subentity_id = document.getElementById('subentity_id');
-    if (country_id == "select") {
-      subentity_id.disabled = true;
+  function get_subentities(country_code, selected_subentity_code) {
+    subentity_code = document.getElementById('subentity_code');
+    if (country_code == "select") {
+      subentity_code.disabled = true;
       return false;
     }
-    url="/ajax/" + "get_subentities." + "pl?country_id=" + country_id + "&random=" + Math.random();
+    url="/ajax/" + "get_subentities." + "pl?country_code=" + country_code + "&random=" + Math.random();
     xmlhttp1.open("GET",url,true);
     xmlhttp1.onreadystatechange=function() {
       if (xmlhttp1.readyState == 4 || xmlhttp1.readyState == "complete") { // Complete
         if (xmlhttp1.status == 200) { // OK response
-          subentity_id.options.length = 0;
+          subentity_code.options.length = 0;
           textToSplit = xmlhttp1.responseText;
-          subentity_id.disabled = false;
+          subentity_code.disabled = false;
           if (textToSplit == "") {
-            subentity_id.options[0] = new Option('Other (Not Listed)', 'OTHER');
+            subentity_code.options[0] = new Option('Other (Not Listed)', 'OTHER');
           } else {
             returnElements=textToSplit.split("||");
-            subentity_id.options[0] = new Option('Select', 'select');
-            subentity_id.options[1] = new Option('Other (Not Listed)', 'OTHER');
+            subentity_code.options[0] = new Option('Select', 'select');
+            subentity_code.options[1] = new Option('Other (Not Listed)', 'OTHER');
             for (var i=0; i<returnElements.length; i++) {
               valueLabelPair = returnElements[i].split("|");
-              subentity_id.options[i+2] = new Option(valueLabelPair[1], valueLabelPair[0]);
-              if (selected_subentity_id != undefined && valueLabelPair[0] == selected_subentity_id) {
-                subentity_id.options[i+2].selected = true;
+              subentity_code.options[i+2] = new Option(valueLabelPair[1], valueLabelPair[0]);
+              // Add it again to display HTML encoded options properly..
+              subentity_code.options[i+2].innerHTML = valueLabelPair[1];
+              if (selected_subentity_code != undefined && valueLabelPair[0] == selected_subentity_code) {
+                subentity_code.options[i+2].selected = true;
               }
             }
           }
@@ -209,8 +224,8 @@
     }
   xmlhttp1.send(null);
   }
-  document.getElementById('country_id').disabled = false;
-  get_subentities(document.getElementById('country_id').value, '[% subentity_id %]'); // initialise the first time!
+  document.getElementById('country_code').disabled = false;
+  get_subentities(document.getElementById('country_code').value, '[% subentity_code %]'); // initialise the first time!
   
   // The setTimout on the inline call to this AJAX function stops Firefox's calls
   // throwing the exception NS_ERROR_NOT_AVAILABLE - it is documented and this IS the fix!
