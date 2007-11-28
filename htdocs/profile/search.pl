@@ -43,14 +43,12 @@ if ($rusty->{params}->{'nomatches'}) {
 
 
 $rusty->{param_info} = {
-  country_id             => { title => "Country" },
-  subentity_id           => { title => "City" },
+  country_code             => { title => "Country" },
+  subentity_code           => { title => "City" },
   gender                 => { title => "Gender",
                              regexp => '^(?:any|male|female)$' },
   sexuality              => { title => "Sexuality",
                              regexp => '^(?:any|straight|gay/lesbian|bisexual/curious)$' },
-  #age_range              => { title => "Age range",
-  #                           regexp => '^(?:any|1820|2124|2530|3140|41plus)$' },
   age_min                => { title => "Minimum age",
                              regexp => '^(?:any|\\d+)$' },
   age_max                => { title => "Maximum age",
@@ -116,7 +114,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
     $rusty->{data} = $rusty->{params};
     populate_common_data();
     delete $rusty->{params}->{enable_subentities_list};
-    delete $rusty->{params}->{subentity_id};
+    delete $rusty->{params}->{subentity_code};
     delete $rusty->{params}->{subentities};
     $rusty->{ttml} = "profile/search.ttml";
     $rusty->process_template;
@@ -126,17 +124,17 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   my $countries =
     $rusty->get_lookup_hash(
       table => "lookup~continent~country",
-      id    => "country_id",
+      id    => "country_code",
       data  => "name" );
   
   my $subentities = {};
-  if ($rusty->{params}->{country_id} =~ /^\w{2}$/ ) {
+  if ($rusty->{params}->{country_code} =~ /^\w{2}$/ ) {
     $subentities =
       $rusty->get_lookup_hash(
-        table => "lookup~continent~country~subentity",
-        id    => "subentity_id",
-        data  => "subentity_name",
-        where => "country_id = '".$rusty->{params}->{country_id}."'" );
+        table => "lookup~continent~country~city1000",
+        id    => "subentity_code",
+        data  => "name",
+        where => "country_code = '".$rusty->{params}->{country_code}."'" );
     $subentities->{OTHER} = 'Other';
   }
   
@@ -159,20 +157,20 @@ ENDSQL
   my @bind_vars = ();
   my @search_params = ();
   
-  if ($rusty->{params}->{subentity_id} && $rusty->{params}->{subentity_id} ne "any") {
-    $query .= " AND ui.subentity_id = ? ";
-    push @bind_vars, $rusty->{params}->{subentity_id};
-    push @search_params, ucfirst($subentities->{$rusty->{params}->{subentity_id}});
+  if ($rusty->{params}->{subentity_code} && $rusty->{params}->{subentity_code} ne "any") {
+    $query .= " AND ui.subentity_code = ? ";
+    push @bind_vars, $rusty->{params}->{subentity_code};
+    push @search_params, ucfirst($subentities->{$rusty->{params}->{subentity_code}});
   } else {
-    delete $rusty->{params}->{subentity_id};
+    delete $rusty->{params}->{subentity_code};
   }
   
-  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne "any") {
-    $query .= " AND ui.country_id = ? ";
-    push @bind_vars, $rusty->{params}->{country_id};
-    push @search_params, ucfirst($countries->{$rusty->{params}->{country_id}});
+  if ($rusty->{params}->{country_code} && $rusty->{params}->{country_code} ne "any") {
+    $query .= " AND ui.country_code = ? ";
+    push @bind_vars, $rusty->{params}->{country_code};
+    push @search_params, ucfirst($countries->{$rusty->{params}->{country_code}});
   } else {
-    delete $rusty->{params}->{country_id};
+    delete $rusty->{params}->{country_code};
   }
   
   if ($rusty->{params}->{gender} ne "any") {
@@ -326,8 +324,8 @@ SET user_id = ?,
     sexuality = ?,
     age_min = ?,
     age_max = ?,
-    country_id = ?,
-    subentity_id = ?,
+    country_code = ?,
+    subentity_code = ?,
     profile_name = ?,
     onlyphotos = ?,
     onlyadult = ?,
@@ -345,8 +343,8 @@ ENDSQL
     $rusty->{params}->{sexuality},
     $rusty->{params}->{age_min},
     $rusty->{params}->{age_max},
-    $rusty->{params}->{country_id},
-    $rusty->{params}->{subentity_id},
+    $rusty->{params}->{country_code},
+    $rusty->{params}->{subentity_code},
     $rusty->{params}->{profile_name},
     $rusty->{params}->{onlyphotos},
     $rusty->{params}->{onlyadult},
@@ -431,10 +429,10 @@ ENDSQL
   if ($count == 0) {
     #my $url = $rusty->{core}->{'self_url'};
     #$url =~ s/mode=search/nomatches=1/;
-    #print $rusty->CGI->redirect( -url => $url );
-    print $rusty->CGI->redirect( -url => '/profile/search.pl?nomatches=1' );
+    #print $rusty->redirect( -url => $url );
+    print $rusty->redirect( -url => '/profile/search.pl?nomatches=1' );
   } else {
-    print $rusty->CGI->redirect( -url    => $rusty->CGI->url( -relative => 1 ) . "?mode=results&search_id=$search_id" );
+    print $rusty->redirect( -url    => $rusty->CGI->url( -relative => 1 ) . "?mode=results&search_id=$search_id" );
   }
   $rusty->exit;
   
@@ -466,7 +464,7 @@ ENDSQL
   if (!$search_cache->{search_id}) {
     
     warn "user trying to view search result that doesn't exist!";
-    print $rusty->CGI->redirect( -url => '/profile/search.pl?invalid_search_id=1' );
+    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
     $rusty->exit;
     
   } elsif ($rusty->{core}->{'user_id'} && $rusty->visitor_cookie &&
@@ -492,7 +490,7 @@ ENDSQL
     $sth->finish;
     if ($rows eq '0E0') {
       warn "user trying to view search result that isn't theirs!";
-      print $rusty->CGI->redirect( -url => '/profile/search.pl?invalid_search_id=1' );
+      print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
       $rusty->exit;
     } else {
       warn "converted search result from visitor to logged in user for search $rusty->{params}->{search_id}";
@@ -505,7 +503,7 @@ ENDSQL
     warn "user trying to view search result that isn't theirs! (user_id: "
        . $rusty->{core}->{'visitor_id'} . " trying to view search_id: "
        . $rusty->{params}->{search_id} . ")";
-    print $rusty->CGI->redirect( -url => '/profile/search.pl?invalid_search_id=1' );
+    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
     $rusty->exit;
     
   } elsif ($rusty->{core}->{'visitor_id'} &&
@@ -516,7 +514,7 @@ ENDSQL
     warn "visitor trying to view search result that isn't theirs! (visitor_id: "
        . $rusty->{core}->{'visitor_id'} . " trying to view search_id: "
        . $rusty->{params}->{search_id} . ")";
-    print $rusty->CGI->redirect( -url => '/profile/search.pl?invalid_search_id=1' );
+    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
     $rusty->exit;
     
   } elsif (!$rusty->{core}->{'user_id'} && !$rusty->{core}->{'visitor_id'} &&
@@ -539,8 +537,6 @@ ENDSQL
     $search_cache->{num_results} > $MAX_RESULTS ?
       "over $MAX_RESULTS" : "$search_cache->{num_results}";
   
-  my $page_link = '/profile/search.pl?search_id=' . $rusty->{params}->{search_id};
-  
   if ($rusty->{params}->{rejoin_search} == 1) {
     $rusty->{params}->{offset} = $search_cache->{last_page_offset};
   }
@@ -560,7 +556,7 @@ ENDSQL
     my $last_page_offset = $rusty->{params}->{offset} - $RESULTS_PER_PAGE;
     #warn "prev_page_link: $last_page_offset = $rusty->{params}->{offset} - $RESULTS_PER_PAGE";
     $last_page_offset = 0 if ($last_page_offset < 0);
-    $rusty->{data}->{prev_page_link} = $page_link . "&offset=$last_page_offset";
+    $rusty->{data}->{prev_page_offset} = $last_page_offset;
   }
   
   my @profile_ids = split /,/, $search_cache->{result_set};
@@ -569,7 +565,7 @@ ENDSQL
   # take us out of the array of results (shouldn't happen, but good to check!
   if ($rusty->{params}->{offset} > $#profile_ids) {
     # If the lower boundary is out of array range, send them to the search page.
-    print $rusty->CGI->redirect( -url => '/profile/search.pl?outofrange=1' );
+    print $rusty->redirect( -url => '/profile/search.pl?outofrange=1' );
     $rusty->exit;
   } elsif (($rusty->{params}->{offset} + ($page_limit - 1)) > $#profile_ids) {
     # If just the upper boundary is out of array range, lower it to end of array.
@@ -581,7 +577,7 @@ ENDSQL
   $query = <<ENDSQL
 SELECT DISTINCT(up.profile_name) AS profile_name, up.profile_id,
 ui.gender, ui.sexuality, ui.age,
-lco.name AS country, lcs.subentity_name AS subentity
+lco.name AS country, lcs.name AS subentity
 #up.height, up.weight, up.waist,
 #up.hair, up.website, up.profession,
 #up.perfect_partner, up.bad_habits,
@@ -594,8 +590,8 @@ lco.name AS country, lcs.subentity_name AS subentity
 #up.thought_text
 FROM `user~profile` up
 INNER JOIN `user~info` ui ON ui.user_id = up.user_id
-LEFT JOIN `lookup~continent~country` lco ON lco.country_id = ui.country_id
-LEFT JOIN `lookup~continent~country~subentity` lcs ON lcs.subentity_id = ui.subentity_id
+LEFT JOIN `lookup~continent~country` lco ON lco.country_code = ui.country_code
+LEFT JOIN `lookup~continent~country~city1000` lcs ON lcs.subentity_code = ui.subentity_code
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 AND up.profile_id = ?
@@ -621,8 +617,7 @@ ENDSQL
   if ((($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $search_cache->{num_results}) &&
       (($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $MAX_RESULTS)) {
     #warn "next_page_link: ($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $MAX_RESULTS";
-    $rusty->{data}->{next_page_link} = $page_link . "&offset="
-                                     . ($rusty->{params}->{offset} + $RESULTS_PER_PAGE);
+    $rusty->{data}->{next_page_offset} = $rusty->{params}->{offset} + $RESULTS_PER_PAGE;
   }
   
   $rusty->{data}->{offset} = $rusty->{params}->{offset};
@@ -691,14 +686,14 @@ sub populate_common_data() {
   #$rusty->{data}->{countries} = [
   #  $rusty->get_ordered_lookup_list(
   #    table => "lookup~continent~country",
-  #    id    => "country_id",
+  #    id    => "country_code",
   #    data  => "name",
   #    order => "name",
   #                                 ),
   #                              ];
   # Get bounding box info to display countries on a map nicely :)
   $query = <<ENDSQL
-SELECT SQL_CACHE country_id AS value, name AS name,
+SELECT SQL_CACHE country_code AS value, name AS name,
        bounding_box_west AS west,
        bounding_box_north AS north,
        bounding_box_east AS east,
@@ -709,8 +704,8 @@ ENDSQL
 ;
   $sth = $rusty->DBH->prepare_cached($query);
   $sth->execute();
-  while (my $box = $sth->fetchrow_hashref) {
-    push @{$rusty->{data}->{countries}}, $box;
+  while (my $countryinfo = $sth->fetchrow_hashref) {
+    push @{$rusty->{data}->{countries}}, $countryinfo;
   }
   
   # Truncate long country names
@@ -727,21 +722,21 @@ ENDSQL
       data  => "name",
       where => "relationship_status_id != 1" )];
   
-  my $country_id = ($rusty->{params}->{country_id} || $rusty->{data}->{country_id});
+  my $country_code = ($rusty->{params}->{country_code} || $rusty->{data}->{country_code});
   # TODO: don't we zoom in on a place if it has been remembered from a previous search?
-  if ($country_id && $country_id ne 'any') {
+  if ($country_code && $country_code ne 'any') {
     $query = <<ENDSQL
-SELECT SQL_CACHE subentity_id, name AS subentity_name
+SELECT SQL_CACHE subentity_code, name AS subentity_name
 FROM `lookup~continent~country~city1000`
-WHERE countrycode = ?
-ORDER BY subentity_name
+WHERE country_code = ?
+ORDER BY name
 ENDSQL
     ;
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($country_id);
+    $sth->execute($country_code);
     $rusty->{params}->{enable_subentities_list} = 1;
-    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
-      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name };
+    while (my ($subentity_code, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_code, name => $subentity_name };
     }
     $sth->finish;
     
@@ -761,13 +756,13 @@ SELECT SQL_CACHE name, capital, population,
                            CONCAT(FORMAT(bounding_box_west,3),'&deg;E'),
                            CONCAT(FORMAT(bounding_box_west*-1,3),'&deg;W'))) AS longitude
 FROM `lookup~continent~country`
-WHERE country_id = ?
+WHERE country_code = ?
 LIMIT 1
 ENDSQL
 ;
     
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{params}->{country_id});
+    $sth->execute($rusty->{params}->{country_code});
     $rusty->{data}->{country_info} = $sth->fetchrow_hashref;
     $rusty->{data}->{country_info}->{areaInSqKm} =~ s/\.0$//;
     $rusty->{data}->{country_info}->{capital} ||= 'N/A';
@@ -826,7 +821,7 @@ sub populate_previous_search($) {
   my $query = <<ENDSQL
 SELECT search_id, created,
        gender, sexuality, age_min, age_max,
-       country_id, subentity_id, profile_name, onlyphotos, onlyadult,
+       country_code, subentity_code, profile_name, onlyphotos, onlyadult,
        relationship_status_id
 FROM `user~profile~search~cache`
 WHERE search_id = ?
@@ -848,15 +843,15 @@ ENDSQL
   # This is a quick hack and should be passed around properly! Or taken out..
   #$rusty->{data}->{age_range} = ($previous_search->{age_min} ? $previous_search->{age_min} : '18')
   #                            . ($previous_search->{age_max} ? $previous_search->{age_max} : 'plus');
-  $rusty->{data}->{country_id} = $previous_search->{country_id};
-  $rusty->{data}->{subentity_id} = $previous_search->{subentity_id};
+  $rusty->{data}->{country_code} = $previous_search->{country_code};
+  $rusty->{data}->{subentity_code} = $previous_search->{subentity_code};
   $rusty->{data}->{profile_name} = $previous_search->{profile_name};
   $rusty->{data}->{onlyphotos} = $previous_search->{onlyphotos};
   $rusty->{data}->{onlyadult} = $previous_search->{onlyadult};
   $rusty->{data}->{relationship_status_id} = $previous_search->{relationship_status_id};
   $rusty->{data}->{previous_search} = $previous_search;
   
-  if ($rusty->{data}->{subentity_id}) {
+  if ($rusty->{data}->{subentity_code}) {
     $rusty->{params}->{enable_subentities_list} = 1;
   }
 }
