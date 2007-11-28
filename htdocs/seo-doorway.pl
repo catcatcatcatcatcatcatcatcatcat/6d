@@ -18,7 +18,7 @@ $rusty->{data}->{keyword} = $rusty->{params}->{keyword};
 
 if ($rusty->{data}->{keyword} !~ /^(?:backpackers|hostels|friends|travels)$/) {
   # redirect to frontpage keyword given is not one we have configured
-  print $rusty->CGI->redirect( -url => '/' );
+  print $rusty->redirect( -url => '/' );
   $rusty->exit;
 }
 $rusty->{ttml} = "seo-doorway.ttml";
