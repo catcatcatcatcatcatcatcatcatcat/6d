@@ -38,16 +38,16 @@ my $dbh = $rusty->DBH;
 # Grab session id that wants to be logged out or whinge if no cookie!
 
 #my $session_id = $rusty->CGI->cookie( -name => "session" )
-#  || print $rusty->CGI->redirect( -url => "/" )
+#  || print $rusty->redirect( -url => "/" )
 #    && warn "You weren't even logged in! How do you expect to log out? FOOL!"
 #      && $rusty->exit;
 if (!$rusty->session_cookie) {
   warn "user has no session cookie";
-  print $rusty->CGI->redirect( -url => "/" );
+  print $rusty->redirect( -url => "/" );
   $rusty->exit;
 } elsif (!$rusty->{core}->{'user_id'}) {
   warn "user is not logged in";
-  print $rusty->CGI->redirect( -url => "/" );
+  print $rusty->redirect( -url => "/" );
   $rusty->exit;
 }
 
@@ -128,7 +128,7 @@ if ($rusty->{params}->{'comingfrommyass'}) {
   
 }
 
-print $rusty->CGI->redirect( -url => "/",
+print $rusty->redirect( -url => "/",
                              -cookie => $delete_cookie );
 
 $rusty->exit;
