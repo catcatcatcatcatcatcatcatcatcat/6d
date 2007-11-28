@@ -34,13 +34,13 @@ SELECT SQL_CACHE name, capital, population,
                            CONCAT(FORMAT(bounding_box_west,3),'&deg;E'),
                            CONCAT(FORMAT(bounding_box_west*-1,3),'&deg;W'))) AS longitude
 FROM `lookup~continent~country`
-WHERE country_id = ?
+WHERE country_code = ?
 LIMIT 1
 ENDSQL
 ;
 
 my $sth = $DBH->prepare_cached($query);
-$sth->execute($params->{country_id});
+$sth->execute($params->{country_code});
 my $output_text = "";
 my ($name, $capital, $population, $areaInSqKm, $currency, $languages,
     $latitude, $longitude) = $sth->fetchrow_array;
