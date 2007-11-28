@@ -251,8 +251,11 @@ sub getNewMessagesCount($$) {
   
   my $dbh = $self->DBH;
   
+  # Would be lovely to use SQL_CACHE here but we
+  # update this table whenever any message is sent
+  # (and that msg could be to us) so can't cache. :(
   my $query = <<ENDSQL
-SELECT SQL_CACHE COUNT(*)
+SELECT COUNT(*)
 FROM `user~profile~message`
 WHERE recipient_profile_id = ?
   AND recipient_deleted_date IS NULL
