@@ -59,7 +59,7 @@ ENDSQL
                 ($rusty->{core}->{visitor_id} || 0));
   $sth->finish;
   
-  print $rusty->CGI->redirect( -url => "/profile/view.pl?"
+  print $rusty->redirect( -url => "/profile/view.pl?"
                                      . "profile_name=" . $rusty->{params}->{profile_name}
                                      . "&search_id=" . $rusty->{params}->{search_id} );
   $rusty->exit;
@@ -84,7 +84,7 @@ if (!$rusty->{params}->{'profile_name'}) {
 $query = <<ENDSQL
 SELECT up.user_id, up.profile_id, up.profile_name,
 ui.gender, ui.sexuality, ui.age,
-lco.name AS country, lcs.subentity_name AS subentity,
+lco.name AS country, lcs.name AS subentity,
 us.joined, us.last_session_end, us.num_logins, us.mins_online, us.num_clicks,
 usess.updated AS online_now,
 up.height, up.weight, up.waist,
@@ -122,8 +122,8 @@ LEFT JOIN `lookup~smoker` ls ON up.smoker_id = ls.smoker_id
 LEFT JOIN `lookup~starsign` lst ON up.starsign_id = lst.starsign_id
 LEFT JOIN `lookup~thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
 LEFT JOIN `user~info` ui ON up.user_id = ui.user_id
-LEFT JOIN `lookup~continent~country` lco ON ui.country_id = lco.country_id
-LEFT JOIN `lookup~continent~country~subentity` lcs ON ui.subentity_id = lcs.subentity_id
+LEFT JOIN `lookup~continent~country` lco ON ui.country_code = lco.country_code
+LEFT JOIN `lookup~continent~country~city1000` lcs ON ui.subentity_code = lcs.subentity_code
 
 WHERE up.profile_name = ?
 LIMIT 1
@@ -139,7 +139,7 @@ if (!$profile->{'profile_id'}) {
   
   # If trying to view their own profile, take them to account setup
   if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
-    print $rusty->CGI->redirect( -url => "/profile/account.pl" );
+    print $rusty->redirect( -url => "/profile/account.pl" );
     $rusty->exit;
   }
   
@@ -153,7 +153,7 @@ if (!$profile->{'profile_id'}) {
   
   # If trying to view their own profile, take them to account setup
   if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
-    print $rusty->CGI->redirect( -url => "/profile/account.pl" );
+    print $rusty->redirect( -url => "/profile/account.pl" );
     $rusty->exit;
   }
   
