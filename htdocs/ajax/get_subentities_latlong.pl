@@ -19,16 +19,16 @@ my $params = rusty::get_utf8_params();
 
 
 #my $query = <<ENDSQL
-#SELECT SQL_CACHE subentity_id, subentity_name, latitude, longitude
-#FROM `lookup~continent~country~subentity`
-#WHERE country_id = ?
+#SELECT SQL_CACHE subentity_code, subentity_name, latitude, longitude
+#FROM `lookup~continent~country~city1000`
+#WHERE country_code = ?
 #  AND latitude IS NOT NULL
 #  AND longitude IS NOT NULL
 #ORDER BY subentity_name
 #ENDSQL
 #;
 my $query = <<ENDSQL
-SELECT SQL_CACHE c.subentity_id, c.name AS subentity_name,
+SELECT SQL_CACHE c.subentity_code, c.name AS subentity_name,
        c.latitude, c.longitude,
        c.population, c.elevation,
        c.TimeZoneId AS timezone,
@@ -42,21 +42,22 @@ SELECT SQL_CACHE c.subentity_id, c.name AS subentity_name,
 FROM `lookup~continent~country~city1000` c
 LEFT JOIN `lookup~continent~country~city1000~timezones` t
        ON t.TimeZoneId = c.TimeZoneId
-WHERE c.countrycode = ?
-ORDER BY subentity_name
+WHERE c.country_code = ?
+ORDER BY c.name
 ENDSQL
 ;
 
 my $sth = $DBH->prepare_cached($query);
-$sth->execute($params->{country_id});
+$sth->execute($params->{country_code});
 my $output_text = "";
 use HTML::Entities 'encode_entities';
-while (my ($subentity_id, $subentity_name, $latitude, $longitude,
+while (my ($subentity_code, $subentity_name, $latitude, $longitude,
            $population, $elevation, $timezone, $gmt_offset, $dst_offset,
            $latitude_formatted, $longitude_formatted) = $sth->fetchrow_array) {
   $gmt_offset =~ s/\.0$//o; $gmt_offset =~ s/^(?!-)/\+/;
   $dst_offset =~ s/\.0$//o; $dst_offset =~ s/^(?!-)/\+/;
-  $output_text .= $subentity_id.'|'.HTML::Entities::encode_entities($subentity_name).'|'.$latitude.'|'.$longitude.'|'
+  $elevation ||= 'unknown';
+  $output_text .= $subentity_code.'|'.HTML::Entities::encode_entities($subentity_name).'|'.$latitude.'|'.$longitude.'|'
                  .$population.'|'.$elevation.'|'.$timezone.'|'."GMT${gmt_offset}/DST${dst_offset}".'|'
                  .$latitude_formatted.'|'.$longitude_formatted.'||';
 }
