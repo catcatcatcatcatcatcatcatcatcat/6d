@@ -11,7 +11,7 @@
 [% IF random_selection %]
 <h2>
   You'll have to 
-  <a href="/signup.pl">sign up</a> or 
+  <a href="/account.pl">sign up</a> or 
   <a href="/login.pl">login</a> 
   to search profiles. In the meantime, here's a random selection:
 </h2>
@@ -21,17 +21,13 @@
   <p class="err">Sorry, but there are currently no more members matching your search criteria.<br />
   <a href="/profile/search.pl">Click here</a> to search for more.</p>
 [% ELSE %]
-  [% IF prev_page_link || next_page_link %]
-    <ul class="opt" style="float:right">
-    [% IF prev_page_link %]
-      <li class="opt[% UNLESS next_page_link %]2[% END %]">
-        <a href="[% prev_page_link FILTER html_entity %]">Prev</a>
-      </li>
+  [% IF prev_page_offset.defined || next_page_offset.defined %]
+    <ul class="opt" style="float:right;">
+    [% IF prev_page_offset.defined %]
+      <li class="opt[% UNLESS next_page_offset.defined %]2[% END %]"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% prev_page_offset %]">Prev</a></li>
     [% END %]
-    [% IF next_page_link %]
-      <li class="opt2">
-        <a href="[% next_page_link FILTER html_entity %]">Next</a>
-      </li>
+    [% IF next_page_offset.defined %]
+      <li class="opt2"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% next_page_offset %]">Next</a></li>
     [% END %]
     </ul>
   [% END %]
@@ -114,13 +110,13 @@ in the search results..
   [% END %]
   <div style="clear:both"></div>
   <!--</div>-->
-  [% IF prev_page_link || next_page_link %]
+  [% IF prev_page_offset.defined || next_page_offset.defined %]
     <ul class="opt" style="clear:both;float:right;margin-top:-24px">
-    [% IF prev_page_link %]
-      <li class="opt[% UNLESS next_page_link %]2[% END %]"><a href="[% prev_page_link FILTER html_entity %]">Prev</a></li>
+    [% IF prev_page_offset.defined %]
+      <li class="opt[% UNLESS next_page_offset.defined %]2[% END %]"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% prev_page_offset %]">Prev</a></li>
     [% END %]
-    [% IF next_page_link %]
-      <li class="opt2"><a href="[% next_page_link FILTER html_entity %]">Next</a></li>
+    [% IF next_page_offset.defined %]
+      <li class="opt2"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% next_page_offset %]">Next</a></li>
     [% END %]
     </ul>
   [% END %]
