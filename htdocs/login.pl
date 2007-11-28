@@ -27,7 +27,7 @@ if ($rusty->{core}->{'user_id'}) {
   # Send them back! (No other site does this, it may be a bad idea -
   # the others all log you in again.. Hmmm? Hmmm. Hmmm!)
   $ref ||= $rusty->{params}->{login} == 1 ? '/?login=1' : '/';
-  print $rusty->CGI->redirect( -url => $ref );
+  print $rusty->redirect( -url => $ref );
   $rusty->exit;
 }
 
@@ -150,7 +150,7 @@ ENDSQL
           
           # They shouldn't be logging in - send them back!
           warn "Recent session exists and cookie matches - request ignored";
-          print $rusty->CGI->redirect( -url => ($ref || '/') );
+          print $rusty->redirect( -url => ($ref || '/') );
           $rusty->exit;
           
         } else {
@@ -248,10 +248,10 @@ ENDSQL
     $ref = URI::Escape::uri_escape($ref);
   }
   # Call self with test parameter and test cookie (plus remember me cookie, if set)
-  print $rusty->CGI->redirect( -url    => $rusty->CGI->url( -relative => 1 ) .
+  print $rusty->redirect( -url    => $rusty->CGI->url( -relative => 1 ) .
                                           "?mode=test" .
                                           ($ref ? "&ref=$ref" : ''),
-                               -cookie => $rusty->{cookies} );
+                          -cookie => $rusty->{cookies} );
   $rusty->exit;
   
 } elsif ($mode =~ /test/o) {
@@ -294,7 +294,7 @@ ENDSQL
     # With URL to send user back to, add the nocookies=1 parameter to the
     # query string if it exists or add it as a query string if not - we
     # could do this ourselves but using URI::QueryParam is safer and easier! :)
-    #print $rusty->CGI->redirect( -url => '/?nocookies=1' );
+    #print $rusty->redirect( -url => '/?nocookies=1' );
     #$rusty->exit;
     if ($ref) {
       require URI;
@@ -306,7 +306,7 @@ ENDSQL
       $ref = '/?nocookies=1';
     }
     
-    print $rusty->CGI->redirect( -url => $ref );
+    print $rusty->redirect( -url => $ref );
     $rusty->exit;
     
   } else {
@@ -412,9 +412,9 @@ ENDSQL
     }
 
     
-    print $rusty->CGI->redirect( -url => $ref,
-                                 -cookie => [ $test_cookie_delete,
-                                              $session_cookie_add ] );
+    print $rusty->redirect( -url => $ref,
+                            -cookie => [ $test_cookie_delete,
+                                         $session_cookie_add ] );
     $rusty->exit;
   }
   
@@ -440,7 +440,7 @@ ENDSQL
     { value => 'select', name => 'Please Select', },
     $rusty->get_ordered_lookup_list(
       table => "lookup~continent~country",
-      id    => "country_id",
+      id    => "country_code",
       data  => "name",
                                    ),
                                 ];
@@ -468,7 +468,7 @@ ENDSQL
 #  
 #  #print $rusty->CGI->header;
 #  #die "Invalid query string '".$ENV{'QUERY_STRING'}."'";
-#  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 ) );
+#  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 ) );
 #  $rusty->exit;
 #
 #}
