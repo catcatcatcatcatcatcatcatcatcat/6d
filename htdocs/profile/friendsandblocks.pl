@@ -18,11 +18,11 @@ $rusty = rusty::Profiles->new;
 
 if (!$rusty->{core}->{'user_id'}) {
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/login.pl?ref="
+  print $rusty->redirect( -url => "/login.pl?ref="
                                      . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
+  print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
   $rusty->exit;
 }
 
@@ -30,9 +30,9 @@ if (!$rusty->{core}->{'profile_id'} && !$rusty->{params}->{prev_action}) {
   
   # If we have no profile & we're not redirected from this (prev_action set)
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?ref="
+  print $rusty->redirect( -url => "/profile/account.pl?ref="
                                      . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
-  #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
   #                                   . "?mode=list&prev_action="
   #                                   . $rusty->{params}->{mode}
   #                                   . "&success=0&reason=noprofile" );
@@ -113,7 +113,7 @@ sub addfriend {
     if (!($rusty->{data}->{friend_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{friend_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfriend"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -132,7 +132,7 @@ sub addfriend {
     if (!($rusty->{data}->{friend_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{friend_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfriend"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -143,7 +143,7 @@ sub addfriend {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -154,7 +154,7 @@ sub addfriend {
   # If they are trying to create a link to themselves..
   if ($rusty->{core}->{profile_id} == $rusty->{data}->{friend_profile_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=itisyou" );
@@ -181,7 +181,7 @@ sub addfriend {
   # If there is a blsock link on this profile, we can't add them as a friend!
   if ($existing_block_link->{block_link_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=friendblocked" );
@@ -195,7 +195,7 @@ sub addfriend {
     
     unless ($rusty->{data}->{friend_link_id}) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfriend"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0" );
@@ -245,7 +245,7 @@ ENDMSG
                                       flag    => "LINKEDFRIEND" );
     
     unless ($msg_id) {
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0" );
@@ -255,7 +255,7 @@ ENDMSG
     # Add this message id to the friend link record!
     $rusty->addMsgIdToFriendLink($rusty->{data}->{friend_link_id}, $msg_id);
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=1" );
@@ -284,7 +284,7 @@ sub delfriend {
     if (!($rusty->{data}->{friend_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{friend_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=delfriend"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -303,7 +303,7 @@ sub delfriend {
     if (!($rusty->{data}->{friend_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{friend_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=delfriend"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -314,7 +314,7 @@ sub delfriend {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -327,7 +327,7 @@ sub delfriend {
   
   # If there is not already a pending or existing link between them, throw the error.
   unless ($existing_friend_link->{friend_link_id}) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delfriend"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=nofriendlinkfound" );
@@ -342,7 +342,7 @@ sub delfriend {
                             message_ids => [ $existing_friend_link->{message_id} ] );
   }
     
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=delfriend"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=".($success>0?1:0) );
@@ -368,7 +368,7 @@ sub respond {
                                                    $rusty->{core}->{'profile_id'});
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=respond"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=notenoughinfo" );
@@ -381,7 +381,7 @@ sub respond {
       ($existing_friend_link->{requestee_profile_id} != $rusty->{core}->{'profile_id'}) ||
       $existing_friend_link->{status} ne "read") {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=respond"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=nopendingfriendlinkfound" );
@@ -391,7 +391,7 @@ sub respond {
   # they were reading the message (shouldn't happen that much!)
   } elsif ($existing_friend_link->{deleted_date}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=respond"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=linkrequestdeleted" );
@@ -459,7 +459,7 @@ sub respond {
     
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=respond"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=invalidresponse" );
@@ -471,7 +471,7 @@ sub respond {
                                 message_ids => [ $existing_friend_link->{message_id} ]);
 
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=respond"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=1&response="
@@ -490,7 +490,7 @@ sub addfave {
     if (!($rusty->{data}->{fave_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{fave_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfave"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -509,7 +509,7 @@ sub addfave {
     if (!($rusty->{data}->{fave_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{fave_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=addfave"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -520,7 +520,7 @@ sub addfave {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -531,7 +531,7 @@ sub addfave {
   # If they are trying to create a link to themselves..
   if ($rusty->{core}->{profile_id} == $rusty->{data}->{fave_profile_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=itisyou" );
@@ -544,7 +544,7 @@ sub addfave {
   
   # If there is already a fave link on this profile, throw the error.
   if ($existing_fave_link->{fave_link_id}) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=favelinkalreadyexists" );
@@ -557,7 +557,7 @@ sub addfave {
   # If there is a block link on this profile, we can't add them as a fave!
   if ($existing_block_link->{block_link_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=faveblocked" );
@@ -567,7 +567,7 @@ sub addfave {
   unless ($rusty->createFaveLink($rusty->{core}->{'profile_id'},
                                  $rusty->{data}->{fave_profile_id})) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=addfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0" );
@@ -575,7 +575,7 @@ sub addfave {
     
   }
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=addfave"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=1" );
@@ -594,7 +594,7 @@ sub delfave {
     if (!($rusty->{data}->{fave_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{fave_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=delfave"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -613,7 +613,7 @@ sub delfave {
     if (!($rusty->{data}->{fave_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{fave_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=delfave"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -624,7 +624,7 @@ sub delfave {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -637,7 +637,7 @@ sub delfave {
   
   # If there is not already a pending or existing link between them, throw the error.
   unless ($existing_fave_link->{fave_link_id}) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delfave"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=nofavelinkfound" );
@@ -646,7 +646,7 @@ sub delfave {
   
   my $success = $rusty->deleteFaveLink($existing_fave_link->{fave_link_id});
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=delfave"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=".($success>0?1:0) );
@@ -664,7 +664,7 @@ sub block {
     if (!($rusty->{data}->{block_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{block_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=block"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -683,7 +683,7 @@ sub block {
     if (!($rusty->{data}->{block_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{block_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=block"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -694,7 +694,7 @@ sub block {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=block"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -705,7 +705,7 @@ sub block {
   # If they are trying to create a link to themselves..
   if ($rusty->{core}->{profile_id} == $rusty->{data}->{block_profile_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=block"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=itisyou" );
@@ -718,7 +718,7 @@ sub block {
   
   # If there is already a block link on this profile, throw the error.
   if ($existing_block_link->{block_link_id}) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=block"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=blocklinkalreadyexists" );
@@ -731,7 +731,7 @@ sub block {
   # If there is a friend link on this profile, we can't add them as a block!
   if ($existing_friend_link->{friend_link_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=block"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=blockisfriend" );
@@ -744,7 +744,7 @@ sub block {
   # If there is a fave link on this profile, we can't add them as a block!
   if ($existing_fave_link->{fave_link_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=block"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=blockisfave" );
@@ -754,7 +754,7 @@ sub block {
   my $success = $rusty->addBlockLink($rusty->{core}->{'profile_id'},
                                      $rusty->{data}->{block_profile_id});
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=block"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=".($success>0?1:0) );
@@ -773,7 +773,7 @@ sub unblock {
     if (!($rusty->{data}->{block_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{block_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=unblock"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofilename"
@@ -792,7 +792,7 @@ sub unblock {
     if (!($rusty->{data}->{block_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{block_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=unblock"
                                          . $rusty->{data}->{query_string_params}
                                          . "&success=0&reason=badprofileid" );
@@ -803,7 +803,7 @@ sub unblock {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=unblock"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noprofileidorname" );
@@ -816,7 +816,7 @@ sub unblock {
   
   # If there is not already a block link on this profile, throw the error.
   unless ($existing_block_link->{block_link_id}) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=unblock"
                                        . $rusty->{data}->{query_string_params}
                                        . "&success=0&reason=noblocklinkfound" );
@@ -825,7 +825,7 @@ sub unblock {
   
   my $success = $rusty->unblockBlockLink($existing_block_link->{block_link_id});
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=unblock"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=".($success>0?1:0) );
@@ -845,7 +845,7 @@ sub addeditnote {
     if (!($rusty->{data}->{noted_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{noted_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{data}->{noted_profile_name}
                                          . "&prev_action=$action"
                                          . $rusty->{data}->{query_string_params}
@@ -865,7 +865,7 @@ sub addeditnote {
     if (!($rusty->{data}->{noted_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{noted_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{data}->{noted_profile_name}
                                          . "&prev_action=$action"
                                          . $rusty->{data}->{query_string_params}
@@ -877,7 +877,7 @@ sub addeditnote {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+    print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                        . $rusty->{data}->{noted_profile_name}
                                        . "&prev_action=$action"
                                        . $rusty->{data}->{query_string_params}
@@ -889,7 +889,7 @@ sub addeditnote {
   # If they are trying to create a note about themselves..
   if ($rusty->{core}->{profile_id} == $rusty->{data}->{noted_profile_id}) {
     
-    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+    print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                        . $rusty->{data}->{noted_profile_name}
                                        . "&prev_action=$action"
                                        . $rusty->{data}->{query_string_params}
@@ -900,7 +900,7 @@ sub addeditnote {
   if (length($rusty->{params}->{note}) == 0) {
     
     if ($action eq 'addnote') {
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{data}->{noted_profile_name}
                                          . "&prev_action=$action"
                                          . $rusty->{data}->{query_string_params}
@@ -912,7 +912,7 @@ sub addeditnote {
       my $success = $rusty->deleteProfileNote($rusty->{core}->{'profile_id'},
                                               $rusty->{data}->{noted_profile_id});
       
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{data}->{noted_profile_name}
                                          . "&prev_action=delnote"
                                          . $rusty->{data}->{query_string_params}
@@ -925,7 +925,7 @@ sub addeditnote {
                                           $rusty->{data}->{noted_profile_id},
                                           $rusty->{params}->{note});
   
-  print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+  print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                      . $rusty->{data}->{noted_profile_name}
                                      . "&prev_action=$action"
                                      . $rusty->{data}->{query_string_params}
@@ -945,7 +945,7 @@ sub delnote {
     if (!($rusty->{data}->{noted_profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{noted_profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{params}->{noted_profile_name}
                                          . "&prev_action=delnote"
                                          . $rusty->{data}->{query_string_params}
@@ -965,7 +965,7 @@ sub delnote {
     if (!($rusty->{data}->{noted_profile_name} =
          $rusty->getProfileNameFromProfileId($rusty->{data}->{noted_profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+      print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                          . $rusty->{params}->{noted_profile_name}
                                          . "&prev_action=delnote"
                                          . $rusty->{data}->{query_string_params}
@@ -977,7 +977,7 @@ sub delnote {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+    print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                        . $rusty->{params}->{noted_profile_name}
                                        . "&prev_action=delnote"
                                        . $rusty->{data}->{query_string_params}
@@ -989,7 +989,7 @@ sub delnote {
   my $success = $rusty->deleteProfileNote($rusty->{core}->{'profile_id'},
                                           $rusty->{data}->{noted_profile_id});
   
-  print $rusty->CGI->redirect( -url => "/profile/view.pl?profile_name="
+  print $rusty->redirect( -url => "/profile/view.pl?profile_name="
                                      . $rusty->{params}->{noted_profile_name}
                                      . "&prev_action=delnote"
                                      . $rusty->{data}->{query_string_params}
@@ -1013,7 +1013,7 @@ sub updateprefs {
   
   
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=updateprefs"
                                      . $rusty->{data}->{query_string_params}
                                      . "&success=1" );
