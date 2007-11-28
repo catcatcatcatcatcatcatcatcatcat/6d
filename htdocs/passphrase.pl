@@ -117,5 +117,5 @@ sub show_error_image() {
 
   }
 
-  rusty->exit(0);
+  exit(0);
 }
