@@ -1,6 +1,8 @@
 /* Downloaded from article: http://www.allinthehead.com/retro/69 */
 /* Adapted to only look for and fix alpha for background png images of DIV elements */
 
+/* THIS INCLUDE IS NO LONGER BEING USED ACROSS THE SITE */
+
 if (navigator.platform == "Win32" && navigator.appName == "Microsoft Internet Explorer" && window.attachEvent) {
   window.attachEvent("onload", fnLoadPngs);
 }
