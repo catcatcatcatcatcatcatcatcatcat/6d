@@ -30,7 +30,7 @@ use constant THUMB_HEIGHT => 100;
 
 
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->CGI->redirect( -url => "/login.pl?ref=/profile/photo-upload.pl" );
+  print $rusty->redirect( -url => "/login.pl?ref=/profile/photo-upload.pl" );
   $rusty->exit;
 }
 
@@ -49,10 +49,10 @@ $sth->finish;
 $rusty->{data}->{profile} = $profile;
 
 if (!$rusty->{core}->{profile_info}->{'updated'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl" );
+  print $rusty->redirect( -url => "/profile/account.pl" );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
+  print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
   $rusty->exit;
 }
 
@@ -87,7 +87,7 @@ $photo->{uploaded_file} = $rusty->CGI->param('photo');
 #warn "uploaded filehandle: $photo->{uploaded_filehandle}";
 #warn "uploaded file: $photo->{uploaded_file}";
 if (!$photo->{uploaded_file}) {
-  print $rusty->CGI->redirect( -url => "/profile/photo-upload.pl"
+  print $rusty->redirect( -url => "/profile/photo-upload.pl"
                                      . "?error=1&reason=nouploadfile" );
   $rusty->process_template;
   $rusty->exit;
@@ -159,7 +159,7 @@ if ($photo->{bytes} == 0) {
   # If file uploaded was zero bytes
   unlink($upload_tmp);
   warn "file uploaded was <=0 bytes: " . $photo->{original_filename};
-  print $rusty->CGI->redirect( -url => "/profile/photo-upload.pl"
+  print $rusty->redirect( -url => "/profile/photo-upload.pl"
                                      . "?error=1&reason=emptyuploadfile" );
   $rusty->exit;
   
@@ -168,7 +168,7 @@ if ($photo->{bytes} == 0) {
   # If file created is zero bytes
   unlink($upload_tmp);
   warn "file created was <=0 bytes: " . $photo->{original_filename};
-  print $rusty->CGI->redirect( -url => "/profile/photo-upload.pl"
+  print $rusty->redirect( -url => "/profile/photo-upload.pl"
                                      . "?error=1&reason=emptyserverfile" );
   $rusty->exit;
   
@@ -178,7 +178,7 @@ if ($photo->{bytes} == 0) {
   # This should never happen if CGI.pm is limiting it properly
   unlink($upload_tmp);
   warn "file created was over max file size allowed:" . $photo->{original_filename};
-  print $rusty->CGI->redirect( -url => "/profile/photo-upload.pl"
+  print $rusty->redirect( -url => "/profile/photo-upload.pl"
                                      . "?error=1&reason=overmaxsize" );
   $rusty->exit;
 }
@@ -227,7 +227,7 @@ my $mime_extensions = {
 
 unless (grep /^$mime_type$/, keys %$mime_extensions) {
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/profile/photo-upload.pl"
+  print $rusty->redirect( -url => "/profile/photo-upload.pl"
                                      . "?error=1&reason=unknownmimetype"
                                      . "&mime=" . URI::Escape::uri_escape($mime_type) );
   $rusty->process_template;
@@ -475,7 +475,7 @@ ENDSQL
 
 require URI::Escape; # 'uri_escape';
 
-print $rusty->CGI->redirect( -url => $rusty->CGI->url(-relative=>1)
+print $rusty->redirect( -url => $rusty->CGI->url(-relative=>1)
                                    . "?uploaded="
                                    . $rusty->{data}->{photo_id}
                                    . ($rusty->{data}->{msg} ? "&msg="
