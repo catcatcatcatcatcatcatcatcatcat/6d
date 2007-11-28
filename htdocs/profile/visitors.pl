@@ -19,11 +19,11 @@ $rusty = rusty::Profiles->new;
 
 if (!$rusty->{core}->{'user_id'}) {
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/login.pl?ref="
+  print $rusty->redirect( -url => "/login.pl?ref="
                                      . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
+  print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
   $rusty->exit;
 }
 
@@ -31,7 +31,7 @@ if (!$rusty->{core}->{'profile_id'} && !$rusty->{params}->{prev_action}) {
   
   # If we have no profile & we're not redirected from this (prev_action set)
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?ref="
+  print $rusty->redirect( -url => "/profile/account.pl?ref="
                                      . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
   $rusty->exit;
 }
@@ -65,7 +65,7 @@ sub list {
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
       table => "lookup~continent~country",
-      id    => "country_id",
+      id    => "country_code",
       data  => "name",
       order => "name",
                                    ),
@@ -74,7 +74,7 @@ sub list {
   $rusty->{data}->{age_min} = $rusty->{params}->{age_min};
   $rusty->{data}->{age_max} = $rusty->{params}->{age_max};
   $rusty->{data}->{gender} = $rusty->{params}->{gender};
-  $rusty->{data}->{country_id} = $rusty->{params}->{country_id};
+  $rusty->{data}->{country_code} = $rusty->{params}->{country_code};
   
   $rusty->process_template;
 }
