@@ -57,43 +57,43 @@ if ($rusty->{params}->{'error'}) {
   
   if (!$email) {
     $rusty->{data}->{'error'} = "noemail";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=noemail" );
     #$rusty->exit;
   } elsif ($email ne $confirmemail) {
     $rusty->{data}->{'error'} = "emailmismatch";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=emailmismatch" );
     #$rusty->exit;
   } elsif (!$dept) {
     $rusty->{data}->{'error'} = "noproblemtype";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=noproblemtype" );
     #$rusty->exit;
   } elsif (!$problem) {
     $rusty->{data}->{'error'} = "noproblem";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=noproblem" );
     #$rusty->exit;
   } elsif (!$subject) {
     $rusty->{data}->{'error'} = "nosubject";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=nosubject" );
     #$rusty->exit;
   } elsif (!$description) {
     $rusty->{data}->{'error'} = "nodescription";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=nodescription" );
     #$rusty->exit;
   } elsif ($dept =~ /[^a-z\._]+/i) {
     $rusty->{data}->{'error'} = "hackedform";
-    #print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=hackedform" );
     #$rusty->exit;
   } else {
     
     email_support();
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=1" );
     $rusty->exit;
   }
