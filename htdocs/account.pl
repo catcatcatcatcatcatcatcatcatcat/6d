@@ -13,25 +13,17 @@ use CarpeDiem;
 #use Email qw( send_email validate_email );
 require Email;
 
-use rusty;
+use rusty::Profiles;
 
-our $rusty = rusty->new;
+use vars qw($rusty $query $sth);
 
-if ($rusty->{core}->{'user_id'}) {
-  # This user is already logged on and trying to access the signup page.
-  print $rusty->CGI->redirect( -url => '/' );
-  $rusty->exit;
-}
-
-use vars qw ( $dbh $query $sth );
-
-$dbh = $rusty->DBH;
+$rusty = rusty::Profiles->new;
 
 
 
 
 
-$rusty->{ttml} = "signup.ttml";
+$rusty->{ttml} = "account.ttml";
 
 # Subroutine prototypes
 
@@ -49,8 +41,8 @@ $rusty->{param_info} = {
   dob_year            => { title => 'Year of birth', type => 'select', regexp => '^\d{4}$' },
   dob_month           => { title => 'Month of birth', type => 'select', minnum => 1, maxnum => 12 },
   dob_day             => { title => 'Day of birth', type => 'select', minnum => 1, maxnum => 31 },
-  country_id          => { title => 'Country', type => 'select', notregexp => '^select$' },
-  subentity_id        => { title => 'Location', type => 'select', notregexp => '^select$' },
+  country_code        => { title => 'Country', type => 'select', notregexp => '^select$' },
+  subentity_code      => { title => 'Location', type => 'select', notregexp => '^select$' },
   real_name           => { title => 'Real name', maxlength => 50, regexp => '\S' },
   profile_name        => { title => 'Profile name', maxlength => 20, regexp => '^[a-z0-9_\-]+$' },
   email               => { title => 'Email', maxlength => 50, regexp => '\S' },
@@ -64,7 +56,44 @@ $rusty->{param_info} = {
 my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'}
   unless $rusty->{params}->{'ref'} eq '/';
 
-if (!$rusty->{params}->{passphrase_id}) {
+# This user is already logged on so mode is edit account, not signup
+if ($rusty->{core}->{'user_id'}) {
+  
+  if ($rusty->{params}->{'submitting'}) {
+    
+  } else {
+    $query = <<ENDSQL
+SELECT real_name, gender,
+        DATE_FORMAT(dob, "%Y") AS dob_year,
+        DATE_FORMAT(dob, "%c") AS dob_month,
+        DATE_FORMAT(dob, "%e") AS dob_day,
+        sexuality, subentity_code, country_code
+FROM `user~info`
+WHERE user_id = ?
+LIMIT 1
+ENDSQL
+;
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute($rusty->{core}->{'user_id'});
+    my $user_info = $sth->fetchrow_hashref();
+    $rusty->{data}->{email} = $rusty->{core}->{email};
+    $rusty->{data}->{profile_name} = $rusty->{core}->{profile_name};
+    $rusty->{data}->{real_name} = $user_info->{real_name};
+    $rusty->{data}->{gender} = $user_info->{gender};
+    $rusty->{data}->{dob_year} = $user_info->{dob_year};
+    $rusty->{data}->{dob_month} = $user_info->{dob_month};
+    $rusty->{data}->{dob_day} = $user_info->{dob_day};
+    $rusty->{data}->{sexuality} = $user_info->{sexuality};
+    $rusty->{data}->{subentity_code} = $user_info->{subentity_code};
+    $rusty->{data}->{country_code} = $user_info->{country_code};
+    
+    get_signup_select_options();
+    
+    $rusty->process_template;
+    $rusty->exit;
+  }
+  
+} elsif (!$rusty->{params}->{passphrase_id}) {
   
   # If this is the 1st call to signup, generate
   # a new passphrase and print blank signup form
@@ -73,23 +102,23 @@ if (!$rusty->{params}->{passphrase_id}) {
   $rusty->{data}->{email} = $rusty->{params}->{email};
   $rusty->{data}->{real_name} = $rusty->{params}->{real_name};
   $rusty->{data}->{gender} = $rusty->{params}->{gender};
-  $rusty->{data}->{country_id} = $rusty->{params}->{country_id};
+  $rusty->{data}->{country_code} = $rusty->{params}->{country_code};
   
   get_signup_select_options();
   
-  if ($rusty->{params}->{country_id}) {
+  if ($rusty->{params}->{country_code}) {
     
     $query = <<ENDSQL
-SELECT subentity_id, subentity_name
-FROM `lookup~continent~country~subentity`
-WHERE country_id = ?
-ORDER BY subentity_name
+SELECT subentity_code, name
+FROM `lookup~continent~country~city1000`
+WHERE country_code = ?
+ORDER BY name
 ENDSQL
 ;
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{params}->{country_id});
-    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
-      push @{$rusty->{data}->{subentities}}, { value => $subentity_id,
+    $sth->execute($rusty->{params}->{country_code});
+    while (my ($subentity_code, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_code,
                                                name  => $subentity_name };
     }
     $sth->finish;
@@ -117,7 +146,7 @@ ENDSQL
     $rusty->{data} = $rusty->{params};
     get_signup_select_options();
     delete $rusty->{params}->{enable_subentities_list};
-    delete $rusty->{params}->{subentity_id};
+    delete $rusty->{params}->{subentity_code};
     delete $rusty->{params}->{subentities};
     $rusty->process_template;
     $rusty->exit;
@@ -231,7 +260,7 @@ WHERE email = ?
 LIMIT 1
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{email});
     if ($sth->fetchrow_array()) {
       
@@ -265,7 +294,7 @@ FROM `signup~passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
-  $sth = $dbh->prepare_cached($query);
+  $sth = $rusty->DBH->prepare_cached($query);
   $sth->execute($rusty->{params}->{passphrase_id});
   my $passphrase = $sth->fetchrow_array();
   $sth->finish;
@@ -324,7 +353,7 @@ DELETE FROM `signup~passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{passphrase_id});
     $sth->finish;
     
@@ -337,14 +366,14 @@ VALUES
 ( ?, ?, ? )
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{password1},
                   $rusty->{params}->{email},
                   $email_validation_code);
     $sth->finish;
     
     # Get the user id of the user we just created
-    my $user_id = $dbh->{mysql_insertid};
+    my $user_id = $rusty->DBH->{mysql_insertid};
     
     # Insert the profile_name into empty profile entry
     $query = <<ENDSQL
@@ -354,13 +383,13 @@ VALUES
 ( ?, ? )
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($user_id,
                   $rusty->{params}->{profile_name});
     $sth->finish;
     
     # Get the profile id of the profile we just created
-    my $profile_id = $dbh->{mysql_insertid};
+    my $profile_id = $rusty->DBH->{mysql_insertid};
     
     # Create reference to profile_id in the user table
     # (I know, we're duplicating key references, but
@@ -372,14 +401,14 @@ SET profile_id = ?
 WHERE user_id = ?
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($profile_id, $user_id);
     $sth->finish;
     
     # Create some basic user info
     $query = <<ENDSQL
 INSERT INTO `user~info`
-( user_id, real_name, gender, sexuality, dob, age, country_id, subentity_id )
+( user_id, real_name, gender, dob, age, sexuality, country_code, subentity_code )
 VALUES
 ( ?, ?, ?, ?, ?, ?, ?, ? )
 ENDSQL
@@ -394,14 +423,14 @@ ENDSQL
                 (int(($localtime[4]+1).sprintf("%02d",$localtime[3])) < 
                  int($rusty->{params}->{dob_month}.sprintf("%02d",$rusty->{params}->{dob_day})));
     
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($user_id,
                   $rusty->{params}->{real_name},
                   $rusty->{params}->{gender},
                   $rusty->{params}->{sexuality},
                   $dob, $age,
-                  $rusty->{params}->{country_id},
-                  $rusty->{params}->{subentity_id});
+                  $rusty->{params}->{country_code},
+                  $rusty->{params}->{subentity_code});
     $sth->finish;
     
     # Create stats for user (when they joined)
@@ -412,7 +441,7 @@ VALUES
 ( ?, NOW() )
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($user_id);
     $sth->finish;
     
@@ -453,7 +482,7 @@ date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE signups = signups + 1
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute();
     $sth->finish;
     
@@ -470,7 +499,7 @@ VALUES
 ENDSQL
 ;
     
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($session_id, $user_id, $ip_address);
     $sth->finish;
     
@@ -479,7 +508,7 @@ ENDSQL
                                            -value   => $session_id );
     
     require URI::Escape;
-    print $rusty->CGI->redirect( -url => "/login.pl?mode=signup_test"
+    print $rusty->redirect( -url => "/login.pl?mode=signup_test"
                                        . ($ref ? "&ref=" . URI::Escape::uri_escape($ref) : ''),
                                  -cookie => $test_cookie );
     
@@ -510,7 +539,7 @@ SET passphrase = ?
 WHERE passphrase_id = ?
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($phrase, $phrase_id);
     $sth->finish;
     
@@ -529,7 +558,7 @@ VALUES
 ( ?, ? )
 ENDSQL
 ;
-    $sth = $dbh->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($phrase_id, $phrase);
     $sth->finish;
   }
@@ -558,7 +587,7 @@ sub get_signup_select_options() {
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
       table => "lookup~continent~country",
-      id    => "country_id",
+      id    => "country_code",
       data  => "name",
       order => "name",
                                    ),
@@ -571,19 +600,19 @@ sub get_signup_select_options() {
     }
   }
   
-  if ($rusty->{params}->{country_id} && $rusty->{params}->{country_id} ne 'select') {
+  if ($rusty->{params}->{country_code} && $rusty->{params}->{country_code} ne 'select') {
     my $query = <<ENDSQL
-SELECT subentity_id, subentity_name
-FROM `lookup~continent~country~subentity`
-WHERE country_id = ?
-ORDER BY subentity_name
+SELECT subentity_code, name
+FROM `lookup~continent~country~city1000`
+WHERE country_code = ?
+ORDER BY name
 ENDSQL
     ;
     my $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{params}->{country_id});
+    $sth->execute($rusty->{params}->{country_code});
     $rusty->{params}->{enable_subentities_list} = 1;
-    while (my ($subentity_id, $subentity_name) = $sth->fetchrow_array) {
-      push @{$rusty->{data}->{subentities}}, { value => $subentity_id, name => $subentity_name};
+    while (my ($subentity_code, $subentity_name) = $sth->fetchrow_array) {
+      push @{$rusty->{data}->{subentities}}, { value => $subentity_code, name => $subentity_name};
     }
     $sth->finish;
   }
