@@ -1,6 +1,6 @@
 
 
-<form id="signup" action="/signup.pl" method="post">
+<form id="signup" action="/account.pl" method="post">
 <fieldset class="new">
   <input type="hidden" name="mode" value="reg" />
   <input type="hidden" name="ref" value="[% FILTER html %][% IF core.ref %][% core.ref %][% ELSE %][% core.self_url %][% END %][% END %]" />
@@ -23,8 +23,8 @@
         <label for="real_name">Country: </label>
       </p>
       <p style="text-align: right; ">
-        <select name="country_id">
-          [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_id %] selected="selected"[% END %]>[% c.name %]</option>
+        <select name="country_code">
+          [% FOREACH c = countries %]<option value="[% c.value %]"[% IF c.value == country_code %] selected="selected"[% END %]>[% c.name %]</option>
           [% END %]
         </select>
       </p>
