@@ -92,7 +92,7 @@ $rusty->{data}->{'welcome'} = $rusty->{params}->{'welcome'};
 # Grab existing profile info for this user if it exists
 
 unless ($rusty->{core}->{'user_id'} > 0) {
-  print $rusty->CGI->redirect( -url => "/login.pl?ref=/profile/account.pl" );
+  print $rusty->redirect( -url => "/login.pl?ref=/profile/account.pl" );
   $rusty->exit;
   # If user not logged in, redirect to original signup.
   # So we're assuming here that signup has logged them in..
@@ -259,10 +259,10 @@ ENDSQL
     # If making new profile, take the user back to where they wanted to go
     # (if they were sent here from somewhere else that needed a profile)..
     if (!$existing_profile->{'created'} && $ref) {
-      print $rusty->CGI->redirect( -url => $ref );
+      print $rusty->redirect( -url => $ref );
       $rusty->exit;
     } elsif ($rusty->{data}->{'welcome'}) {
-      print $rusty->CGI->redirect( -url => '/?welcome=1' );
+      print $rusty->redirect( -url => '/?welcome=1' );
       $rusty->exit;
     }
   }
