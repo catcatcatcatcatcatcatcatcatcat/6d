@@ -26,7 +26,7 @@ $rusty->{ttml} = "help/resend-activation.ttml";
 if (!$rusty->{core}->{'user_id'}) {
   
   warn "user tried to access resend-activation while not logged in";
-  print $rusty->CGI->redirect( -url => "/login.pl" );
+  print $rusty->redirect( -url => "/login.pl" );
   $rusty->exit;
   
 } elsif ($rusty->{core}->{'email_validated'}) {
@@ -87,7 +87,7 @@ ENDMSG
                        TextMessage => $textmessage,
                        HtmlMessage => $htmlmessage );
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?sent=1" );
     $rusty->exit;
     
