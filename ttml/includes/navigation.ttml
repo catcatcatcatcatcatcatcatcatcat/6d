@@ -4,7 +4,7 @@
   <div id="Userpic"></div>
   <div id="NotLoggedInDiv"[% IF core.openloginnav %] style="display:none"[% END %]>
     <i><a href="/login.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]" onclick="return ShowLoginBox();">Log in now</a>.</i>
-    <div style="font-size: 12px; margin-top: 0.4em"><i>(<a href="/signup.pl">Sign up</a>)</i></div>
+    <div style="font-size: 12px; margin-top: 0.4em"><i>(<a href="/account.pl">Sign up</a>)</i></div>
   </div>
   <form id="login_form" action="/login.pl" method="post">
   <fieldset>
@@ -47,7 +47,7 @@
                 </td>
                 <td style="font:10px Arial, Helvetica, sans-serif; text-align:right; " 
                     valign="top">
-                  <i>(or <a href="/signup.pl">signup</a>)</i>
+                  <i>(or <a href="/account.pl">signup</a>)</i>
                 </td>
               </tr>
             </table>
@@ -105,7 +105,7 @@
              >Welcome</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
-             ><a href="/signup.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
+             ><a href="/account.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                  >Create an Account</a></li>
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
              ><a href="/login.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
