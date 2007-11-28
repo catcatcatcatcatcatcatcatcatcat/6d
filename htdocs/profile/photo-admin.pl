@@ -18,16 +18,16 @@ $rusty = rusty::Profiles->new;
 
 
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->CGI->redirect( -url => "/login.pl?ref=/profile/photo-admin.pl" );
+  print $rusty->redirect( -url => "/login.pl?ref=/profile/photo-admin.pl" );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
+  print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
   $rusty->exit;
 }
 
 
 if (!$rusty->{core}->{'profile_id'} && !$rusty->{params}->{prev_action}) {
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action="
                                      . $rusty->{params}->{mode}
                                      . "&success=0&reason=noprofile" );
@@ -79,7 +79,7 @@ sub setmainphoto {
   
   unless ($rusty->{params}->{photo_id} > 0) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=setmainphoto"
                                      . "&success=0&reason=nophotoid" );
     $rusty->exit;
@@ -95,7 +95,7 @@ sub setmainphoto {
        . "photo_id $rusty->{params}->{photo_id} "
        . "which belongs to user_id $photo_profile_id";
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=setmainphoto"
                                        . "&success=0&reason=mismatch" );
     $rusty->exit;
@@ -114,7 +114,7 @@ ENDSQL
   my $rows = $sth->execute($rusty->{core}->{'profile_id'}, $rusty->{params}->{photo_id});
   $sth->finish;
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=setmainphoto"
                                      . "&success="
                                      . ($rows eq '0E0' ? "0&reason=badphotoid" : "1") );
@@ -127,7 +127,7 @@ sub delete {
   
   unless ($rusty->{params}->{photo_id} > 0) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=delete"
                                      . "&success=0&reason=nophotoid" );
     $rusty->exit;
@@ -143,7 +143,7 @@ sub delete {
        . "photo_id $rusty->{params}->{photo_id} "
        . "which belongs to user_id $photo_profile_id";
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delete"
                                        . "&success=0&reason=mismatch" );
     $rusty->exit;
@@ -187,7 +187,7 @@ ENDSQL
   $sth->finish;
   
   if (!$rows || $rows eq '0E0') {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=delete"
                                        . "&success=0&reason=badphotoid" );
     $rusty->exit;
@@ -198,7 +198,7 @@ ENDSQL
   # the default photo now, even if there are no photos (will set it to NULL)
   $rusty->getMainPhoto($rusty->{core}->{'profile_id'}); 
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=delete"
                                      . "&success=1" );
   $rusty->exit;
@@ -212,7 +212,7 @@ sub editcaption {
   
   unless ($rusty->{params}->{photo_id} > 0) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&prev_action=editcaption"
                                      . "&success=0&reason=nophotoid" );
     $rusty->exit;
@@ -229,7 +229,7 @@ sub editcaption {
        . "photo_id $rusty->{params}->{photo_id} "
        . "which belongs to user_id $photo_info->{'profile_id'}";
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=editcaption"
                                        . "&success=0&reason=mismatch" );
     $rusty->exit;
@@ -250,13 +250,13 @@ ENDSQL
     $sth->finish;
     
     if (!$rows || $rows eq '0E0') {
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=editcaption"
                                          . "&success=0&reason=badphotoid" );
       $rusty->exit;
     }
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=editcaption"
                                        . "&success=1" );
     $rusty->exit;
