@@ -19,16 +19,16 @@ $rusty = rusty::Profiles->new;
 
 if (!$rusty->{core}->{'user_id'}) {
   require URI::Escape;
-  print $rusty->CGI->redirect( -url => "/login.pl?ref="
+  print $rusty->redirect( -url => "/login.pl?ref="
                                      . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
-  print $rusty->CGI->redirect( -url => "/profile/account.pl?deleted=1" );
+  print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
   $rusty->exit;
 }
 
 if (!$rusty->{core}->{'profile_id'} && !$rusty->{params}->{prev_action}) {
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=summary&prev_action="
                                      . $rusty->{params}->{mode}
                                      . "&success=0&reason=noprofile" );
@@ -212,7 +212,7 @@ sub read {
             $message->{recipient_profile_id} == $rusty->{core}->{profile_id}) &&
           !$message->{is_draft} ) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&tray=".$rusty->{data}->{tray}
                                      . "&prev_action=read"
                                      . "&success=0&reason=badmessageid" );
@@ -313,7 +313,7 @@ sub compose {
     if (!($rusty->{data}->{profile_id} =
          $rusty->getProfileIdFromProfileName($rusty->{data}->{profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=".$rusty->{data}->{mode}
                                          . "&tray=".$rusty->{data}->{tray}
                                          . "&success=0&reason=badprofilename"
@@ -331,7 +331,7 @@ sub compose {
     if (!($rusty->{data}->{profile_name} =
             $rusty->getProfileNameFromProfileId($rusty->{data}->{profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=list&prev_action=".$rusty->{data}->{mode}
                                          . "&tray=".$rusty->{data}->{tray}
                                          . "&success=0&reason=badprofileid" );
@@ -343,7 +343,7 @@ sub compose {
   # If they are trying to send a message to themselves..
   if ($rusty->{core}->{profile_id} == $rusty->{data}->{profile_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=".$rusty->{data}->{mode}
                                        . "&tray=".$rusty->{data}->{tray}
                                        . "&success=0&reason=itisyou" );
@@ -361,7 +361,7 @@ sub compose {
         !$original_message->{sent_date} ||
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=reply"
                                        . "&tray=".$rusty->{data}->{tray}
                                        . "&success=0&reason=badmessageidlinked" );
@@ -385,7 +385,7 @@ sub compose {
         !$original_message->{sent_date} ||
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&prev_action=forward"
                                        . "&tray=".$rusty->{data}->{tray}
                                        . "&success=0&reason=badmessageidlinked" );
@@ -462,7 +462,7 @@ sub viewconvhist {
             $message->{recipient_profile_id} == $rusty->{core}->{profile_id}) &&
           !$message->{is_draft} ) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&tray=".$rusty->{data}->{tray}
                                      . "&prev_action=read"
                                      . "&success=0&reason=badmessageid" );
@@ -510,7 +510,7 @@ sub send {
   # reconstruct the send POST URI as a GET.. Fools..
   unless ($rusty->ensure_post()) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                        . "?mode=inbox&prev_action=send"
                        . "&success=0&reason=notposted"
                        . $extra_query_string_params );
@@ -533,7 +533,7 @@ sub send {
   # If we are just saving this message to drafts, then return with success!
   if ($rusty->{params}->{save}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                        . "?mode=list&tray=drafts"
                        . "&prev_action=save"
                        . "&success=" . ($saved_message_id > 0 ? 1 : 0)
@@ -552,7 +552,7 @@ sub send {
     if (!($rusty->{data}->{profile_id} =
             $rusty->getProfileIdFromProfileName($rusty->{data}->{profile_name}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=compose&prev_action=send"
                                          . "&message_id=".$saved_message_id
                                          . "&tray=".$rusty->{params}->{tray}
@@ -572,7 +572,7 @@ sub send {
     if (!($rusty->{data}->{profile_name} =
             $rusty->getProfileNameFromProfileId($rusty->{data}->{profile_id}))) {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                          . "?mode=compose&prev_action=send"
                                          . "&message_id=".$saved_message_id
                                          . "&tray=".$rusty->{params}->{tray}
@@ -584,7 +584,7 @@ sub send {
   # If the fool has not specified any profile name or id, send them back!
   } else {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=compose&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
@@ -599,7 +599,7 @@ sub send {
     # I sometimes allow this (comment out below) for testing porpoises :)
     # But don't do it in production as messages to oneself messes up the
     # numbers when working out how many messages in inbox/sent items. :(
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=compose&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
@@ -620,7 +620,7 @@ sub send {
         !$original_message->{sent_date} ||
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
-      print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=editdraft&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
@@ -635,7 +635,7 @@ sub send {
   my $success = $rusty->sendSavedMessage( saved_message_id => $saved_message_id,
                                           profile_id       => $rusty->{data}->{profile_id} );
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                    . "?mode=inbox&prev_action=send"
                    . "&success=$success&offset=0"
                    . $extra_query_string_params );
@@ -654,7 +654,7 @@ sub processselected {
   # If the fool has not specified any message ids, send them back!
   if (!$rusty->{params}->{message_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&tray=".$rusty->{params}->{'tray'}
                                        . "&prev_action=$mode"
                                        . "&success=0&reason=nomessageid" );
@@ -694,7 +694,7 @@ sub processselected {
     $success = 0;
   }
   
-  print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+  print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&tray=".$rusty->{params}->{'tray'}
                                      . "&prev_action=$mode"
                                      . "&success=".($success>0?1:0) );
@@ -710,7 +710,7 @@ sub submitasspam {
   # If the fool has not specified any message ids, send them back!
   if (!$rusty->{params}->{message_id}) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&tray=".$rusty->{params}->{'tray'}
                                        . "&prev_action=submitasspam"
                                        . "&success=0&reason=nomessageid" );
@@ -725,7 +725,7 @@ sub submitasspam {
             $message->{recipient_profile_id} == $rusty->{core}->{profile_id}) &&
           !$message->{is_draft} ) {
     
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                      . "?mode=list&tray=".$rusty->{data}->{tray}
                                      . "&prev_action=submitasspam"
                                      . "&success=0&reason=badmessageid" );
@@ -734,7 +734,7 @@ sub submitasspam {
   }
   
   if ($rusty->submitMessageAsSpam($rusty->{params}->{message_id})) {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&tray=".$rusty->{params}->{'tray'}
                                        . "&prev_action=submitasspam"
                                        . "&success=1" );
@@ -772,7 +772,7 @@ ENDMSG
                        'HtmlMessage' => $htmlmessage );
     
   } else {
-    print $rusty->CGI->redirect( -url => $rusty->CGI->url( -relative => 1 )
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
                                        . "?mode=list&tray=".$rusty->{params}->{'tray'}
                                        . "&prev_action=submitasspam"
                                        . "&success=0&reason=alreadysubmittedasspam" );
