@@ -40,7 +40,7 @@ $rusty->{data}->{countries} = [
   { value => 'select', name => 'Please Select', },
   $rusty->get_ordered_lookup_list(
     table => "lookup~continent~country",
-    id    => "country_id",
+    id    => "country_code",
     data  => "name",
                                   ),
                               ];
