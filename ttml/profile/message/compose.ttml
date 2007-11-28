@@ -85,6 +85,10 @@ END;
   <p style="clear: left; ">
     <input type="submit" name="send" value="Send" />
     <input type="submit" name="save" value="Save as Draft" />
+    [% IF message_id %]
+      <a href="/profile/message.pl?mode=delete&amp;tray=[% tray %]&amp;message_id=[% message_id %]"
+        ><img src="/images/icons/message/delete_message.gif" alt="Delete" /> Delete</a>
+    [% END %]
   </p>
   [% IF reply_id %]
     <input type="hidden" name="reply_id" value="[% reply_id %]" />
