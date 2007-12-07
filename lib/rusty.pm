@@ -159,7 +159,9 @@ sub new() {
   
   # Find out which vhost we're in - testing or prod!
   #$self->{core}->{env} = $ENV{ENV};
-  if ($ENV{SERVER_NAME} =~ /^(?:testing|local)\./) {
+  if ($ENV{SERVER_NAME} =~ /^local\./) {
+    $self->{core}->{env} = 'local';
+  } elsif ($ENV{SERVER_NAME} =~ /^testing\./) {
     $self->{core}->{env} = 'testing';
   } elsif ($ENV{SERVER_NAME} =~ /^www\./) {
     $self->{core}->{env} = 'production';
