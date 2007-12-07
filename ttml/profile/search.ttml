@@ -328,8 +328,7 @@
 </div>
 
 
-
-<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAmYkY5ykoTVKCJQ64vbYjBhTnbkjcJZuewrE5PCWsc4sP5Rr-uhSXrKCEwtrNVeadQ7qBp_f6r7etag"></script>
+<script type="text/javascript" src="http://www.google.com/jsapi?key=[% IF core.env == 'local' %]ABQIAAAAekzUm1p-Bc2TWI-lu70nuRRSLKfqh4SQoivfwFZzQMzfgoY9uRStmKISiwnZRkrxty7m9SMLHg1oXA[% ELSIF core.env == 'testing' %]ABQIAAAAmYkY5ykoTVKCJQ64vbYjBhTnbkjcJZuewrE5PCWsc4sP5Rr-uhSXrKCEwtrNVeadQ7qBp_f6r7etag[% ELSE %]ABQIAAAAmYkY5ykoTVKCJQ64vbYjBhSfBeapUcmFQ5wQI7xi27mIPrOwHRTUpJvmsX0W4LRAA9MsaW5cSy4Y_A[% END %]"></script>
 <script type="text/javascript">
 
 var google_maps_enabled = true;
