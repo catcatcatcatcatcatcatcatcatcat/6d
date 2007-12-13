@@ -5,7 +5,7 @@
 
 <h1>Contact Us</h1>
 
-[% IF core.env == 'testing' %]
+[% IF (core.env == 'testing') || (core.env == 'local') %]
 <p class="testing_todo_list">TO ADD (WHEN PEEPS ARE ONLINE): Impatient?&nbsp;
 Talk to one of us on
 <a class="testing_todo_list" href="#/livesupport/">Live Support</a>
