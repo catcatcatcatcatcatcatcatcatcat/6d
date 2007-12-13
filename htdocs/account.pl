@@ -56,42 +56,293 @@ $rusty->{param_info} = {
 my $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'}
   unless $rusty->{params}->{'ref'} eq '/';
 
+
+# User could be requesting that we fill up their cities list (no JS/AJAX)
+if ($rusty->{params}->{reloadareas}) {
+  $rusty->{data} = $rusty->{params};
+  get_signup_select_options();
+  $rusty->process_template;
+  $rusty->exit;
+  
+# Or re-allow them to select their countries list (still no JS/AJAX)
+} elsif ($rusty->{params}->{changecountry}) {
+  $rusty->{data} = $rusty->{params};
+  get_signup_select_options();
+  delete $rusty->{params}->{enable_subentities_list};
+  delete $rusty->{params}->{subentity_code};
+  delete $rusty->{params}->{subentities};
+  $rusty->process_template;
+  $rusty->exit;
+}
+
+
 # This user is already logged on so mode is edit account, not signup
 if ($rusty->{core}->{'user_id'}) {
   
   if ($rusty->{params}->{'submitting'}) {
     
-  } else {
-    $query = <<ENDSQL
+    # Do all of the cleverness right about here for users editing accounts...
+    
+    # First, let's catch out the smart-ass monster-truckers..
+    unless ($rusty->ensure_post()) {
+      $rusty->{data} = $rusty->{params};
+      $rusty->{data}->{not_posted} = 1;
+      get_signup_select_options();
+      $rusty->process_template();
+      $rusty->exit;
+    }
+    
+    $rusty->{params}->{email} = lc($rusty->{params}->{email});
+    $rusty->{params}->{confirmemail} = lc($rusty->{params}->{confirmemail});
+    
+    $rusty->{data}->{param_info} = $rusty->{param_info};
+    
+    # Don't worry if email isn't being changed..
+    delete $rusty->{param_info}->{email}->{regexp};
+    delete $rusty->{param_info}->{confirmemail}->{regexp};
+    # Profile name won't be changed on account edit..
+    delete $rusty->{param_info}->{profile_name}->{regexp};
+    # And passphrase won't be required..
+    delete $rusty->{param_info}->{passphrase}->{regexp};
+    # Check that all the data we've been given is right.
+    my $num_param_errors;
+    $num_param_errors = $rusty->validate_params();
+    
+    if ($rusty->{param_errors}->{dob_year} ||
+        $rusty->{param_errors}->{dob_month} ||
+        $rusty->{param_errors}->{dob_day}) {
+      
+      delete $rusty->{param_errors}->{dob_year};
+      delete $rusty->{param_errors}->{dob_month};
+      delete $rusty->{param_errors}->{dob_day};
+      $rusty->{param_errors}->{dob}->{error} = "select all fields";
+      $rusty->{param_errors}->{dob}->{title} = 'Date of Birth';
+      $num_param_errors++;
+      
+    } else {
+      
+      require Time::DaysInMonth;
+      my $days_in_month = Time::DaysInMonth::days_in($rusty->{params}->{dob_year},
+                                                     $rusty->{params}->{dob_month});
+      unless ($rusty->{params}->{dob_day} <= $days_in_month) {
+        
+        $rusty->{param_errors}->{dob}->{error} = "select a valid date";
+        $rusty->{param_errors}->{dob}->{title} = 'Date of Birth';
+        $num_param_errors++;
+      }
+    }
+    
+    if ($rusty->{params}->{email} eq '') {
+      
+      delete $rusty->{param_errors}->{email};
+      $num_param_errors--;
+      
+    } elsif (exists $rusty->{param_errors}->{email}) {
+      
+      delete $rusty->{param_errors}->{confirmemail};
+      
+    } else {
+      
+      if ($rusty->{params}->{email} ne $rusty->{params}->{confirmemail}) {
+        
+        $rusty->{param_errors}->{email}->{error} =
+          "email addresses do not match";
+        $rusty->{param_errors}->{email}->{title} =
+          $rusty->{param_info}->{email}->{title};
+        $num_param_errors++;
+        
+      } elsif (!Email::validate_email($rusty->{params}->{email})) {
+        
+        $rusty->{param_errors}->{email}->{error} =
+          'is not a valid email address';
+        $rusty->{param_errors}->{email}->{title} =
+          $rusty->{param_info}->{email}->{title};
+        $num_param_errors++;
+      }
+    }
+    
+    if (not exists $rusty->{param_errors}->{email}) {
+      
+      $query = <<ENDSQL
+SELECT email
+FROM `user`
+WHERE email = ?
+LIMIT 1
+ENDSQL
+;
+      $sth = $rusty->DBH->prepare_cached($query);
+      $sth->execute($rusty->{params}->{email});
+      if ($sth->fetchrow_array()) {
+        
+        $rusty->{param_errors}->{email}->{error} =
+          'is already in use by another member - please choose another';
+        $rusty->{param_errors}->{email}->{title} =
+          $rusty->{param_info}->{email}->{title};
+        $num_param_errors++;
+      }
+      $sth->finish;
+    }
+    
+    if ($rusty->{params}->{password1} eq '') {
+      
+      delete $rusty->{param_errors}->{password1};
+      delete $rusty->{param_errors}->{password2};
+      $num_param_errors--;
+      
+    } elsif ($rusty->{param_errors}->{password1}) {
+      
+      $rusty->{param_errors}->{passwords} = $rusty->{param_errors}->{password1};
+      delete $rusty->{param_errors}->{password1};
+      delete $rusty->{param_errors}->{password2};
+      
+    } elsif ($rusty->{params}->{password1} ne $rusty->{params}->{password2}) {
+      
+      $rusty->{param_errors}->{passwords}->{error} =
+        'passwords do not match';
+      $rusty->{param_errors}->{passwords}->{title} =
+        $rusty->{param_info}->{password1}->{title};
+      $num_param_errors++;
+    }
+    
+    if ($num_param_errors > 0) {
+      
+      # If errors in form, print signup form with errors flagged.
+      $rusty->{data}->{errors} = $rusty->{param_errors};
+      
+    } else {
+      
+      # If the form was filled out correctly;
+      
+      # Update basic user info
+      $query = <<ENDSQL
+UPDATE `user~info` SET
+real_name = ?,
+gender = ?,
+dob = ?,
+age = ?,
+sexuality = ?,
+country_code = ?,
+subentity_code = ?
+WHERE user_id = ?
+ENDSQL
+;
+      my $dob = sprintf("%4d-%02d-%02d",
+                        $rusty->{params}->{dob_year},
+                        $rusty->{params}->{dob_month},
+                        $rusty->{params}->{dob_day});
+      
+      my @localtime = localtime();
+      my $age = (($localtime[5]+1900) - $rusty->{params}->{dob_year}) -
+                  (int(($localtime[4]+1).sprintf("%02d",$localtime[3])) < 
+                   int($rusty->{params}->{dob_month}.sprintf("%02d",$rusty->{params}->{dob_day})));
+      
+      $sth = $rusty->DBH->prepare_cached($query);
+      $sth->execute($rusty->{params}->{real_name},
+                    $rusty->{params}->{gender},
+                    $dob, $age,
+                    $rusty->{params}->{sexuality},
+                    $rusty->{params}->{country_code},
+                    $rusty->{params}->{subentity_code},
+                    $rusty->{core}->{user_id});
+      $sth->finish;
+      
+      # If requesting a password change..
+      if ($rusty->{params}->{password1}) {
+        
+        # Update password
+        $query = <<ENDSQL
+UPDATE `user` SET
+password = ?
+WHERE user_id = ?
+ENDSQL
+;
+        $sth = $rusty->DBH->prepare_cached($query);
+        $sth->execute($rusty->{params}->{password1},
+                      $rusty->{core}->{user_id});
+        $sth->finish;
+        
+      }
+      
+      # If requesting an email change..
+      if ($rusty->{params}->{email}) {
+        
+        my $email_validation_code = $rusty->random_word();
+        
+        # Update email info
+        $query = <<ENDSQL
+UPDATE `user` SET
+email = ?,
+email_validated = NULL,
+email_validation_code = ?
+WHERE user_id = ?
+ENDSQL
+;
+        $sth = $rusty->DBH->prepare_cached($query);
+        $sth->execute($rusty->{params}->{email},
+                      $email_validation_code,
+                      $rusty->{core}->{user_id});
+        $sth->finish;
+        
+        # Send out email if email changed with link to validate new email
+        require URI::Escape; # 'uri_escape';
+        my $activation_link = "http://" . $rusty->CGI->server_name
+          . "/email-validation.pl"
+          . "?email=" . URI::Escape::uri_escape($rusty->{params}->{email})
+          . "&profile=" . $rusty->{core}->{profile_name}
+          . "&validation=$email_validation_code";
+        
+        my $textmessage = <<ENDEMAIL
+Hi,
+The user '$rusty->{core}->{profile_name}' from BackpackingBuddies.com
+requested to change their email address to this one.
+Please confirm that this is your email address by clicking on the link
+provided below:
+
+$activation_link
+
+If this request did not come from you, please delete this email and
+no further action is required.
+ENDEMAIL
+;
+        
+      }
+      
+      $rusty->{data}->{msg} = "Your account was updated successfully";
+      
+    }
+  }
+  
+  # Now get the user's info so we can fill out their form for them..
+  
+  $query = <<ENDSQL
 SELECT real_name, gender,
-        DATE_FORMAT(dob, "%Y") AS dob_year,
-        DATE_FORMAT(dob, "%c") AS dob_month,
-        DATE_FORMAT(dob, "%e") AS dob_day,
-        sexuality, subentity_code, country_code
+      DATE_FORMAT(dob, "%Y") AS dob_year,
+      DATE_FORMAT(dob, "%c") AS dob_month,
+      DATE_FORMAT(dob, "%e") AS dob_day,
+      sexuality, subentity_code, country_code
 FROM `user~info`
 WHERE user_id = ?
 LIMIT 1
 ENDSQL
 ;
-    $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{core}->{'user_id'});
-    my $user_info = $sth->fetchrow_hashref();
-    $rusty->{data}->{email} = $rusty->{core}->{email};
-    $rusty->{data}->{profile_name} = $rusty->{core}->{profile_name};
-    $rusty->{data}->{real_name} = $user_info->{real_name};
-    $rusty->{data}->{gender} = $user_info->{gender};
-    $rusty->{data}->{dob_year} = $user_info->{dob_year};
-    $rusty->{data}->{dob_month} = $user_info->{dob_month};
-    $rusty->{data}->{dob_day} = $user_info->{dob_day};
-    $rusty->{data}->{sexuality} = $user_info->{sexuality};
-    $rusty->{data}->{subentity_code} = $user_info->{subentity_code};
-    $rusty->{data}->{country_code} = $user_info->{country_code};
-    
-    get_signup_select_options();
-    
-    $rusty->process_template;
-    $rusty->exit;
-  }
+  $sth = $rusty->DBH->prepare_cached($query);
+  $sth->execute($rusty->{core}->{'user_id'});
+  my $user_info = $sth->fetchrow_hashref();
+  $rusty->{data}->{email} = $rusty->{core}->{email};
+  $rusty->{data}->{profile_name} = $rusty->{core}->{profile_name};
+  $rusty->{data}->{real_name} = $user_info->{real_name};
+  $rusty->{data}->{gender} = $user_info->{gender};
+  $rusty->{data}->{dob_year} = $user_info->{dob_year};
+  $rusty->{data}->{dob_month} = $user_info->{dob_month};
+  $rusty->{data}->{dob_day} = $user_info->{dob_day};
+  $rusty->{data}->{sexuality} = $user_info->{sexuality};
+  $rusty->{data}->{subentity_code} = $user_info->{subentity_code};
+  $rusty->{data}->{country_code} = $user_info->{country_code};
+  
+  get_signup_select_options();
+  
+  $rusty->process_template;
+  $rusty->exit;
   
 } elsif (!$rusty->{params}->{passphrase_id}) {
   
@@ -133,25 +384,6 @@ ENDSQL
   
   # Hoorah for being lazy!
   $rusty->{data} = $rusty->{params};
-  
-  # User could be requesting that we fill up their cities list (no JS/AJAX)
-  if ($rusty->{params}->{reloadareas}) {
-    $rusty->{data} = $rusty->{params};
-    get_signup_select_options();
-    $rusty->process_template;
-    $rusty->exit;
-    
-  # Or re-allow them to select their countries list (still no JS/AJAX)
-  } elsif ($rusty->{params}->{changecountry}) {
-    $rusty->{data} = $rusty->{params};
-    get_signup_select_options();
-    delete $rusty->{params}->{enable_subentities_list};
-    delete $rusty->{params}->{subentity_code};
-    delete $rusty->{params}->{subentities};
-    $rusty->process_template;
-    $rusty->exit;
-  }
-  
   
   # First, let's catch out the smart-ass monster-truckers..
   unless ($rusty->ensure_post()) {
@@ -427,8 +659,8 @@ ENDSQL
     $sth->execute($user_id,
                   $rusty->{params}->{real_name},
                   $rusty->{params}->{gender},
-                  $rusty->{params}->{sexuality},
                   $dob, $age,
+                  $rusty->{params}->{sexuality},
                   $rusty->{params}->{country_code},
                   $rusty->{params}->{subentity_code});
     $sth->finish;
