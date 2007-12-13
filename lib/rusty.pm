@@ -168,7 +168,7 @@ sub new() {
   }
   
   # Let's do a bit of benchmarking (if we're in testing env)..
-  if ($self->{core}->{env} eq 'testing') {
+  if ($self->{core}->{env} =~ /^(?:testing|local)$/) {
     require Benchmark::Timer;
     $self->{benchmark} = Benchmark::Timer->new;
     $self->benchmark->start('total');
@@ -301,7 +301,7 @@ sub new() {
                                 #'empty', #empty theme just to allow simple theme framework to show through
                                 ];
   
-  if ($self->{core}->{env} eq 'testing') {
+  if ($self->{core}->{env} =~ /^(?:testing|local)$/) {
     $self->benchmark->stop('birth');
   }
   
@@ -1435,12 +1435,12 @@ SELECT SQL_CACHE $params->{id}, $params->{data}
 FROM `$params->{table}`
 ENDSQL
 ;
+  $params->{order} ||= $params->{id};
   $query .= ($params->{where} ? "WHERE $params->{where}\n" : "")
-          . "ORDER BY ?\n";
+          . "ORDER BY $params->{order}\n";
   
   my $sth = $dbh->prepare_cached($query);
-  
-  $sth->execute($params->{order} ? $params->{order} : $params->{id});
+  $sth->execute();
   
   my @array;
   
