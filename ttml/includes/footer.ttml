@@ -47,7 +47,7 @@ addEvent(window, 'load', slide_down_notification());
 
 
 
-[% IF core.env == 'testing' %]
+[% IF (core.env == 'testing') || (core.env == 'local') %]
   [% PERL %]
       if (defined $stash->get('benchmark')) {
         $stash->get('benchmark')->stop('total');
@@ -147,7 +147,7 @@ addEvent(window, 'load', slide_down_notification());
      href="/help/contact-us.pl?dept=suggestions&amp;problem=other&amp;ref=[% core.self_url_escaped %]">Get in touch!</a>
   <br />
   
-  [% IF core.env == 'testing' %]
+  [% IF (core.env == 'testing') || (core.env == 'local') %]
     <span class="testing_todo_list" style="color:#AAA">Doorways: 
       <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
       <a style="color:#AAA; font-weight: normal; " href="/intro/hostels/">Hostels</a> | 
