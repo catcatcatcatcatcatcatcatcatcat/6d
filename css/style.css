@@ -644,3 +644,9 @@ a:visited.testing_todo_list,
   color: #F44;
   border: 1px dashed #3F3;
 }
+
+/* for links that want to be target="_blank" but are class="_blank".. */
+._blank {
+  background: transparent url(/images/icons/new-window.gif) no-repeat scroll right bottom;
+  padding: 0 15px 0 0;
+}
