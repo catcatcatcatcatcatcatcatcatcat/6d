@@ -122,15 +122,15 @@
       </li>
     [% ELSE %]
       <li[% IF core.emi == mi_count %] class="Selected"[% END %]
-         ><a href="/?emi=[% mi_count %]#account.not_written_yet" onmouseover="show([% mi_count %])"
+         ><a href="/account.pl?emi=[% mi_count %]" onmouseover="show([% mi_count %])"
              onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
              >[% IF !core.email_validated %]<span class="navmenu-attention">[% END %]My Account
              [% IF !core.email_validated %]</span>[% END %]</a>
         <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
           [% IF (core.env == 'testing') || (core.env == 'local') %]
           <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
-             ><a href="#/account.not_written_yet?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
-                 ><span style="text-decoration: line-through; ">Update Details</span></a></li>
+             ><a href="/account.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
+                 >Update Details</a></li>
           <!-- Have taken out the link since target="_blank" attribute is deprecated in strict XHTML markup
                and we can't have anyone without javascript being taken to the assistant page in this window..
                They would just get confused and cry - they will have to live without the assistant working. -->
