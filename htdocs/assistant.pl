@@ -18,8 +18,9 @@ my ($dbh, $query, $sth);
 
 $dbh = $rusty->DBH;
 
-$rusty->{data}->{new_messages_count} =
-  $rusty->getNewMessagesCount($rusty->{core}->{'profile_id'});
+# The unread message count info is now collected on new profile object creation..
+#$rusty->{data}->{new_messages_count} =
+#  $rusty->getNewMessagesCount($rusty->{core}->{'profile_id'});
 
 $rusty->{data}->{friends_online} =
   $rusty->getOnlineFriendProfileNames($rusty->{core}->{'profile_id'});
