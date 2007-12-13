@@ -10,7 +10,7 @@
 [% ELSIF errors && errors.size > 0 %]
 <p class="err">[% errors.size %] small
   problem[% IF errors.size && errors.size > 1 %]s[% END %]
-  occurred while processing this search:
+  occurred while processing this request:
 </p>
 <ul class="err">
   [% FOREACH field = errors.keys %]
@@ -20,6 +20,8 @@
   [% END %]
 </ul>
 <br />
+[% ELSIF msg %]
+<p class="success">[% msg %]</p>
 [% END %]
 
 
