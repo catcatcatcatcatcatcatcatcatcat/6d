@@ -33,7 +33,7 @@
   [% END %]
   <h1 style="margin-bottom:0; ">Search Results: [% search_string %]</h1>
   <h5 style="margin-left:15px;margin-top:0;">Snapshot created [% search_date %]
-[% IF core.env == 'testing' %]
+[% IF (core.env == 'testing') || (core.env == 'local') %]
 <span class="testing_todo_list">
 put this here if the search date is over a minute old or something like that..
 and get it to add any new profiles found on this search criteria and add them to
