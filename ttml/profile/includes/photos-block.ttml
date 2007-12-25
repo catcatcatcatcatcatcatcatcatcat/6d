@@ -11,7 +11,7 @@
      END %]
 [% END %]
 
-[% IF photos.size > 0 %]
+[% IF photos && photos.size > 0 %]
 [% FOREACH photo_info = photos %]
   [% SET photo_id = photo_info.photo_id %]
   [% SET caption = photo_info.caption %]
@@ -100,10 +100,10 @@
                     z-index:1; ">
           <a
           [% IF adult_pass || (photo_info.photo_id && photo_info.checked_date && !photo_info.adult) %]
-             href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+             href="/profile/photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
              [% photo_link = real_photo_link %]
           [% ELSE %]
-             href="upgrade-buy.pl[% IF search_id %]?search_id=[% search_id %][% END %]"
+             href="/profile/photo-album.pl?profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]&amp;error=photonotviewable"
           [% END %]
              class="thumbnail-shadow"
              title="[% full_caption %] :: Uploaded:[% photo_info.uploaded_date %]">
@@ -117,10 +117,10 @@
       </div>
       <p style="text-align:right; padding-right:4px; max-width:115px">
       [% IF adult_pass || (photo_info.photo_id && photo_info.checked_date && !photo_info.adult) %]
-        <a href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+        <a href="/profile/photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
            title="[% full_caption %]">
       [% ELSE %]
-        <a href="upgrade-buy.pl[% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+        <a href="/profile/photo-album.pl?profile_id=[% profile_id %][% IF search_id %]&amp;search_id=[% search_id %][% END %]&amp;error=photonotviewable"
            title="[% full_caption %]">
       [% END %]
       [% caption %]
@@ -194,7 +194,6 @@
           <a title="Delete Photo" href="photo-admin.pl?mode=delete&amp;photo_id=[% photo_id %]"
           ><img src="/images/icons/photo/delete_photo.gif" alt="Delete Photo" /></a></li>
       </ul>
-      
     </div>
   [% END %]
 [% END %]
