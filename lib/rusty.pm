@@ -201,6 +201,12 @@ sub new() {
     $self->{core}->{'email'} = $self->get_email_address($self->{core}->{'user_id'});
     $self->{core}->{'email_validated'} = $self->is_email_validated($self->{core}->{'user_id'});
     
+    # We also want to know what their visitor_id is so if we create search sessions,
+    # we can link the session to both the logged out and logged in user - this allows
+    # the user to continue viewing the search results (that doesn't nec. require login)
+    # even if their session expires..
+    $self->{core}->{'visitor_id'} = $self->_get_visitor_id_while_logged_in();
+    
   } elsif ($self->session_cookie) {
     
     # If the user's cookie is still there, then they didn't log
@@ -978,7 +984,7 @@ ENDSQL
   # it be for now.  We don't really care, do we? Non..
   if (!$user_id) {
     
-    return 0;
+    $! = "session expired" && return 0;
     
   } else {
     
@@ -1014,6 +1020,37 @@ ENDSQL
     
     return $user_id;
   }
+}
+
+
+
+
+sub _get_visitor_id_while_logged_in($) {
+  
+  # Just check to see what visitor id they used to have before logging in
+  # (this is used for things like search sessions where we want them to persist
+  #  whether they're logged in or out.  This particularly helps them continue
+  #  viewing their search results if their logged in session expires).
+  
+  my $self = shift;
+  
+  my $visitor_ref = $self->visitor_cookie;
+  
+  return 0 if length($visitor_ref) != 24;
+  
+  my $query = <<ENDSQL
+SELECT visitor_id
+FROM `visitor`
+WHERE visitor_ref = ?
+LIMIT 1
+ENDSQL
+;
+  my $sth = $self->DBH->prepare_cached($query);
+  $sth->execute($visitor_ref);
+  my ($visitor_id) = $sth->fetchrow_array();
+  $sth->finish;
+  
+  return $visitor_id
 }
 
 
