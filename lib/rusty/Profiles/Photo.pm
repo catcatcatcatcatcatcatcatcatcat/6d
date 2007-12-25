@@ -59,7 +59,7 @@ ENDSQL
   my ($total) = $sth->fetchrow_array;
   $sth->finish;
   
-  return $total;
+  return int($total);
 
 }
 
@@ -86,7 +86,7 @@ ENDSQL
   my ($total) = $sth->fetchrow_array;
   $sth->finish;
   
-  return $total;
+  return int($total);
 
 }
 
