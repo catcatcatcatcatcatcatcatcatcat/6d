@@ -22,8 +22,7 @@ If you receive any new messages you will be alerted here." /></h2>
 <hr style="width: 100%; height: 2px; " />
 [% IF core.user_id %]
 
-<a href="/" class="_blank"
-   onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a> |
+<a href="/" onclick="javascript:setMainFrameHref('/'); return false;">Main Menu</a> |
 <a href="/assistant.pl">Refresh</a><br />
 <a href="javascript:window.close();">Close</a> |
 <a href="/logout.pl?comingfrommyass=1"
@@ -31,10 +30,10 @@ If you receive any new messages you will be alerted here." /></h2>
 <hr style="width: 100%; height: 1px; " />
 
 <h3 style="margin: 0px; ">Messages:</h3>
-[% IF core.profile.unread_message_count && core.profile.unread_message_count > 0 %]
+[% IF core.profile_info.unread_message_count && core.profile_info.unread_message_count > 0 %]
 <a href="/profile/message.pl?mode=list&amp;tray=inbox" 
-   class="_blank">[% core.profile.unread_message_count %] new 
-   message[% IF core.profile.unread_message_count > 1 %]s[% END %]</a>.
+   class="_blank">[% core.profile_info.unread_message_count %] new 
+   message[% IF core.profile_info.unread_message_count > 1 %]s[% END %]</a>.
 [% ELSE %]
 No new messages.
 [% END %]
