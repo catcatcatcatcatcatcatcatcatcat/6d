@@ -9,15 +9,17 @@
 <p class="err">[% msg %]</p>
 [% END %]
 
-[% IF sent %]
+[% IF error %]
+<p class="err">[% error %]</p>
+[% ELSIF sent %]
 <p class="success">Another activation email has been sent to you.<br />
 If you did not receive the first one, then please check your junk mail folder.<br />
 If you still haven't received an email from us then please <a href="/help/contact-us.pl?dept=support&amp;problem=activation">tell us</a> and we'll try to figure out what's wrong. <br />
 Now click <a href='/'>here</a> to go home.
 [% ELSE %]
-<p>To have another activation email sent to '[% email %]', <a href="/help/resend-activation.pl?send=1">click here.</a></p>
-<p>If this email address is not correct, you can change it HERE.</p>
-<p>If you're not getting any emails from us, then tell us HERE.</p>
+<p>To have another activation email sent to '[% core.email %]', <a href="/help/resend-activation.pl?send=1">request another activation email</a></p>
+<p>If this email address is not correct, then please <a href="/account.pl">update your details</a>.</p>
+<p>If you're not getting any emails from us, then <a href="/help/contact-us.pl?dept=support&amp;problem=emailsnotreceived">report your problem</a> here.</p>
 [% END %]
 
 <p>Having problems? 
