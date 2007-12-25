@@ -8,7 +8,9 @@
   <li><a href="/help/contact-us.pl">Contact Us</a></li>
   <li><a href="/help/faq.pl">Frequently Asked Questions</a></li>
   <li><a href="/help/forgotten-login-details.pl">Forgotten your Username / Password?</a></li>
+[% UNLESS core.email_validated %]
   <li><a href="/help/resend-activation.pl">Resend Email Activation Code</a></li>
+[% END %]
 </ul>
 
 [% INCLUDE includes/footer.ttml %]
