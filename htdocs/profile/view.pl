@@ -29,9 +29,28 @@ use vars qw( $rusty $query $sth );
 
 $rusty = rusty::Profiles->new;
 
+$rusty->{data}->{'error'} = $rusty->{params}->{'error'};
 $rusty->{params}->{profile_name} =~ s/\s//o;
 
 $rusty->{ttml} = "profile/view.ttml";
+
+# Get profile id and name and fill up data, depending on which was specified..
+if ($rusty->{params}->{profile_name}) {
+  $rusty->{data}->{profile_name} = $rusty->{params}->{profile_name};
+  $rusty->{data}->{profile_id} = $rusty->getProfileIdFromProfileName($rusty->{params}->{profile_name});
+} elsif ($rusty->{params}->{profile_id}) {
+  $rusty->{data}->{profile_id} = $rusty->{params}->{profile_id};
+  $rusty->{data}->{profile_name} = $rusty->getProfileNameFromProfileId($rusty->{params}->{profile_id});
+} else {
+  # If no profile name was specified,
+  if ($rusty->{core}->{'profile_name'}) {
+    # If this is a logged in user, show them their own profile (if it exists).
+    $rusty->{data}->{'profile_name'} = $rusty->{core}->{'profile_name'};
+  } else {
+    $rusty->process_template;
+    $rusty->exit;
+  }
+}
 
 
 if ($rusty->{params}->{from_search} && $rusty->{params}->{search_id}) {
@@ -60,25 +79,10 @@ ENDSQL
   $sth->finish;
   
   print $rusty->redirect( -url => "/profile/view.pl?"
-                                     . "profile_name=" . $rusty->{params}->{profile_name}
+                                     . "profile_name=" . $rusty->{data}->{profile_name}
                                      . "&search_id=" . $rusty->{params}->{search_id} );
   $rusty->exit;
 }
-
-
-
-# If no profile name was specified,
-if (!$rusty->{params}->{'profile_name'}) {
-  # If this is a logged in user, show them their own profile (if it exists).
-  if ($rusty->{core}->{'profile_name'}) {
-    $rusty->{params}->{'profile_name'} = $rusty->{core}->{'profile_name'};
-  } else {
-    $rusty->process_template;
-    $rusty->exit;
-  }
-}
-
-
 
 
 $query = <<ENDSQL
@@ -131,14 +135,14 @@ ENDSQL
 ;
 
 $sth = $rusty->DBH->prepare_cached($query);
-$sth->execute($rusty->{params}->{'profile_name'});
+$sth->execute($rusty->{data}->{'profile_name'});
 my $profile = $sth->fetchrow_hashref;
 $sth->finish;
 
 if (!$profile->{'profile_id'}) {
   
   # If trying to view their own profile, take them to account setup
-  if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
+  if ($rusty->{data}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
     print $rusty->redirect( -url => "/profile/account.pl" );
     $rusty->exit;
   }
@@ -152,7 +156,7 @@ if (!$profile->{'profile_id'}) {
 } elsif ($profile->{deleted_date}) {
   
   # If trying to view their own profile, take them to account setup
-  if ($rusty->{params}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
+  if ($rusty->{data}->{'profile_name'} eq $rusty->{core}->{'profile_name'}) {
     print $rusty->redirect( -url => "/profile/account.pl" );
     $rusty->exit;
   }
@@ -248,7 +252,7 @@ if ($profile->{own_profile}) {
   
   my $visitors = $rusty->getRecentProfileVisitors($rusty->{core}->{profile_id}, 10);
   
-  if (@$visitors) {
+  if ($visitors) {
     $profile->{last_visitor}->{profile_name} = ${$visitors}[0]->{profile_name};
     $profile->{last_visitor}->{main_photo} = $rusty->getPhotoInfo(${$visitors}[0]->{main_photo_id});
     $profile->{visitors} = $visitors;
