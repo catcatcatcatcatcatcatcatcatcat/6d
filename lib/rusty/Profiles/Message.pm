@@ -143,6 +143,16 @@ ENDSQL
                  $msg_info{saved_message_id} );
   $sth->finish;
   
+  # Update unread message count for recipient
+  $query = <<ENDSQL
+UPDATE `user~profile` SET
+unread_message_count = unread_message_count + 1
+WHERE profile_id = ?
+ENDSQL
+;
+  $sth = $dbh->prepare_cached($query);
+  $sth->execute( $msg_info{profile_id} );
+  
   return 1;
 }
 
@@ -235,6 +245,16 @@ ENDSQL
   $sth->execute( $message_id, $message_id, $message_id );
   $sth->finish;
   
+  # Update unread message count for recipient
+  $query = <<ENDSQL
+UPDATE `user~profile` SET
+unread_message_count = unread_message_count + 1
+WHERE profile_id = ?
+ENDSQL
+;
+  $sth = $dbh->prepare_cached($query);
+  $sth->execute( $params{to} );
+  
   return $message_id;
 }
 
@@ -254,15 +274,22 @@ sub getNewMessagesCount($$) {
   # Would be lovely to use SQL_CACHE here but we
   # update this table whenever any message is sent
   # (and that msg could be to us) so can't cache. :(
+#  my $query = <<ENDSQL
+#SELECT COUNT(*)
+#FROM `user~profile~message`
+#WHERE recipient_profile_id = ?
+#  AND recipient_deleted_date IS NULL
+#  AND recipient_hidden_from = 0
+#  AND is_draft = 0
+#  AND read_date IS NULL
+#GROUP BY recipient_profile_id
+#ENDSQL
+#;
+  # Now we can cache! :)
   my $query = <<ENDSQL
-SELECT COUNT(*)
-FROM `user~profile~message`
-WHERE recipient_profile_id = ?
-  AND recipient_deleted_date IS NULL
-  AND recipient_hidden_from = 0
-  AND is_draft = 0
-  AND read_date IS NULL
-GROUP BY recipient_profile_id
+SELECT SQL_CACHE unread_message_count
+FROM `user~profile`
+WHERE profile_id = ?
 ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
@@ -270,7 +297,7 @@ ENDSQL
   my ($num_new_messages) = $sth->fetchrow_array;
   $sth->finish;
   
-  return $num_new_messages;
+  return int($num_new_messages);
 }
 
 
@@ -381,6 +408,16 @@ ENDSQL
                                       };
   }
   $sth->finish;
+  
+  # Update unread message count
+  $query = <<ENDSQL
+UPDATE `user~profile` SET
+unread_message_count = ?
+WHERE profile_id = ?
+ENDSQL
+;
+  $sth = $dbh->prepare_cached($query);
+  $sth->execute( $traycount->{'inbox'}->{unread}, $profile_id );
   
   return $traycount;
 }
@@ -677,104 +714,6 @@ ENDSQL
 
 
 
-# Deprecated in favour of caching results (above)
-#
-#sub getMessages($$$$$$$) {
-#  
-#  my $self = shift;
-#  
-#  my ($profile_id, $tray, $offset, $limit, $order, $order2) = @_;
-#  
-#  my $dbh = $self->DBH;
-#  
-#  my $query = <<ENDSQL
-#SELECT upm.message_id,
-#       DATE_FORMAT(upm.sent_date, '%a %d/%m/%y %H:%i') AS sent_date,
-#       DATE_FORMAT(upm.read_date, '%a %d/%m/%y %H:%i') AS read_date,
-#       upm.sender_profile_id, upm.sender_main_photo_id,
-#       upm.recipient_profile_id, upm.recipient_main_photo_id,
-#       upm.draft_recipient_profile_name,
-#       upm.recipient_read_flag, upm.sender_read_flag,
-#       upm.recipient_flagged_flag, upm.sender_flagged_flag,
-#       upm.recipient_replied_flag,
-#       upm.recipient_forwarded_flag, upm.sender_forwarded_flag,
-#       up.profile_name,
-#       upm.subject, upm.body
-#FROM `user~profile~message` upm
-#ENDSQL
-#;
-#  if ($tray eq 'inbox') {
-#    $query .= <<ENDSQL
-#LEFT JOIN `user~profile` up ON up.profile_id = upm.sender_profile_id
-#WHERE upm.recipient_profile_id = ?
-#  AND upm.recipient_deleted_date IS NULL
-#  AND upm.recipient_hidden_from = 0
-#  AND upm.is_draft = 0
-#ENDSQL
-#;
-#  } elsif ($tray eq 'sent') {
-#    $query .= <<ENDSQL
-#LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
-#WHERE upm.sender_profile_id = ?
-#  AND upm.sender_deleted_date IS NULL
-#  AND upm.sender_hidden_from = 0
-#  AND upm.is_draft = 0
-#ENDSQL
-#;
-#  } elsif ($tray eq 'drafts') {
-#    $query .= <<ENDSQL
-#LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
-#WHERE upm.sender_profile_id = ?
-#  AND upm.sender_deleted_date IS NULL
-#  AND upm.sender_hidden_from = 0
-#  AND upm.is_draft = 1
-#ENDSQL
-#;
-#  }
-#  
-#  # If ordering, make sure we have a sub-order (default or specified)..
-#  my $order_by_order2;
-#  if ($order) {
-#    my $reverse_order = ($order2 =~ s/^__//o ? 1 : 0);
-#    $order2 = 'sent_date' unless $order2 =~ /^(?:sent_date|profile_name|subject)$/o;
-#    $order_by_order2 = ($reverse_order ?
-#                         ($order2 eq 'sent_date' ? 'ASC' : 'DESC') :
-#                         ($order2 eq 'sent_date' ? 'DESC' : 'ASC'));
-#    $order2 = "upm.$order2" if $order2 =~ /^(?:sent_date|subject)$/o;
-#  }
-#  
-#  # Set up default ordering unless we already have ordering specified
-#  my $reverse_order = ($order =~ s/^__//o ? 1 : 0);
-#  $order = 'sent_date' unless $order =~ /^(?:sent_date|profile_name|subject)$/o;
-#  my $order_by_order = ($reverse_order ?
-#                        ($order eq 'sent_date' ? 'ASC' : 'DESC') :
-#                        ($order eq 'sent_date' ? 'DESC' : 'ASC'));
-#  $order = "upm.$order" if $order =~ /^(?:sent_date|subject)$/o;
-#  
-#  $query .= "ORDER BY $order $order_by_order"
-#          . ($order2 ? ", $order2 $order_by_order2" : "");
-#  #$query .= "\nLIMIT ?, ?\n";
-#  
-#  # Stop limiting and ordering on main query and
-#  # store full results with ordering and limiting
-#  # happening within the code here
-#  # Put full results in viewprefs for message moving
-#  # back and forward within reading..
-#  
-#  my $sth = $dbh->prepare_cached($query);
-#  $sth->execute($profile_id, $offset, $limit);
-#  my @msgs;
-#  while (my $msg = $sth->fetchrow_hashref) {
-#    push @msgs, $msg;
-#  }
-#  $sth->finish;
-#  
-#  return @msgs ? \@msgs : undef;
-#}
-
-
-
-
 sub getMessageDetail($) {
   
   my $self = shift;
@@ -938,6 +877,21 @@ ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
   my $rows = $sth->execute($message_id);
+  
+  # If we managed to really read it,
+  if ($rows ne '0E0') {
+    
+    # Update unread message count for recipient
+    $query = <<ENDSQL
+UPDATE `user~profile` up
+INNER JOIN `user~profile~message` upm ON upm.recipient_profile_id = up.profile_id
+SET up.unread_message_count = up.unread_message_count - 1
+WHERE upm.message_id = ?
+ENDSQL
+;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute( $message_id );
+  }
   $sth->finish;
   
   return ($rows eq '0E0' ? 0 : 1);
@@ -965,6 +919,21 @@ ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
   my $rows = $sth->execute($message_id);
+  
+  # If we managed to really read it,
+  if ($rows ne '0E0') {
+    
+    # Update unread message count for recipient
+    $query = <<ENDSQL
+UPDATE `user~profile` up
+INNER JOIN `user~profile~message` upm ON upm.recipient_profile_id = up.profile_id
+SET up.unread_message_count = up.unread_message_count - 1
+WHERE upm.message_id = ?
+ENDSQL
+;
+    $sth = $dbh->prepare_cached($query);
+    $sth->execute( $message_id );
+  }
   $sth->finish;
   
   return ($rows eq '0E0' ? 0 : 1);
