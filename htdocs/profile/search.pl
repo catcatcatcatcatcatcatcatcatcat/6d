@@ -495,22 +495,24 @@ ENDSQL
     } else {
       warn "converted search result from visitor to logged in user for search $rusty->{params}->{search_id}";
     }
+    
   } elsif ($rusty->{core}->{'user_id'} &&
            ($search_cache->{'user_id'} != $rusty->{core}->{'user_id'})) {
     
     # If the person viewing the search is logged in, check the search
     # they are requesting belongs to them..  If not, complain!
     warn "user trying to view search result that isn't theirs! (user_id: "
-       . $rusty->{core}->{'visitor_id'} . " trying to view search_id: "
+       . $rusty->{core}->{'user_id'} . " trying to view search_id: "
        . $rusty->{params}->{search_id} . ")";
     print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
     $rusty->exit;
     
   } elsif ($rusty->{core}->{'visitor_id'} &&
-           $search_cache->{'visitor_id'} != $rusty->{core}->{'visitor_id'}) {
+           ($search_cache->{'visitor_id'} != $rusty->{core}->{'visitor_id'})) {
     
     # If the person viewing the search is not logged in but has a visitor
     # session (cookies enabled), check the search belongs to them..
+    # If not, complain!
     warn "visitor trying to view search result that isn't theirs! (visitor_id: "
        . $rusty->{core}->{'visitor_id'} . " trying to view search_id: "
        . $rusty->{params}->{search_id} . ")";
