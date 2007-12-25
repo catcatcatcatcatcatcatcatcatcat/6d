@@ -82,11 +82,10 @@ END; %]
 <script type="text/javascript">
 //<!--
 function selectAll(to_select_or_not_to_select) {
-  var form = document.messages;
+  var form = document.getElementById('messages');
   for (x=0; x<form.elements.length; x++) {
     form.elements[x].checked = to_select_or_not_to_select;
   }
-  return false;
 }
 //-->
 </script>
@@ -190,7 +189,7 @@ of [% message_cache_count %].</h3>
       </th>
     </tr>
     [% FOREACH message = messages %]
-    <tr id="messagerow-[% message.message_id %]"
+    <tr id="messagerow-[% loop.count %]"
         onmouseover="this.className+=' hover'"
         onmouseout="this.className=this.className.substring(0,this.className.lastIndexOf(' hover'))"
         [% IF !message.read_date && tray == "inbox" %]class="unread"[% END %]>
@@ -198,18 +197,18 @@ of [% message_cache_count %].</h3>
                           [% IF selectall %] checked="checked"[% END %] /></td>
       <td class="messageaction">
         <a href="/profile/message.pl?mode=markas[% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]flagged[% ELSE %]unflagged[% END %]&amp;message_id=[% message.message_id %]"
-             title="Flag" onclick="return toggle_message_flagged_flag('[% message.message_id %]')"><img
-               id="messageflaggedimage-[% message.message_id %]"
+             title="Flag" onclick="return toggle_message_flagged_flag([% loop.count %], '[% message.message_id %]')"><img
+               id="messageflaggedimage-[% loop.count %]"
                [% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]class="flagged"[% END %]
                src="/images/icons/message/[% IF (tray == "inbox" && message.recipient_flagged_flag) || (tray != "inbox" && message.sender_flagged_flag) %]flagged[% ELSE %]unflagged[% END %].gif"
                alt="Flag" /></a></td>
       [% IF tray == "inbox" %]
-      <td class="messageaction"><a href="/profile/message.pl?mode=reply&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
-        title="Reply"><img src="/images/icons/message/compose_message_reply.gif" alt="Reply" /></a></td>
+      <td class="messageaction">[% IF message.flag != "LINKEDFRIEND" %]<a href="/profile/message.pl?mode=reply&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+        title="Reply"><img src="/images/icons/message/compose_message_reply.gif" alt="Reply" /></a>[% END %]</td>
       [% END %]
       [% IF tray != "drafts" %]
-      <td class="messageaction"><a href="/profile/message.pl?mode=forward&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
-        title="Forward"><img src="/images/icons/message/compose_message_forward.gif" alt="Forward" /></a></td>
+      <td class="messageaction">[% IF message.flag != "LINKEDFRIEND" %]<a href="/profile/message.pl?mode=forward&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
+        title="Forward"><img src="/images/icons/message/compose_message_forward.gif" alt="Forward" /></a>[% END %]</td>
       [% END %]
       <td class="messageaction"><a href="/profile/message.pl?mode=delete&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
         title="Delete"><img src="/images/icons/message/delete_message.gif" alt="Delete" /></a></td>
@@ -218,18 +217,19 @@ of [% message_cache_count %].</h3>
             [% IF (message.read_date && message.flag != "LINKEDFRIEND") ||
                   (message.flag == "LINKEDFRIEND" && message.recipient_read_flag) %]
             <a href="/profile/message.pl?mode=markas[% IF message.recipient_read_flag %]unread[% ELSE %]read[% END %]&amp;message_id=[% message.message_id %]"
-               onclick="return toggle_message_read_flag('[% message.message_id %]')"
+               onclick="return toggle_message_read_flag([% loop.count %], '[% message.message_id %]')"
                title="Mark message as read/unread">[% END %]<img
-                 id="messagereadimage-[% message.message_id %]"
+                 id="messagereadimage-[% loop.count %]"
                  src="/images/icons/message/[% IF message.recipient_read_flag %]opened[%
                                                  IF message.recipient_forwarded_flag %]_forwarded[%
                                                  ELSIF message.recipient_replied_flag %]_replied[%
                                                  END;
                                                ELSE %]closed[%
                                                END %]_message[% IF message.flag == "LINKEDFRIEND" %]_special[% END %].gif"
-                 alt="Message read/unread" />[% IF message.read_date %]</a>[% END %]
+                 alt="Message read/unread" />[% IF (message.read_date && message.flag != "LINKEDFRIEND") ||
+                                                   (message.flag == "LINKEDFRIEND" && message.recipient_read_flag) %]</a>[% END %]
           [% ELSIF tray == "sent" %]
-          <img id="messagereadimage-[% message.message_id %]"
+          <img id="messagereadimage-[% loop.count %]"
                src="/images/icons/message/[% IF message.sender_read_flag %]opened[%
                                                IF message.sender_forwarded_flag %]_forwarded[%
                                                END;
@@ -237,7 +237,7 @@ of [% message_cache_count %].</h3>
                                              END %]_message.gif"
                alt="Message read/unread by recipient" />
           [% ELSIF tray == "drafts" %]
-          <img id="messagereadimage-[% message.message_id %]"
+          <img id="messagereadimage-[% loop.count %]"
                src="/images/icons/message/opened_message.gif"
                alt="Draft message" />
           [% END %]
@@ -249,8 +249,8 @@ of [% message_cache_count %].</h3>
     <tr class="nohoverchange">
       <td colspan="[% IF tray == "inbox" %]8[% ELSIF tray == "drafts" %]6[% ELSE %]7[% END %]">
         <ul class="opt" style="float: left; font-size: 0.9em; ">
-          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=1" onclick="return selectAll(true);">Select All</a></li>
-          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=0" onclick="return selectAll(false);">Deselect All</a></li>
+          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=1" onclick="selectAll(true); return false;">Select All</a></li>
+          <li class="opt"><a href="/profile/message.pl?mode=[% tray %]&amp;selectall=0" onclick="selectAll(false); return false;">Deselect All</a></li>
           <li class="opt2"><b>With selected:</b> <input type="image" name="mode" value="deleteselected" src="/images/icons/message/delete_message.gif" title="Delete Selected" /> Delete
           [% IF tray == "inbox" %]
           <input type="image" name="mode" value="markselectedasread" src="/images/icons/message/opened_message.gif" title="Mark as Read" /> Mark as Read
@@ -296,13 +296,11 @@ of [% message_cache_count %].</h3>
 <script type="text/javascript">
 //<!--
   var xmlhttp = new_xmlhttp();
-  function toggle_message_read_flag( message_id ) {
-    message_row_object = document.getElementById("messagerow-" + message_id);
-    message_read_image_object = document.getElementById("messagereadimage-" + message_id);
-    if (!message_row_object || !message_read_image_object)
+  function toggle_message_read_flag( message_row, message_id ) {
+    message_read_image_object = document.getElementById("messagereadimage-" + message_row);
+    if (!message_read_image_object)
       return;
     read = 0; // Let's assume that we are setting it to unread
-    //alert('original classname of message row: ' + message_row_object.className);
     if (message_read_image_object.src.match(/closed/)) {            // If image was closed envelope
       read = 1;                                                     // we will be setting it to read..
     }
@@ -313,19 +311,11 @@ of [% message_cache_count %].</h3>
       if (xmlhttp.readyState == 4 || xmlhttp.readyState == "complete") { // Complete
         if (xmlhttp.status == 200) { // OK response
           if (read == 1) {
-            //message_row_object.className=
-            //  message_row_object.className.substring(message_row_object.className.indexOf('unread'),message_row_object.className.lastIndexOf('unread'))"
-            //message_row_object.className =
-            //  message_row_object.className.replace(/ *\bunread\b */,' ');
             message_read_image_object.src =
               message_read_image_object.src.replace(/closed/, 'opened');
             //alert('was unread so className now ' + message_row_object.className);
             //alert('was unread so image now ' + message_read_image_object.src);
           } else {
-            //message_row_object.className =
-            //  message_row_object.className.replace(/ *$/,' unread');
-            //if (!message_row_object.className)
-            //  message_row_object.className = 'unread';
             message_read_image_object.src =
               message_read_image_object.src.replace(/opened/, 'closed');
             //alert('was read so className now ' + message_row_object.className);
@@ -341,8 +331,8 @@ of [% message_cache_count %].</h3>
     return false;
   }
   
-  function toggle_message_flagged_flag( message_id ) {
-    message_flagged_image_object = document.getElementById("messageflaggedimage-" + message_id);
+  function toggle_message_flagged_flag( message_row, message_id ) {
+    message_flagged_image_object = document.getElementById("messageflaggedimage-" + message_row);
     if (!message_flagged_image_object)
       return;
     flagged = 1; // Let's assume that we are setting it to flagged
