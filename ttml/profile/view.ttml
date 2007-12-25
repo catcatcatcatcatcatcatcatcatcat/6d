@@ -15,7 +15,9 @@ ELSE;
 END;
 %]
 
-[% IF NOT profile_name %]
+[% IF error %]
+  [% IF error == "photoalbumnotviewable" %]<p class="err">The photo album for this profile cannot be viewed by you right now.  Sorry. :(</p>[% END %]
+[% ELSIF NOT profile_name %]
   <p class="err">Please specify a profile to view!</p>
   [% INCLUDE includes/footer.ttml %][% RETURN %]
 [% ELSIF NOT profile_id %]
@@ -103,7 +105,7 @@ END;
   </ul>
   
   <div id="profilenote-edit" style="float: right; clear: right;[% IF !note && mode != 'addnote' %] display: none; [% END %]">
-    <form id="profilenote" name="profilenote" action="/profile/friendsandblocks.pl" method="post">
+    <form id="profilenote" action="/profile/friendsandblocks.pl" method="post">
       <fieldset>
         <input type="hidden" name="mode" value="[% IF note %]editnote[% ELSE %]addnote[% END %]" />
         <input type="hidden" name="noted_profile_name" value="[% profile_name %]" />
@@ -136,9 +138,9 @@ END;
 
 <h1 style="margin-bottom:0; ">[% profile_name %]</h1>
 <p style="font-size: 0.8em; margin-left: 15px; color: #666; margin-top:0; ">[% core.server_name %]/[% profile_name %]</p>
-[% IF (main_photo.adult || !main_photo.checked_date || !main_photo.photo_id)
-      && !own_profile && !adult_pass; # Quick and Nasty Kludge!
-   main_photo.tnnc_width = 100;
+[% IF ((main_photo.adult || !main_photo.checked_date)
+      && !own_profile && !adult_pass) || !main_photo.photo_id;
+   main_photo.tnnc_width = 100; # Quick and Nasty Kludge!
    main_photo.tnnc_height = 100;
    END %]
 [% real_photo_link = "/photos/${profile_name}/${main_photo.thumbnail_nocrop_filename}" %]
@@ -462,7 +464,7 @@ END;
 [% IF showfriends && linked_friends && linked_friends.size > 0 %]
 <h3>Linked Friends</h3>
 [% IF own_profile %]
-<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all friends</a><br / >
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all friends</a><br />
 [% END %]
 <a href="/[% random_friend.profile_name %]">
 [% IF random_friend.main_photo.adult && !adult_pass;
@@ -492,7 +494,7 @@ END;
 [% IF showfaves && faves && faves.size > 0 %]
 <h3 style="clear:left;padding-top:32px">Favourites</h3>
 [% IF own_profile %]
-<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all faves</a><br / >
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/friendsandblocks.pl">Manage all faves</a><br />
 [% END %]
 <a href="/[% random_fave.profile_name %]">
 [% IF random_fave.main_photo.adult && !adult_pass;
@@ -522,7 +524,7 @@ END;
 [% IF visitors && visitors.size > 0 %]
 <h3 style="clear:left;padding-top:32px">Recent visitors</h3>
 [% IF own_profile %]
-<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/visitors.pl">See all visitors</a><br / >
+<a style="font-size: 0.8em; margin-left: 20px; " href="/profile/visitors.pl">See all visitors</a><br />
 [% END %]
 <a href="/[% last_visitor.profile_name %]">
 [% IF last_visitor.main_photo.adult && !adult_pass;
