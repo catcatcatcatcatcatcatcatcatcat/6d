@@ -17,6 +17,10 @@ breadcrumbs.push("$title");
 %]
 
 
+[% IF error %]
+  [% IF error == "photonotviewable" %]<p class="err">The selected picture for this profile cannot be viewed by you right now.  Sorry :(</p>[% END %]
+[% END %]
+
 <h1>[% IF profile_name == core.profile_name %]My[% ELSE %][% profile_name %]'s[% END %] Photos</h1>
 
 [% IF num_photos == 0 %]
