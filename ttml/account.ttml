@@ -242,7 +242,7 @@
       return false;
     } else if (profile_name.match(/[^a-z0-9_\-]/i)) { //letters, numbers, underscores and hyphens
       profile_name_object.style.color = "red";
-      profile_name_check_text.innerHTML = "The profile name you have entered is <strong>invalid</strong>";
+      profile_name_check_text.innerHTML = "The profile name you have entered is \<strong\>invalid\<\/strong\>";
       profile_name_check_text.style.color = "red";
       return false;
     }
@@ -253,12 +253,12 @@
       if (xmlhttp2.readyState == 4 || xmlhttp2.readyState == "complete") { // Complete
         if (xmlhttp2.status == 200) { // OK response
           profile_name_object.style.color = "red";
-          profile_name_check_text.innerHTML = "The profile name you have entered <strong>already exists</strong>";
+          profile_name_check_text.innerHTML = "The profile name you have entered \<strong\>already exists\<\/strong\>";
           profile_name_check_text.style.color = "red";
           //return true;
         } else {
           profile_name_object.style.color = "green";
-          profile_name_check_text.innerHTML = "The profile name you have entered is <strong>available</strong>";
+          profile_name_check_text.innerHTML = "The profile name you have entered is \<strong\>available\<\/strong\>";
           profile_name_check_text.style.color = "green";
           //return false;
         }
