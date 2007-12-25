@@ -22,9 +22,9 @@ breadcrumbs.push("$title");
      class="thumbnail-container"
      style="float:left; clear:left;">
 [% caption = friend_main_photo.caption FILTER html_entity %]
-[% IF (friend_main_photo.adult || !friend_main_photo.checked_date || !friend_main_photo.photo_id)
-      && !adult_pass; # Quick and Nasty Kludge!
-   friend_main_photo.tnnc_width = 100;
+[% IF ((friend_main_photo.adult || !friend_main_photo.checked_date)
+      && !adult_pass) || !friend_main_photo.photo_id;
+   friend_main_photo.tnnc_width = 100; # Quick and Nasty Kludge!
    friend_main_photo.tnnc_height = 100;
    END %]
 [% real_photo_link = "/photos/${friend_profile_name}/${friend_main_photo.thumbnail_nocrop_filename}" %]
