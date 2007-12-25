@@ -50,9 +50,10 @@
     [% ELSIF reason == "noprofile" %]You have not created a profile.
     [% ELSIF reason == "notposted" %]You did not submit the form correctly.  Hmmmm.. Bad spammer!
     [% ELSIF reason == "badmessageid" %]The message did not belong to you.
-    [% ELSIF reason == "badmessageidlinked" %]The message you are replying to/forwarding does not belong to you.
+    [% ELSIF reason == "badmessageidlinked" %]The message you selected cannot be [% IF prev_action == "reply" %]replied to[% ELSIF prev_action == "forward" %]forwarded[% END %].
     [% ELSIF reason == "alreadyresponded" %]You have already responded to this message.
     [% ELSIF reason == "alreadysubmittedasspam" %]You have already submitted this message as spam.
+    [% ELSIF reason == "itisyou" %]You cannot send a message to yourself.
     [% ELSE %]An unknown error occured.
     [% END %]
   </p>
