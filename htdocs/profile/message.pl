@@ -357,7 +357,7 @@ sub compose {
     
     # If message we are replying to was not sent to us or has not been sent yet..
     # Or is a special automated message type (friend link request), disallow!
-    if ($original_message->{recipient_profile_id} != $rusty->{core}->{profile_id} ||
+    if (($original_message->{recipient_profile_id} != $rusty->{core}->{profile_id}) ||
         !$original_message->{sent_date} ||
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
@@ -379,9 +379,10 @@ sub compose {
     
     my $original_message = $rusty->getMessageDetail($rusty->{params}->{message_id});
     
-    # If message we are forwarding was not sent to us or has not been sent yet..
+    # If message we are forwarding was not sent to/by us or has not been sent yet..
     # Or is a special automated message type (friend link request), disallow!
-    if ($original_message->{recipient_profile_id} != $rusty->{core}->{profile_id} ||
+    if ((($original_message->{recipient_profile_id} != $rusty->{core}->{profile_id}) &&
+         ($original_message->{sender_profile_id} != $rusty->{core}->{profile_id})) ||
         !$original_message->{sent_date} ||
         $original_message->{flag} eq 'LINKEDFRIEND') {
       
@@ -553,7 +554,7 @@ sub send {
             $rusty->getProfileIdFromProfileName($rusty->{data}->{profile_name}))) {
       
       print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                         . "?mode=compose&prev_action=send"
+                                         . "?mode=editdraft&prev_action=send"
                                          . "&message_id=".$saved_message_id
                                          . "&tray=".$rusty->{params}->{tray}
                                          . "&success=0&reason=badprofilename"
@@ -573,7 +574,7 @@ sub send {
             $rusty->getProfileNameFromProfileId($rusty->{data}->{profile_id}))) {
       
       print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                         . "?mode=compose&prev_action=send"
+                                         . "?mode=editdraft&prev_action=send"
                                          . "&message_id=".$saved_message_id
                                          . "&tray=".$rusty->{params}->{tray}
                                          . "&success=0&reason=badprofileid"
@@ -585,7 +586,7 @@ sub send {
   } else {
     
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=compose&prev_action=send"
+                                       . "?mode=editdraft&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
                                        . "&success=0&reason=noprofileidorname"
@@ -600,7 +601,7 @@ sub send {
     # But don't do it in production as messages to oneself messes up the
     # numbers when working out how many messages in inbox/sent items. :(
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=compose&prev_action=send"
+                                       . "?mode=editdraft&prev_action=send"
                                        . "&message_id=".$saved_message_id
                                        . "&tray=".$rusty->{params}->{tray}
                                        . "&success=0&reason=itisyou"
