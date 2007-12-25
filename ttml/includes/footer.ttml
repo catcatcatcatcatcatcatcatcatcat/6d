@@ -148,6 +148,32 @@ addEvent(window, 'load', slide_down_notification());
   <br />
   
   [% IF (core.env == 'testing') || (core.env == 'local') %]
+    <span class="testing_todo_list" style="color:#AAA">
+      <a href="#" class="testing" style="color:#AAA;" onclick="expire_current_session(); return false; ">Expire Current Sesson in background</a>
+    </span>
+<script src="/js/xmlhttp.js" type="text/javascript"></script>
+<script type="text/javascript">
+//<!--
+  var xmlhttp_logout = new_xmlhttp();
+  function expire_current_session() {
+    url="/ajax/" + "expire_current_session." + "pl?random=" + Math.random();
+    xmlhttp_logout.open("GET",url,true);
+    xmlhttp_logout.onreadystatechange=function() {
+      if (xmlhttp_logout.readyState == 4 || xmlhttp_logout.readyState == "complete") { // Complete
+        if (xmlhttp_logout.status == 200) { // OK response
+          alert("Session expired");
+        } else {
+          alert("Bad response by the server");
+        }
+      }
+    }
+  xmlhttp_logout.send(null);
+  }
+//-->
+</script>
+  [% END %]
+  
+  [% IF (core.env == 'testing') || (core.env == 'local') %]
     <span class="testing_todo_list" style="color:#AAA">Doorways: 
       <a style="color:#AAA; font-weight: normal; " href="/intro/backpackers/">Backpackers</a> | 
       <a style="color:#AAA; font-weight: normal; " href="/intro/hostels/">Hostels</a> | 
