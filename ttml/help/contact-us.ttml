@@ -81,6 +81,7 @@ and get help right now.</p>
         <option value="activation" [% IF problem == "activation" %]selected="selected"[% END %]>Account Activation</option>
         <option value="javascript" [% IF problem == "javascript" %]selected="selected"[% END %]>Enabling Javascript</option>
         <option value="cookies" [% IF problem == "cookies" %]selected="selected"[% END %]>Enabling Cookies</option>
+        <option value="emailsnotreceived" [% IF problem == "emailsnotreceived" %]selected="selected"[% END %]>Receiving Emails</option>
         <option value="other" [% IF problem == "other" %]selected="selected"[% END %]>Other</option>
       </select>
     </td>
