@@ -195,8 +195,6 @@ sub read {
   
   $rusty->{ttml} = "profile/message/read.ttml";
   
-  $rusty->{data}->{tray_count} = $rusty->getAllMessagesSummary($rusty->{core}->{'profile_id'});
-  
   # Catch processing errors that redirect back to read..
   $rusty->{data}->{prev_action} = $rusty->{params}->{prev_action};
   $rusty->{data}->{success} = $rusty->{params}->{success};
@@ -240,6 +238,9 @@ sub read {
     $rusty->markMessageReadFlags( recipient_profile_id => $rusty->{core}->{'profile_id'},
                                   message_ids => [ $rusty->{params}->{message_id} ] );
   }
+  
+  # Now get all message tray counts since we have marked stuff as read/unread..
+  $rusty->{data}->{tray_count} = $rusty->getAllMessagesSummary($rusty->{core}->{'profile_id'});
   
   sub recurse_inner_message($$;$) { # Level is an optional arg. (3 on inner recursive call, 2 for public)
     my ($this_msg, $recurse_max, $recurse_level_count) = @_;
