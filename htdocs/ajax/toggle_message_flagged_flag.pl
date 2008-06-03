@@ -61,6 +61,7 @@ $sth = $DBH->prepare_cached($query);
 my $rows = $sth->execute( $profile_id, $flagged_flag, $profile_id, $flagged_flag,
                           $message_id,
                           $profile_id, $flagged_flag, $profile_id, $flagged_flag );
+$sth->finish;
 if ($rows eq '0E0') {
   
   # If things failed, try to work out why and send back a success
@@ -81,6 +82,7 @@ ENDSQL
       $recipient_flagged_flag,
       $sender_profile_id,
       $sender_flagged_flag) = $sth->fetchrow_array();
+  $sth->finish;
   if ($recipient_profile_id != $profile_id &&
       $sender_profile_id != $profile_id) {
     warn "profile $profile_id tried to mark message $message_id "
@@ -110,4 +112,3 @@ ENDSQL
   print "Status: 200\n\n";
   
 }
-$sth->finish;

@@ -64,6 +64,7 @@ ENDSQL
 ;
 $sth = $DBH->prepare_cached($query);
 my $rows = $sth->execute($read_flag, $message_id, $profile_id, $read_flag);
+$sth->finish;
 if ($rows eq '0E0') {
   
   # If things failed, try to work out why and send back a success
@@ -78,6 +79,7 @@ ENDSQL
 ;
   $sth = $DBH->prepare_cached($query);
   $sth->execute($message_id);
+  $sth->finish;
   my ($real_message_id,
       $recipient_profile_id,
       $recipient_read_flag,
@@ -114,4 +116,3 @@ ENDSQL
   print "Status: 200\n\n";
   
 }
-$sth->finish;

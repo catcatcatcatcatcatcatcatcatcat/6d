@@ -709,6 +709,7 @@ ENDSQL
   while (my $countryinfo = $sth->fetchrow_hashref) {
     push @{$rusty->{data}->{countries}}, $countryinfo;
   }
+  $sth->finish;
   
   # Truncate long country names
   foreach (@{$rusty->{data}->{countries}}) {

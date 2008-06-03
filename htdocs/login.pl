@@ -201,6 +201,7 @@ ENDSQL
       #$sth->execute($session_id)
       #  || print $rusty->CGI->header
       #     && die "Could not invalidate other user's session: ".$dbh->errstr;
+      #$sth->finish;
       #
       # If it's proxies (ie. AOL) then it could be the same user
       # logging in over the top of an existing login session.
