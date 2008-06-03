@@ -143,13 +143,13 @@ if ($rusty->{params}->{'submitting'}) {
   $rusty->{params}->{website} =~ s!^http://!!oi;
   if (!Data::Validate::URI::is_http_uri('http://'.$rusty->{params}->{website})) {
     $rusty->{param_errors}->{website}->{error} = "does not look like a valid URL!";
-    $rusty->{param_errors}->{website}->{title} = $rusty->{params}->{website}->{title};
+    $rusty->{param_errors}->{website}->{title} = $rusty->{params}->{website};
     $num_param_errors++;
   }
   $rusty->{params}->{fave_website} =~ s!^http://!!oi;
   if (!Data::Validate::URI::is_http_uri('http://'.$rusty->{params}->{fave_website})) {
     $rusty->{param_errors}->{fave_website}->{error} = "does not look like a valid URL!";
-    $rusty->{param_errors}->{fave_website}->{title} = $rusty->{params}->{fave_website}->{title};
+    $rusty->{param_errors}->{fave_website}->{title} = $rusty->{params}->{fave_website};
     $num_param_errors++;
   }
   
