@@ -23,7 +23,7 @@
     <meta name="description" content="Meet other backpackers while you're traveling for dates, drinks and trips.  Find fun people to start traveling with, arrange nights out with other backpackers in your city.  Find or become a tour guide in your city.  Rent your sofa or room and find cheap and friendly places to sleep!" />
     <link rel="SHORTCUT ICON" href="/favicon.ico" />
     <link rel="home" title="Home" href="http://[% core.server_name %]/" />
-    <link rel="search" title="Search Profiles" href="http://[% core.server_name %]/profiles/search.pl" />
+    <link rel="search" title="Search Profiles" href="http://[% core.server_name %]/profile/search.pl" />
     <!-- <link rel="contents" title="Site Map" href="http://[% core.server_name %]/#help/sitemap.pl" /> -->
     <link rel="help" title="Technical Support" href="http://[% core.server_name %]/help/contact-us.pl" />
     
