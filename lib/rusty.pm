@@ -1670,7 +1670,6 @@ ENDSQL
       # Leave session there to be found for debugging! =D
       $rot_sth->execute($expired_session->{'session_id'});
       next;
-      
     }
     
     my $rows = $update_sth->execute(
@@ -1687,10 +1686,7 @@ ENDSQL
       warn "No rows affected by update query on user id "
          . $expired_session->{'user_id'}."'s stats - "
          . "I reckon they need some stats creating..";
-      $update_sth->finish;
-      $delete_sth->finish;
-      $sth->finish;
-      return 0;
+      next;
     }
     
     $rows = $delete_sth->execute($expired_session->{'session_id'})
@@ -1699,16 +1695,13 @@ ENDSQL
     if ($rows eq '0E0') {
       warn "No rows affected by delete query on expired session id '"
          . $expired_session->{'session_id'}."'. This is impossible!";
-      $update_sth->finish;
-      $delete_sth->finish;
-      $sth->finish;
-      return 0;
+      next;
     }
   }
+  $sth->finish;
+  $rot_sth->finish;
   $update_sth->finish;
   $delete_sth->finish;
-  $rot_sth->finish;
-  $sth->finish;
   return 1;
 }
 
@@ -1759,6 +1752,17 @@ ENDSQL
 ;
   my $delete_sth = $dbh->prepare_cached($delete_query);
   
+  my $rot_query = <<ENDSQL
+UPDATE `visitor~session`
+SET visitor_ref = CONCAT("ERROR: ", SUBSTRING(visitor_ref, 8)),
+    visitor_id = NULL,
+    updated = updated # Make sure it is not updated on update!
+WHERE visitor_id = ?
+LIMIT 1
+ENDSQL
+;
+  my $rot_sth = $dbh->prepare_cached($rot_query);
+
   # Loop through each expired session found and perform
   # the UPDATE and DELETE statement templates above.
   
@@ -1773,16 +1777,6 @@ ENDSQL
          . "visitor id ".$expired_session->{'visitor_id'}
          . " has been left to rot in it's own ridiculousness.";
       # Leave session there to be found for debugging! =D
-      my $rot_query = <<ENDSQL
-UPDATE `visitor~session`
-SET visitor_ref = CONCAT("ERROR: ", SUBSTRING(visitor_ref, 8)),
-    visitor_id = NULL,
-    updated = updated # Make sure it is not updated on update!
-WHERE visitor_id = ?
-LIMIT 1
-ENDSQL
-;
-      my $rot_sth = $dbh->prepare_cached($rot_query);
       $rot_sth->execute($expired_session->{'session_id'});
       next;
     }
@@ -1801,10 +1795,7 @@ ENDSQL
       warn "No rows affected by update query on visitor id "
          . $expired_session->{'visitor_id'}."'s stats - "
          . "I reckon they need some stats creating..";
-      $update_sth->finish;
-      $delete_sth->finish;
-      $sth->finish;
-      return 0;
+      next;
     }
     
     $rows = $delete_sth->execute($expired_session->{'visitor_id'})
@@ -1813,15 +1804,13 @@ ENDSQL
     if ($rows eq '0E0') {
       warn "No rows affected by delete query on expired visitor id '"
          . $expired_session->{'visitor_id'}."'. This is impossible!";
-      $update_sth->finish;
-      $delete_sth->finish;
-      $sth->finish;
-      return 0;
+      next;
     }
   }
+  $sth->finish;
+  $rot_sth->finish;
   $update_sth->finish;
   $delete_sth->finish;
-  $sth->finish;
   return 1;
 }
 
@@ -1847,10 +1836,10 @@ ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($visitor_id);
+  my $visitor_session = $sth->fetchrow_hashref;
+  $sth->finish;
   
-  if (my $visitor_session = $sth->fetchrow_hashref) {
-    
-    $sth->finish;
+  if ($visitor_session) {
     
     $query = <<ENDSQL
 UPDATE `user~session`
@@ -1880,8 +1869,6 @@ ENDSQL
     
     return 1;
   }
-  
-  $sth->finish;
   
   return 0;
 }
