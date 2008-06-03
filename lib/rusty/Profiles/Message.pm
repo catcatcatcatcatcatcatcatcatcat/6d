@@ -152,6 +152,7 @@ ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
   $sth->execute( $msg_info{profile_id} );
+  $sth->finish;
   
   return 1;
 }
@@ -254,6 +255,7 @@ ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
   $sth->execute( $params{to} );
+  $sth->finish;
   
   return $message_id;
 }
@@ -418,6 +420,7 @@ ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
   $sth->execute( $traycount->{'inbox'}->{unread}, $profile_id );
+  $sth->finish;
   
   return $traycount;
 }
@@ -577,6 +580,7 @@ ENDSQL
   $sth = $dbh->prepare_cached($query);
   my $msgstring = join(',', @msg_ids);
   $sth->execute($profile_id, $tray, scalar(@msg_ids), $msgstring, scalar(@msg_ids), $msgstring);
+  $sth->finish;
 }
 
 
@@ -601,6 +605,7 @@ ENDSQL
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id, $tray);
   my $msg_results_cache = $sth->fetchrow_hashref;
+  $sth->finish;
   
   if ($msg_results_cache->{result_cache_count} == 0) {
     return { messages => undef,
@@ -691,6 +696,7 @@ ENDSQL
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id, $tray);
   my $msg_results_cache = $sth->fetchrow_hashref;
+  $sth->finish;
   if (my $msg_ids_string = $msg_results_cache->{result_cache}) {
     
     my ($prev, $next) = (undef, undef);
@@ -877,6 +883,7 @@ ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
   my $rows = $sth->execute($message_id);
+  $sth->finish;
   
   # If we managed to really read it,
   if ($rows ne '0E0') {
@@ -919,6 +926,7 @@ ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
   my $rows = $sth->execute($message_id);
+  $sth->finish;
   
   # If we managed to really read it,
   if ($rows ne '0E0') {
@@ -933,8 +941,8 @@ ENDSQL
 ;
     $sth = $dbh->prepare_cached($query);
     $sth->execute( $message_id );
+    $sth->finish;
   }
-  $sth->finish;
   
   return ($rows eq '0E0' ? 0 : 1);
 }

@@ -367,8 +367,8 @@ WHERE up.profile_id = ?
 ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
-  $sth = $dbh->prepare_cached($query);
   $sth->execute($visitor_profile_id);
+  $sth->finish;
 }
 
 
