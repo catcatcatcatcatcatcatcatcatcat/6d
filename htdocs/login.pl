@@ -149,14 +149,14 @@ ENDSQL
         if ($session_id eq $cookie_session_id) {
           
           # They shouldn't be logging in - send them back!
-          warn "Recent session exists and cookie matches - request ignored";
+          warn "Recent session '$session_id' exists for '$user_id' and cookie matches - request ignored";
           print $rusty->redirect( -url => ($ref || '/') );
           $rusty->exit;
           
         } else {
           
           # Their cookie has been messed with so continue as usual.
-          warn "Recent session exists but cookie session id does not match";
+          warn "Recent session exists for '$user_id' but cookie session id '$cookie_session_id' does not match '$session_id'";
         }
       } else {
         
@@ -165,7 +165,7 @@ ENDSQL
         # same machine/network?  Haha. The key is to not allow any more than
         # one session at the time!  UserID is now a unique key on `user~session`
         # so it never happens..
-        warn "Recent session already exists for this user but no cookie found";
+        warn "Recent session '$session_id' already exists for user '$user' but no cookie found";
       }
       
     # If that valid session exists but the IP address is different..
