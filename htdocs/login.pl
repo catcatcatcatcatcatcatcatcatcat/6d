@@ -165,7 +165,7 @@ ENDSQL
         # same machine/network?  Haha. The key is to not allow any more than
         # one session at the time!  UserID is now a unique key on `user~session`
         # so it never happens..
-        warn "Recent session '$session_id' already exists for user '$user' but no cookie found";
+        warn "Recent session '$session_id' already exists for user '$user_id' but no cookie found";
       }
       
     # If that valid session exists but the IP address is different..
