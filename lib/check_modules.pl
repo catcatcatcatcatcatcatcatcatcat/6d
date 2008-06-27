@@ -5,6 +5,7 @@ use strict;
 my @packages = qw(
 
 CGI
+Apache::DBI
 DBI
 DBD::mysql
 Template
