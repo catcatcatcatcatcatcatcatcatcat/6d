@@ -4,14 +4,27 @@ use strict;
 
 use warnings;
 
+######################
+# Mac dev env change (uncomment on Mac dev env):
+#  - have to set the full path here - not gooooood :(
+#$ENV{DOCUMENT_ROOT} = '/Users/russellp/dev/6d/htdocs/';
+#use lib "/Users/russellp/dev/6d/lib/";
+######################
+
 $ENV{MOD_PERL} or die "not running under mod_perl!";
 
 use CGI (qw(-oldstyle_urls -private_tempfiles -debug));
 CGI->compile(qw(url self_url param Vars cookie header upload));
 
+
+######################
+# Mac dev env change:
+#  - Comment out the two lines below on Mac dev env.
+#    For some reason this is stopping the server from starting on the Mac
+#    Somehow, it stops the ImageMagick module from starting!
 use Apache::DBI (); # Apache::DBI preloads DBI as well
 DBI->install_driver("mysql");
-
+######################
 
 use CarpeDiem;
 use Email;
