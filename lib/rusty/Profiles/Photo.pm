@@ -391,4 +391,41 @@ sub profile_thumbnail($) {
 
 
 
+# The following function is mainly used for administrative purposes..
+# so use with caution! :P
+sub getAllPhotosPendingApproval($) {
+  
+  my $self = shift;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT photo_id,
+       filename, resized_filename, thumbnail_filename, original_filename,
+       kilobytes, width, height,
+       thumbnail_nocrop_filename, tnnc_width, tnnc_height,
+       caption,
+  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(uploaded_date)) AS elapsed_time_since_upload
+FROM `user~profile~photo`
+WHERE checked_date IS NULL
+  AND deleted_date IS NULL
+ORDER BY uploaded_date ASC
+LIMIT 100
+ENDSQL
+;
+
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute();
+  my @photos = ();
+  while (my $photo_info = $sth->fetchrow_hashref) {
+    push @photos, $photo_info;
+  }
+  $sth->finish;
+  
+  return @photos ? \@photos : undef;
+}
+
+
+
+
 1;
