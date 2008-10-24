@@ -328,6 +328,7 @@ ENDSQL
   $sth = $rusty->DBH->prepare_cached($query);
   $sth->execute($rusty->{core}->{'user_id'});
   my $user_info = $sth->fetchrow_hashref();
+  $sth->finish;
   $rusty->{data}->{email} = $rusty->{core}->{email};
   $rusty->{data}->{profile_name} = $rusty->{core}->{profile_name};
   $rusty->{data}->{real_name} = $user_info->{real_name};
@@ -437,6 +438,7 @@ ENDSQL
     $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{profile_name});
     (my $profile_exists) = $sth->fetchrow_array();
+    $sth->finish;
     if ($profile_exists > 0) {
       
       $rusty->{param_errors}->{profile_name}->{error} =
