@@ -54,12 +54,12 @@
   <tr>
     <td class="[% IF errors.dob %]input-error[% ELSE %]input[% END %]">Date of birth</td>
     <td>
-      <select name="dob_year" id="dob_year" onchange="get_num_days(); /*get_num_days(this.value, this.nextSibling.value)*/">
+      <select name="dob_year" id="dob_year" onchange="get_num_days()">
         <option value="">Year</option>
         [% years = [1870..2000]; FOREACH y = years.reverse %]<option value="[% y %]"[% IF y == dob_year %] selected="selected"[% END %]>[% y %]</option>
         [% END %]
       </select>
-      <select name="dob_month" id="dob_month" onchange="get_num_days(); /*get_num_days(this.previousSibling.value, this.value)*/">
+      <select name="dob_month" id="dob_month" onchange="get_num_days()">
         <option value="">Month</option>
         [% FOREACH m = [1..12] %]<option value="[% m %]"[% IF m == dob_month %] selected="selected"[% END %]>[% m %]</option>
         [% END %]
@@ -118,7 +118,7 @@
   <tr>
     <td class="[% IF errors.profile_name %]input-error[% ELSE %]input[% END %]">Profile Name</td>
     <td>
-[% UNLESS core.user_id %]
+[% UNLESS core.profile_name %]
     <input id="profile_name" name="profile_name" maxlength="20" type="text" class="text" value="[% profile_name %]"
                onkeyup="setTimeout('check_profile_name_exists()', 0)" /><br />
         <div style="font-size:0.7em" id="profile_name_check_text" name="profile_name_check_text"></div>
@@ -197,6 +197,7 @@
     }
     url="/ajax/" + "get_subentities." + "pl?country_code=" + country_code + "&random=" + Math.random();
     xmlhttp1.open("GET",url,true);
+    xmlhttp1.send(null);
     xmlhttp1.onreadystatechange=function() {
       if (xmlhttp1.readyState == 4 || xmlhttp1.readyState == "complete") { // Complete
         if (xmlhttp1.status == 200) { // OK response
@@ -224,11 +225,11 @@
         }
       }
     }
-  xmlhttp1.send(null);
   }
   document.getElementById('country_code').disabled = false;
   get_subentities(document.getElementById('country_code').value, '[% subentity_code %]'); // initialise the first time!
-  
+
+[% UNLESS core.profile_name %]
   // The setTimout on the inline call to this AJAX function stops Firefox's calls
   // throwing the exception NS_ERROR_NOT_AVAILABLE - it is documented and this IS the fix!
   // eg. onkeyup="setTimeout('ajax_function()', 0)"
@@ -236,6 +237,7 @@
   function check_profile_name_exists() {
     profile_name_object = document.getElementById('profile_name');
     profile_name = profile_name_object.value;
+    alert(profile_name);
     profile_name_check_text = document.getElementById('profile_name_check_text');
     if (profile_name == "") {
       profile_name_check_text.innerHTML = "";
@@ -247,8 +249,8 @@
       return false;
     }
     url="/ajax/" + "check_profile_name." + "pl?profile_name=" + profile_name + "&random=" + Math.random();
-    //xmlhttp2.open("HEAD",url,true);
     xmlhttp2.open("GET",url,true);
+    xmlhttp2.send(null);
     xmlhttp2.onreadystatechange=function() {
       if (xmlhttp2.readyState == 4 || xmlhttp2.readyState == "complete") { // Complete
         if (xmlhttp2.status == 200) { // OK response
@@ -264,12 +266,12 @@
         }
       }
     }
-    xmlhttp2.send(null);
   }
   [% IF profile_name %]check_profile_name_exists(); // initialise the first time![% END %]
-  
+[% END %]
+
   var xmlhttp3 = new_xmlhttp();
-  function get_num_days(/*dob_year, dob_month*/) {
+  function get_num_days() {
     dob_year = document.getElementById('dob_year').value;
     dob_month = document.getElementById('dob_month').value;
     if (!dob_year || dob_year == "" || !dob_month || dob_month == "") {
@@ -277,6 +279,7 @@
     }
     url="/ajax/" + "get_num_days." + "pl?year=" + dob_year + "&month=" + dob_month;
     xmlhttp3.open("GET",url,true);
+    xmlhttp3.send(null);
     xmlhttp3.onreadystatechange=function() {
       if (xmlhttp3.readyState == 4 || xmlhttp3.readyState == "complete") { // Complete
         if (xmlhttp3.status == 200) { // OK response
@@ -297,10 +300,8 @@
         }
       }
     }
-    xmlhttp3.send(null);
   }
 //-->
 </script>
-
 
 [% INCLUDE includes/footer.ttml %]
