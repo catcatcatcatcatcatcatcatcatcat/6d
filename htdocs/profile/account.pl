@@ -119,7 +119,8 @@ unless ($rusty->{params}->{'gender'} &&
         $rusty->{params}->{'profile_name'} ) {
   # The user has signed up and is logged in
   # without a gender or profile name? Naaah!
-  die "Your account appears to be corrupted.  Technical support will fix it!"
+  print $rusty->redirect( -url => "/account.pl" );
+  die 'account corrupted?  user id "' . $rusty->{core}->{'user_id'} . ' has no gender or profile_name!';
 }
 
 my $existing_profile = $rusty->{core}->{'profile_info'};
