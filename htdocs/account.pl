@@ -549,13 +549,24 @@ ENDSQL
     
   } else {
     
+    my $passphrase_success_field = 'passphrase_hit';
+    
     if (($num_param_errors == 0) && ($rusty->{params}->{passphrase} ne $passphrase)) {
       
       # Only if the form has no other errors, then check the passphrase.
       # If the passphrase does not match then generate a new passphrase.
+      $passphrase_success_field = 'passphrase_miss';
+      
+      # Was this passphrase attempt a near miss?  Or just plain rubbish?
+      for (my $i=0; $i<=length($passphrase)-3; $i++) {
+        if ($rusty->{params}->{passphrase} =~ /$passphrase[$i..$i+2]/) {
+          $passphrase_success_field = 'passphrase_near_miss';
+          last;
+        }
+      }
       
       warn "Passphrase '$passphrase' did not match user's attempt '".
-           $rusty->{params}->{passphrase}."'.";
+           $rusty->{params}->{passphrase}."'." . ($passphrase_near_miss ? ' But it was very close!' : '');
       
       $rusty->{param_errors}->{passphrase}->{error} =
         'passphrase was not correct - please enter the new passphrase';
@@ -568,7 +579,20 @@ ENDSQL
       # Generate new password for this session
       generate_passphrase($rusty->{params}->{passphrase_id});
     }
+    
+    # Build query to log successful passphrase hits as well as misses in stats db.
+    $query = <<ENDSQL
+INSERT INTO `site~stats`
+SET $passphrase_success_field = 1,
+    date = CURRENT_DATE()
+ON DUPLICATE KEY UPDATE $passphrase_success_field = $passphrase_success_field + 1
+ENDSQL
+;
+    $sth = $rusty->DBH->prepare_cached($query);
+    $sth->execute();
+    $sth->finish;
   }
+  
   
   if ($num_param_errors > 0) {
     
