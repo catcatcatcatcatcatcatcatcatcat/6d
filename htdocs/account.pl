@@ -547,11 +547,11 @@ ENDSQL
     
     $rusty->{params}->{passphrase} = '';
     
-  } else {
+  } elsif ($num_param_errors == 0) {
     
     my $passphrase_success_field = 'passphrase_hit';
-    
-    if (($num_param_errors == 0) && ($rusty->{params}->{passphrase} ne $passphrase)) {
+    warn "arse";
+    if ($rusty->{params}->{passphrase} ne $passphrase) {
       
       # Only if the form has no other errors, then check the passphrase.
       # If the passphrase does not match then generate a new passphrase.
@@ -559,14 +559,15 @@ ENDSQL
       
       # Was this passphrase attempt a near miss?  Or just plain rubbish?
       for (my $i=0; $i<=length($passphrase)-3; $i++) {
-        if ($rusty->{params}->{passphrase} =~ /$passphrase[$i..$i+2]/) {
+        my $chunk = substr($passphrase, $i, 3);
+        if ($rusty->{params}->{passphrase} =~ /\Q$chunk\E/) {
           $passphrase_success_field = 'passphrase_near_miss';
           last;
         }
       }
       
       warn "Passphrase '$passphrase' did not match user's attempt '".
-           $rusty->{params}->{passphrase}."'." . ($passphrase_near_miss ? ' But it was very close!' : '');
+           $rusty->{params}->{passphrase}."'." . ($passphrase_success_field eq 'passphrase_near_miss' ? ' But it was very close!' : '');
       
       $rusty->{param_errors}->{passphrase}->{error} =
         'passphrase was not correct - please enter the new passphrase';
