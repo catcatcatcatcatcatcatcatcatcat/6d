@@ -83,8 +83,11 @@ sub stamp {
     my ($caller,$line) = id(2);
     # Get one level lower than the doc root..
     my $codebase;
-    ($codebase = $ENV{DOCUMENT_ROOT}) =~ s/[^\\\/]+[\\\/]?$//o unless $codebase;
-    $caller =~ s/^\Q$codebase\E//o;
+    $codebase ||= '';
+    if (!$codebase && $ENV{DOCUMENT_ROOT}) {
+      ($codebase = $ENV{DOCUMENT_ROOT}) =~ s/[^\\\/]+[\\\/]?$//o;
+    }
+    $caller =~ s/^\Q$codebase\E//o if $codebase;
     $line = sprintf("%04i", $line);
     return "[$time] $type \@ $line \@ $caller:\t";
 }
@@ -98,8 +101,8 @@ sub stomp {
   #require CGI;
   #(my $uri = CGI->self_url( -oldstyle_urls )) =~ s/;/&/g;
   #return ' while ' . $ENV{REQUEST_METHOD} . " request for $uri"
-  return ' while ' . $ENV{REQUEST_METHOD} .
-         ' request of ' . $ENV{REQUEST_URI};
+  return ' while ' . ($ENV{REQUEST_METHOD} ? $ENV{REQUEST_METHOD} : '') .
+         ' request of ' . ($ENV{REQUEST_URI} ? $ENV{REQUEST_URI} : '');
   
 }
 
