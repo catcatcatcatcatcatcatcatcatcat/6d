@@ -64,7 +64,6 @@ ENDSQL
 ;
   $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_name);
-  $sth->finish;
   
   if (($email, $password, $real_name) = $sth->fetchrow_array()) {
     
@@ -82,6 +81,8 @@ ENDSQL
     $rusty->exit;
     
   }
+  
+  $sth->finish;
   
 } elsif ($email) {
   
