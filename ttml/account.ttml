@@ -237,7 +237,6 @@
   function check_profile_name_exists() {
     profile_name_object = document.getElementById('profile_name');
     profile_name = profile_name_object.value;
-    alert(profile_name);
     profile_name_check_text = document.getElementById('profile_name_check_text');
     if (profile_name == "") {
       profile_name_check_text.innerHTML = "";
