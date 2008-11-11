@@ -25,8 +25,10 @@ $rusty->{ttml} = "help/resend-activation.ttml";
 
 if (!$rusty->{core}->{'user_id'}) {
   
-  warn "user tried to access resend-activation while not logged in";
-  print $rusty->redirect( -url => "/login.pl" );
+  # If user is not logged in yet, this is okay as we let people get to this page
+  # from the help pages without being logged in.  Once logged in, they can send an
+  # activation email and they should be happy and dancing yeah..
+  print $rusty->redirect( -url => "/login.pl?ref=/help/resend-activation.pl" );
   $rusty->exit;
   
 } elsif ($rusty->{core}->{'email_validated'}) {
