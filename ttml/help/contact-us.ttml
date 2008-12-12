@@ -61,7 +61,7 @@ and get help right now.</p>
   </tr>
   <tr>
     <td>Contact Telephone Number:</td>
-    <td><input type="text" class="text" name="email" maxlength="50" value="[% phone %]" /></td>
+    <td><input type="text" class="text" name="phone" maxlength="50" value="[% phone %]" /></td>
   </tr>
   <tr>
     <td colspan="2">
