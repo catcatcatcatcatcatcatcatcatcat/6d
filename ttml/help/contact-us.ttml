@@ -67,8 +67,9 @@ and get help right now.</p>
     <td colspan="2">
       Type of Contact:<span class="mandatory">*</span><br />
       <select style="width:300px" name="dept">
-        <option value="support" [% IF dept == "support" %]selected="selected"[% END %]>Technical Support</option>
-        <option value="suggestions" [% IF dept == "suggestions" %]selected="selected"[% END %]>Suggestions</option>
+        [% FOREACH dept_option = dept_options.keys %]
+        <option value="[% dept_option %]" [% IF dept == dept_option %]selected="selected"[% END %]>[% dept_options.$dept_option %]</option>
+        [% END %]
       </select>
     </td>
   </tr>

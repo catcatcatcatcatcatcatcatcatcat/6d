@@ -16,7 +16,7 @@ use rusty::Profiles;
 
 our $rusty = rusty::Profiles->new;
 
-use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref );
+use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref $dept_options );
 
 
 # Subroutine prototypes
@@ -25,6 +25,9 @@ sub email_support();
 
 
 $rusty->{ttml} = "help/contact-us.ttml";
+
+$dept_options = $rusty->{data}->{dept_options} = { 'support' => 'Technical Support',
+						   'suggestions' => 'Suggestions' };
 
 $email = $rusty->{data}->{email} = lc($rusty->{params}->{email});
 $confirmemail = $rusty->{data}->{confirmemail} = lc($rusty->{params}->{confirmemail});
@@ -85,7 +88,8 @@ if ($rusty->{params}->{'error'}) {
     #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=nodescription" );
     #$rusty->exit;
-  } elsif ($dept =~ /[^a-z\._]+/i) {
+  } elsif ($dept =~ /[^a-z\._]+/i &&
+	   grep /^$dept$/, keys %$dept_options) {
     $rusty->{data}->{'error'} = "hackedform";
     #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=hackedform" );
