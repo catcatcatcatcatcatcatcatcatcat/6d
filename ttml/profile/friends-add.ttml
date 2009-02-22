@@ -49,7 +49,7 @@ breadcrumbs.push("$title");
     <a [% IF from_profile %]
        title="[% caption %]"
        [% ELSE %]
-       class="_blank"
+       rel="external"
        href="/profile/view.pl?profile_name=[% friend_profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
        title="Go to [% friend_profile_name %]'s profile."
        class="thumbnail-shadow"

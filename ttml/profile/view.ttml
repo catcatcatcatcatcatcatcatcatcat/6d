@@ -229,7 +229,7 @@ END;
   <tr>
     <td class="label">[% UNLESS hide_empty_info && !website %]Personal website[% END %]</td>
     <td>[% UNLESS hide_empty_info && !website %]
-                      [% IF website %]<a href="http://[% website FILTER uri FILTER html %]" class="_blank">[% website FILTER html %]</a>
+                      [% IF website %]<a href="http://[% website FILTER uri FILTER html %]" rel="external">[% website FILTER html %]</a>
                       [% ELSE %]Rather not say
                       [% END %]
                     [% END %]
@@ -428,7 +428,7 @@ END;
   <tr>
     <td class="label">Website</td>
     <td>
-      <a href="http://[% fave_website FILTER html_entity %]" class="_blank">
+      <a href="http://[% fave_website FILTER html_entity %]" rel="external">
         [% fave_website FILTER html_entity %]</a>
     </td>
   </tr>

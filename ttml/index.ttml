@@ -166,10 +166,10 @@ if (window.addEventListener)
     <p>
       This site is written in <strong>Object Oriented</strong> <strong>PERL</strong> with an engine
       that does every bit of hard work to allow new feature and page creation to be as simple as possible
-      (see the main site engine object's methods in <a class="_blank" href="http://files.backpackingbuddies.com/files/lib/rusty.pm">rusty.pm</a> within the <a class="_blank" href="http://files.backpackingbuddies.com/">Code listings for this site</a>).&nbsp;
+      (see the main site engine object's methods in <a rel="external" href="http://files.backpackingbuddies.com/files/lib/rusty.pm">rusty.pm</a> within the <a rel="external" href="http://files.backpackingbuddies.com/">Code listings for this site</a>).&nbsp;
       No code has been lifted or copied (apart from two modules heavily adapted from 
-      <a class="_blank" href="http://search.cpan.org/search?m=module&amp;q=cgi%3A%3Acarp">CGI::Carp</a> and 
-      <a class="_blank" href="http://search.cpan.org/search?m=module&amp;q=imagepwd">ImagePwd</a> to do what they
+      <a rel="external" href="http://search.cpan.org/search?m=module&amp;q=cgi%3A%3Acarp">CGI::Carp</a> and 
+      <a rel="external" href="http://search.cpan.org/search?m=module&amp;q=imagepwd">ImagePwd</a> to do what they
       already did well, a little differently) -
       everything has been hand-coded and techniques researched as much as possible at every stage.&nbsp;
       It runs on a <strong>mod_perl 2</strong> enabled 
@@ -192,14 +192,14 @@ if (window.addEventListener)
       <strong>JavaScript</strong> sits on top of an already functioning website to act as an extra, 
       but optional layer of functionality and 'niceness'.&nbsp;  Such functionality includes <strong>AJAX</strong> - one of many
       '<strong>Web 2.0</strong>' technologies and approaches used within this site <em>(fancy
-      <a class="_blank" href="http://en.wikipedia.org/wiki/Image:Web20_en.png">a Web 2.0 picture</a>
+      <a rel="external" href="http://en.wikipedia.org/wiki/Image:Web20_en.png">a Web 2.0 picture</a>
       to explain this buzzword?)</em>.<br />
       <strong>Web standards</strong> have been adhered to with regards to <strong>accessibility</strong>
       and <strong>cross-browser issues</strong> - so this should look good and work perfectly for everyone!&nbsp;
       All pages and relevant database fields are <strong>UTF-8 unicode encoded</strong> 
       to make sure that international visitors enjoy themselves too.<br />
-      Please, feel free to take a look at all of the <a class="_blank" href="http://files.backpackingbuddies.com/">Code behind this site</a>
-      and the <a class="_blank" href="/info/db_datadict.html">Database design</a>.
+      Please, feel free to take a look at all of the <a rel="external" href="http://files.backpackingbuddies.com/">Code behind this site</a>
+      and the <a rel="external" href="/info/db_datadict.html">Database design</a>.
     </p>
     <h3>The monkey and the girls..</h3>
     <p>
@@ -209,8 +209,8 @@ if (window.addEventListener)
       There will also be a few links lying around that do not go anywhere (they remind me to do things)
       but every link that goes somewhere <em>does</em> work!<br />
       Thanks for taking a look, and remember to look at the 
-      <a class="_blank" href="http://files.backpackingbuddies.com/">Code behind this site</a> (the most important bit)
-      and the <a class="_blank" href="/info/db_datadict.html">Database design</a>.
+      <a rel="external" href="http://files.backpackingbuddies.com/">Code behind this site</a> (the most important bit)
+      and the <a rel="external" href="/info/db_datadict.html">Database design</a>.
     </p>
     <h3>Statistics and lies!</h3>
     <p>

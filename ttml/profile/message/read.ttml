@@ -164,7 +164,7 @@ END; %]
                                   recurse_limit,
                                   recurse_level) %]
       [% ELSE %]
-          <h2><a class="_blank" href="/profile/message.pl?mode=viewconvhist&tray=[% tray %]&message_id=[% message.message_id %]">View entire conversation thread</a></h2>
+          <h2><a rel="external" href="/profile/message.pl?mode=viewconvhist&tray=[% tray %]&message_id=[% message.message_id %]">View entire conversation thread</a></h2>
       [% END %]
     [% END %]
     [% IF is_reply || is_forward %]

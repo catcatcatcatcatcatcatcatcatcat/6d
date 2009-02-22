@@ -34,15 +34,21 @@ function getNewWindowLinks() {
     for (var i = 0; i < links.length; i++) {
       link = links[i];
       // Find all links with a class name of "_blank"
-      if (/\b_blank\b/.exec(link.className)) {
+      //if (/\b_blank\b/.exec(link.className)) {
+      // Find all links which actually link somewhere and
+      // have the rel="external" attribute set.
+      if (anchor.getAttribute("href") &&
+          anchor.getAttribute("rel") == "external") {
         // Create an em element containing the new window warning text and insert it after the link text
         //objWarningText = document.createElement("em");
         //strWarningText = document.createTextNode(strNewWindowAlert);
         //objWarningText.appendChild(strWarningText);
         //link.appendChild(objWarningText);
         link.title = link.title + strNewWindowAlert;
-        link.onclick = openInNewWindow;
+        //link.onclick = openInNewWindow;
+	link.target = "_blank";
       }
+
     }
     objWarningText = null;
   }

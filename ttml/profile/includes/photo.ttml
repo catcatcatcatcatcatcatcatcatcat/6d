@@ -32,7 +32,7 @@
        [% ELSE %]
        href="/profile/view.pl?profile_name=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
        title="Go to [% profile_name %]'s profile."
-       class="_blank thumbnail-shadow"
+       rel="external" class="thumbnail-shadow"
        [% END %]>
       <img src="[% photo_link %]"
            style="width:[% photo.tnnc_width %]px;

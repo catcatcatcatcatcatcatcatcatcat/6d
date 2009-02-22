@@ -129,7 +129,7 @@ addEvent(window, 'load', getNewWindowLinks);
     <span class="error-box-title">Assistant popup has been blocked!</span>
     <!-- target="_blank" has been removed so that our strict markup is valid but now
          people we rely on javascript to force the link to open in a new window! -->
-    Manually <a href="/assistant.pl" class="_blank"
+    Manually <a href="/assistant.pl" rel="external"
                 onclick="OpenAssistant(); return false;">open the assistant in a new tab/window</a>.&nbsp;
     To stop this happening again, learn
     <a href="/help/disabling-popup-blockers.pl">How to disable your Popup Blocker</a>.
