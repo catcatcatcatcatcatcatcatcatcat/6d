@@ -1,0 +1,49 @@
+[% title = 'Photo Approval' %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/admin/">Admin</a>'); %]
+[% breadcrumbs.push("$title"); %]
+
+
+<h1>Photo Approval</h1>
+[% IF mode == "recently_approved" %]
+<h2 style="display: inline; ">Recently approved..</h2><a href="[% self_uri %]?mode=list">See to be approved</a>
+[% ELSE %]
+<h2 style="display: inline; ">To be approved..</h2><a href="[% self_uri %]?mode=recently_approved">See recently approved</a>
+[% END %]
+
+
+[% IF prev_action %]
+  [% IF success == 1 %]
+  <p class="success">That
+    [% IF prev_action == "delete" %]photo was successfully deleted
+    [% ELSE %]previous action was completed successfully
+    [% END %]
+  </p>
+  [% ELSE %]
+  <p class="err">That
+    [% IF prev_action == "delete" %]photo could not be deleted
+    [% ELSE %]previous action could not be completed
+    [% END %]
+    <br />
+    Reason:
+    [% IF reason == "nophotoid" %]No photo was specified
+    [% ELSIF reason == "mismatch" %]The photo specified does not belong to you
+    [% ELSIF reason == "badphotoid" %]The photo specified does not exist
+    [% ELSIF reason == "alreadychecked" %]The photo has already been checked
+    [% ELSE %]An unknown error occured
+    [% END %]
+  .</p>
+  [% END %]
+[% END %]
+
+<p style="clear:both;margin-bottom:32px">
+[% IF photos && photos.size > 0 %]
+There are [% photos.size %] photos to approve.  Get going!
+[% SET photo_album_mode = "admin";
+   INCLUDE "profile/includes/photos-block.ttml" %]
+[% ELSE %]
+There are no photos to approve!
+[% END %]
+</p>
+
+[% INCLUDE includes/footer.ttml %]
