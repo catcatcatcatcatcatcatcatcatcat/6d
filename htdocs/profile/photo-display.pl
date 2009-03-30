@@ -51,7 +51,6 @@ SELECT up.profile_name,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
        DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-       upp.assigned_to,
        DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
        upp.adult, upp.total_visit_count
 FROM `user~profile~photo` upp

@@ -172,7 +172,6 @@ SELECT SQL_CACHE up.profile_name,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
        DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-       upp.assigned_to,
        DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
        upp.adult, upp.total_visit_count
 FROM `user~profile~photo` upp
@@ -260,7 +259,6 @@ SELECT photo_id,
        thumbnail_nocrop_filename, tnnc_width, tnnc_height,
        caption,
        DATE_FORMAT(uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-       assigned_to,
        DATE_FORMAT(checked_date, '%d/%m/%y %H:%i') AS checked_date,
        adult, total_visit_count
 FROM `user~profile~photo`
@@ -276,7 +274,6 @@ ENDSQL
 #       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
 #       upp.caption,
 #       DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-#       upp.assigned_to,
 #       DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
 #       upp.adult, upp.total_visit_count
 #FROM `user~profile~photo` upp
@@ -316,7 +313,6 @@ SELECT photo_id,
        thumbnail_nocrop_filename, tnnc_width, tnnc_height,
        caption,
        DATE_FORMAT(uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-       assigned_to,
        DATE_FORMAT(checked_date, '%d/%m/%y %H:%i') AS checked_date,
        adult, deleted_date, total_visit_count
 FROM `user~profile~photo`
