@@ -361,7 +361,7 @@ ENDSQL
   if ($rusty->{core}->{'user_id'}) {
     
     $query = <<ENDSQL
-INSERT INTO `user~stats`
+INSERT DELAYED INTO `user~stats`
 SET user_id = ?, num_profile_searches = 1
 ON DUPLICATE KEY
 UPDATE num_profile_searches = num_profile_searches + 1
