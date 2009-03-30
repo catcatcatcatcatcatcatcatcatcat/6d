@@ -73,7 +73,7 @@ You can still <a href="/profile/photo-upload.pl">upload more photos</a>!
 [% END %]
 </p>
 
-[% SET photo_album_mode = "admin";
+[% SET photo_album_mode = "owner";
    INCLUDE "profile/includes/photos-block.ttml" %]
 
 <p style="clear: both; font-size: 0.7em; color: #666; ">
