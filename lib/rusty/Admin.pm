@@ -19,7 +19,7 @@ use rusty::Profiles::Photo;
 use rusty::Profiles::Message;
 use rusty::Profiles::FriendsAndBlocks;
 our @ISA = qw( rusty
-	           rusty::Profiles
+               rusty::Profiles
                rusty::Profiles::Photo
                rusty::Profiles::Message
                rusty::Profiles::FriendsAndBlocks );
@@ -30,12 +30,12 @@ our @ISA = qw( rusty
 sub new() {
   my $proto = shift;
   my $class = ref($proto) || $proto;
-  my $self = $class->rusty::new();
+  my $self = $class->rusty::Profiles::new();
   
   if ($self->{core}->{'user_id'}) {
     $self->{core}->{'admin_level'} = $self->getAdminLevelFromUserId($self->{core}->{'user_id'});
     if ($self->{core}->{'admin_privileges'}) {
-	  die "UserID '$user_id' trying to access admin pages but has no admin privileges set";
+	  die "UserID '$self->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
     }
   } else {
     print $self->redirect( -url => '/login.pl' );
@@ -75,7 +75,7 @@ LIMIT 1
 ENDSQL
 ;
   my $sth = $self->DBH->prepare_cached($query);
-  $sth->execute($value);
+  $sth->execute($user_id);
   my $admin_priveleges = $sth->fetchrow_hashref;
   $sth->finish;
   
