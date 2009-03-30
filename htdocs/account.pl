@@ -542,7 +542,7 @@ ENDSQL
       $rusty->{param_info}->{passphrase}->{title};
     $num_param_errors++;
     
-    $rusty->{params}->{passphrase_id} = generate_passphrase();
+    $rusty->{data}->{passphrase_id} = generate_passphrase();
     
     $rusty->{params}->{passphrase} = '';
     
@@ -565,7 +565,7 @@ ENDSQL
         }
       }
       
-      warn "Passphrase '$passphrase' did not match user's attempt '".
+      warn "Passphrase '$passphrase' did not match user's attempt '" .
            $rusty->{params}->{passphrase}."'." . ($passphrase_success_field eq 'passphrase_near_miss' ? ' But it was very close!' : '');
       
       $rusty->{param_errors}->{passphrase}->{error} =
@@ -577,7 +577,7 @@ ENDSQL
       $rusty->{params}->{passphrase} = '';
       
       # Generate new password for this session
-      generate_passphrase($rusty->{params}->{passphrase_id});
+      $rusty->{data}->{passphrase_id} = generate_passphrase($rusty->{params}->{passphrase_id});
     }
     
     # Build query to log successful passphrase hits as well as misses in stats db.
