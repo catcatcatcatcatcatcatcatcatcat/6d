@@ -416,9 +416,6 @@ $err = $thumbnail_nocrop->Write( filename    => $photo->{local_thumb_nocrop_file
 warn $err if $err;
 
 
-# When we get an admin area, we'll put this in place with someone to check it..
-$photo->{assignee} = "";
-
 # Calculate filesize in kilobytes - if file is greater than zero
 # but less than 1KB then make it 1KB (otherwise someone could
 # upload unlimited 0.9KB files and kill our little server..
@@ -436,12 +433,12 @@ INSERT INTO `user~profile~photo`
   resized_filename, thumbnail_filename, original_filename,
   kilobytes, width, height,
   thumbnail_nocrop_filename, tnnc_width, tnnc_height,
-  caption, uploaded_date, assigned_to )
+  caption, uploaded_date )
 VALUES ( ?, ?,
          ?, ?, ?,
          ?, ?, ?,
          ?, ?, ?,
-         ?, NOW(), ? )
+         ?, NOW(), )
 ENDSQL
 ;
 $sth = $rusty->DBH->prepare_cached($query);
@@ -455,8 +452,7 @@ $sth->execute( $profile->{'profile_id'},
                $photo->{local_thumb_nocrop_filename},
                $thumbnail_nocrop->Get('width'),
                $thumbnail_nocrop->Get('height'),
-               $rusty->{params}->{caption},
-               $photo->{assignee} );
+               $rusty->{params}->{caption} );
 $sth->finish;
 
 $rusty->{data}->{photo_id} = $rusty->DBH->{mysql_insertid};
@@ -465,13 +461,56 @@ $rusty->{data}->{photo_id} = $rusty->DBH->{mysql_insertid};
 if (!$profile->{main_photo_id}) {
   $query = <<ENDSQL
 UPDATE `user~profile`
-SET main_photo_id = LAST_INSERT_ID() WHERE profile_id = ?
+SET main_photo_id = ? WHERE profile_id = ?
 ENDSQL
 ;
   $sth = $rusty->DBH->prepare_cached($query);
-  $sth->execute($profile->{'profile_id'});
+  $sth->execute($rusty->{data}->{photo_id}, $profile->{'profile_id'});
   $sth->finish;
 }
+
+#
+require Email; #qw( send_email create_html_from_text );
+
+# Send out email to a support dept.
+
+my $current_time = localtime();
+
+my $textmessage = <<ENDMSG
+  =============
+  Date: $current_time
+  User ID: $rusty->{core}->{user_id}
+  Email: $rusty->{core}->{email}
+  Profile Name: $rusty->{core}->{profile_name}
+  Photo ID: $rusty->{data}->{photo_id}
+  =============
+  
+  Caption: $rusty->{params}->{caption}
+  FileName: $photo->{original_filename}
+  Thumb: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_thumb_filename}
+  NoCrop: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_thumb_nocrop_filename}  
+  Resized: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_resized_filename}
+
+  APPROVE?  http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=approve\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
+  ADULT?    http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=mark_as_adult\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
+  REJECT?   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=reject\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
+ENDMSG
+;
+    
+    my $htmlmessage = Email::create_html_from_text($textmessage);
+    $htmlmessage .= << ENDHTML
+<img src="http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_resized_filename}" />
+
+See all photos requiring approval:   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl
+ENDHTML
+;
+    
+    Email::send_email( 'To'          => [ "support\@backpackingbuddies.com", ],
+                       'Reply-To'    => [ "$rusty->{core}->{profile_name} <$rusty->{core}->{email}>", ],
+                       'Subject'     => "Photo uploaded",
+                       'TextMessage' => $textmessage,
+                       'HtmlMessage' => $htmlmessage );
+    
 
 require URI::Escape; # 'uri_escape';
 
