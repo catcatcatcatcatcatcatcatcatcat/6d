@@ -41,7 +41,7 @@ sub display_single_photo {
   
   $rusty->{data}->{profile_id} = $rusty->{params}->{profile_id};
   $rusty->{data}->{photo_id} = $rusty->{params}->{photo_id};
-  $rusty->{data}->{adminmode} = $rusty->{params}->{a};
+  $rusty->{data}->{mode} = $rusty->{params}->{mode};
   
   my $query = <<ENDSQL
 SELECT up.profile_name,
@@ -74,15 +74,18 @@ ENDSQL
   }
   
   
-  # Let's make sure that if admin mode was requested, we are
+  # Let's make sure that if owner mode was requested, we are
   # looking at one of our own photos. If so, we give access regardless.
-  if ($rusty->{data}->{adminmode}) {
+  if ($rusty->{data}->{mode} eq 'owner') {
     if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
       warn "admin mode requested for photo that isn't theirs: "
          . " profile id '$rusty->{core}->{profile_id}' and photo id "
          . "'$rusty->{data}->{photo_id}'.";
-      delete $rusty->{data}->{adminmode};
+      delete $rusty->{data}->{mode};
     }
+  } elsif ($rusty->{data}->{mode} eq 'admin') {
+    #check if user is admin user with privileges
+    
   }
   
   
