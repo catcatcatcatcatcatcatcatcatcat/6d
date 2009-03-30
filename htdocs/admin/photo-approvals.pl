@@ -12,13 +12,15 @@ use CarpeDiem;
 
 use rusty::Admin;
 
+use vars qw($rusty $query $sth);
+
 $rusty = rusty::Admin->new;
 
-$_ = $rusty->{params}->{mode};
+$_ = ($rusty->{data}->{mode} = $rusty->{params}->{mode});
 SWITCH:
 {
-  &processphotos, last SWITCH if /^processphotos$/;
-  &list, last SWITCH if /^list$/;
+  &processphotos($_), last SWITCH if /^(?:approve|reject|mark_as_adult|undo_checking)$/;
+  &list, last SWITCH if /^(?:list|recently_approved)$/;
   
   # Default behaviour: list
   $rusty->{data}->{errors}->{mode} = "mode $_ is not defined" if $_;
@@ -29,9 +31,13 @@ SWITCH:
 
 sub list {
   
-  $rusty->{ttml} = "profile/photo-admin.ttml";
+  $rusty->{ttml} = "admin/photo-approvals.ttml";
   
-  $rusty->{data}->{photos} = $rusty->getAllPhotosPendingApproval()
+  if ($rusty->{params}->{mode} eq 'recently_approved') {
+    $rusty->{data}->{photos} = $rusty->getRecentlyApprovedPhotos();
+  } else {
+    $rusty->{data}->{photos} = $rusty->getAllPhotosPendingApproval();
+  }
   
   # Catch processing errors that redirect back to list..
   $rusty->{data}->{prev_action} = $rusty->{params}->{prev_action};
@@ -44,82 +50,114 @@ sub list {
 
 
 sub processphotos {
+
+  my $action = shift;
   
   unless ($rusty->{params}->{photo_id} > 0) {
     
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                     . "?mode=list&prev_action=delete"
+                                     . "?mode=list&prev_action=$action"
                                      . "&success=0&reason=nophotoid" );
     $rusty->exit;
     
   }
   
-  my $photo_profile_id = $rusty->getProfileIdFromPhotoId($rusty->{params}->{photo_id});
+  my $photo_info = $rusty->getPhotoInfo($rusty->{params}->{photo_id});
   
-  if ($photo_profile_id && ($rusty->{core}->{'profile_id'} != $photo_profile_id)) {
+  # Check that this photo exists!
+  if (!$photo_info) {
     
-    warn "user trying to delete a photo that does not belong to them: "
-       . "user_id $rusty->{core}->{'user_id'} deleting "
-       . "photo_id $rusty->{params}->{photo_id} "
-       . "which belongs to user_id $photo_profile_id";
+    warn "admin user trying to process photo id $rusty->{params}->{photo_id} that does not exist";
     
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=list&prev_action=delete"
+                                       . "?mode=list&prev_action=$action"
+                                       . "&success=0&reason=badphotoid" );
+    $rusty->exit;
+    
+  # To make it harder for naughty administrators deleting random photos
+  # or doing things in bulk, check profile id of photo owner too
+  } elsif ($rusty->{params}->{'profile_id'} == $photo_info->{'profile_id'}) {
+    
+    warn "admin user trying to process a photo that does not belong to them: "
+       . "admin user id $rusty->{core}->{user_id} processing "
+       . "photo id $rusty->{params}->{photo_id} from profile id $rusty->{params}->{profile_id} "
+       . "but this photo actually belongs to $photo_info->{profile_id}";
+    
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
+                                       . "?mode=list&prev_action=$action"
                                        . "&success=0&reason=mismatch" );
     $rusty->exit;
     
   }
   
-  # Create a deleted photo directory for this user.
-  my $photo_profile_name = $rusty->getProfileNameFromProfileId($photo_profile_id);
-  my $photo_profile_directory = $rusty->photo_upload_directory . "/$photo_profile_name";
-  mkdir($photo_profile_directory . "/del", 0777)
-    unless -d ("$photo_profile_directory/del");
-  die "cannot create profile deleted photo directory: $photo_profile_directory/del"
-    unless -d ("$photo_profile_directory/del");
-  
-  # Delete the resized and both thumbnailed versions of the image.
-  my $photo_info = $rusty->getPhotoInfo($rusty->{params}->{photo_id});
-  unlink "$photo_profile_directory/$photo_info->{resized_filename}"
-    or warn "could not delete profile resized photo: $photo_info->{resized_filename}";
-  unlink "$photo_profile_directory/$photo_info->{thumbnail_filename}"
-    or warn "could not delete profile thumbnailed photo: $photo_info->{thumbnail_filename}";
-  unlink "$photo_profile_directory/$photo_info->{thumbnail_nocrop_filename}"
-    or warn "could not delete profile thumbnail (no crop) photo: $photo_info->{thumbnail_nocrop_filename}";
-  rename "$photo_profile_directory/$photo_info->{filename}",
-         "$photo_profile_directory/del/$photo_info->{filename}"
-    or warn "could not move profile original photo to deleted folder: $photo_info->{thumbnail_filename}";
-  
-  $query = <<ENDSQL
+  # If approving photo, update the admin user id, set adult to 0 and checked_date to NOW
+  # If marking photo as adult, update the admin user id, set adult to 1 and checked_date to NOW
+  # If rejecting photo, update the admin user id, set rejected to 1 and checked_date to NOW
+  if ($action =~ /^(?:approve|reject|mark_as_adult)$/) {
+    
+    # Then check photo isn't already checked - don't allow if already checked!
+    if ($photo_info->{checked_date}) {
+      
+      warn "admin user trying to process photo id $rusty->params}->{photo_id} "
+         . "that was already checked on $photo_info->{checked_date}";
+      
+      print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
+                                       . "?mode=list&prev_action=$action"
+                                       . "&success=0&reason=alreadychecked" );
+      $rusty->exit;
+      
+    }
+    
+    $query = <<ENDSQL
 UPDATE `user~profile~photo`
-SET deleted_date = NOW(),
-    resized_filename = NULL,
-    thumbnail_filename = NULL,
-    thumbnail_nocrop_filename = NULL,
-    tnnc_width = NULL, tnnc_height = NULL,
-    filename = CONCAT("del/",filename)
+SET checked_date = NOW(),
+    checked_by_user_id = ?,
+    adult = ?,
+    rejected = ?
 WHERE photo_id = ?
+  AND profile_id = ?
+  AND checked_date IS NULL
 LIMIT 1
 ENDSQL
 ;
-  $sth = $rusty->DBH->prepare_cached($query);
-  my $rows = $sth->execute($rusty->{params}->{photo_id});
-  $sth->finish;
-  
-  if (!$rows || $rows eq '0E0') {
+    $sth = $rusty->DBH->prepare_cached($query);
+    my $rows = $sth->execute($rusty->{core}->{user_id}, ($action eq 'mark_as_adult' ? 1 : 0), ($action eq 'reject' ? 1 : 0), $rusty->{params}->{photo_id}, $rusty->{params}->{profile_id});
+    $sth->finish;
+    
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=list&prev_action=delete"
-                                       . "&success=0&reason=badphotoid" );
+                                       . "?mode=list&prev_action=$action"
+                                       . "&success="
+                                       . ($rows eq '0E0' ? "0&reason=unknown" : "1") );
+    $rusty->exit;
+    
+  } elsif ($action eq 'undo_checking') {
+
+    $query = <<ENDSQL
+UPDATE `user~profile~photo`
+SET checked_date = NULL,
+    checked_by_user_id = ?,
+    adult = NULL,
+    rejected = NULL
+WHERE photo_id = ?
+  AND profile_id = ?
+  AND checked_date IS NOT NULL
+LIMIT 1
+ENDSQL
+;
+    $sth = $rusty->DBH->prepare_cached($query);
+    my $rows = $sth->execute($rusty->{core}->{user_id}, $rusty->{params}->{photo_id}, $rusty->{params}->{profile_id});
+    $sth->finish;
+    
+    print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
+                                       . "?mode=recently_approved&prev_action=$action"
+                                       . "&success="
+                                       . ($rows eq '0E0' ? "0&reason=unknown" : "1") );
     $rusty->exit;
     
   }
-  
-  # Call to get main photo will sort out which is
-  # the default photo now, even if there are no photos (will set it to NULL)
-  $rusty->getMainPhoto($rusty->{core}->{'profile_id'}); 
-  
+      
   print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                     . "?mode=list&prev_action=delete"
+                                     . "?mode=list&prev_action=$action"
                                      . "&success=1" );
   $rusty->exit;
   
