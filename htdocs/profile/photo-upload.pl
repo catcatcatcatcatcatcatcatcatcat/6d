@@ -438,7 +438,7 @@ VALUES ( ?, ?,
          ?, ?, ?,
          ?, ?, ?,
          ?, ?, ?,
-         ?, NOW(), )
+         ?, NOW() )
 ENDSQL
 ;
 $sth = $rusty->DBH->prepare_cached($query);
@@ -471,6 +471,7 @@ ENDSQL
 
 #
 require Email; #qw( send_email create_html_from_text );
+require URI::Escape; # 'uri_escape';
 
 # Send out email to a support dept.
 
@@ -484,35 +485,37 @@ my $textmessage = <<ENDMSG
   Profile Name: $rusty->{core}->{profile_name}
   Photo ID: $rusty->{data}->{photo_id}
   =============
-  
-  Caption: $rusty->{params}->{caption}
-  FileName: $photo->{original_filename}
-  Thumb: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_thumb_filename}
-  NoCrop: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_thumb_nocrop_filename}  
-  Resized: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_resized_filename}
-
-  APPROVE?  http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=approve\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
-  ADULT?    http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=mark_as_adult\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
-  REJECT?   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=reject\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_name}
 ENDMSG
 ;
-    
-    my $htmlmessage = Email::create_html_from_text($textmessage);
-    $htmlmessage .= << ENDHTML
-<img src="http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_resized_filename}" />
+$textmessage .= "\n  Caption:  " . $rusty->{params}->{caption}
+              . "\n  FileName: " . $photo->{original_filename}
+              . "\n  Thumb:    http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/"
+              . URI::Escape::uri_escape($photo->{local_thumb_filename})
+              . "\n  NoCrop:   http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/"
+              . URI::Escape::uri_escape($photo->{local_thumb_nocrop_filename})
+              . "\n  Resized: http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/"
+              . URI::Escape::uri_escape($photo->{local_resized_filename});
+$textmessage .= <<ENDMSG
+  
+  APPROVE?  http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=approve\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_id}
+  ADULT?    http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=mark_as_adult\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_id}
+  REJECT?   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl?mode=reject\&photo_id=$rusty->{data}->{photo_id}\&profile_id=$rusty->{core}->{profile_id}
+  See all photos requiring approval:   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl
+ENDMSG
+;
 
-See all photos requiring approval:   http://$rusty->{core}->{server_name}/admin/photo-approvals.pl
+my $htmlmessage = Email::create_html_from_text($textmessage);
+$htmlmessage .= <<ENDHTML
+<img src="http://$rusty->{core}->{server_name}/photos/$rusty->{core}->{profile_name}/$photo->{local_resized_filename}" />
 ENDHTML
 ;
     
-    Email::send_email( 'To'          => [ "support\@backpackingbuddies.com", ],
-                       'Reply-To'    => [ "$rusty->{core}->{profile_name} <$rusty->{core}->{email}>", ],
-                       'Subject'     => "Photo uploaded",
-                       'TextMessage' => $textmessage,
-                       'HtmlMessage' => $htmlmessage );
-    
+Email::send_email( 'To'          => [ "support\@backpackingbuddies.com", ],
+                   'Reply-To'    => [ "$rusty->{core}->{profile_name} <$rusty->{core}->{email}>", ],
+                   'Subject'     => "Photo uploaded",
+                   'TextMessage' => $textmessage,
+                   'HtmlMessage' => $htmlmessage );
 
-require URI::Escape; # 'uri_escape';
 
 print $rusty->redirect( -url => $rusty->CGI->url(-relative=>1)
                                    . "?uploaded="
