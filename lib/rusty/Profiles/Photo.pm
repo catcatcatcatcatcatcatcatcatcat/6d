@@ -396,16 +396,53 @@ sub getAllPhotosPendingApproval($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-SELECT photo_id,
-       filename, resized_filename, thumbnail_filename, original_filename,
-       kilobytes, width, height,
-       thumbnail_nocrop_filename, tnnc_width, tnnc_height,
-       caption,
-  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(uploaded_date)) AS elapsed_time_since_upload
-FROM `user~profile~photo`
-WHERE checked_date IS NULL
-  AND deleted_date IS NULL
-ORDER BY uploaded_date ASC
+SELECT upp.photo_id, upp.profile_id, up.profile_name,
+       upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
+       upp.kilobytes, upp.width, upp.height,
+       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
+       upp.caption,
+  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.uploaded_date)) AS elapsed_time_since_upload
+FROM `user~profile~photo` upp
+INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
+WHERE upp.checked_date IS NULL
+  AND upp.deleted_date IS NULL
+ORDER BY upp.uploaded_date ASC
+LIMIT 100
+ENDSQL
+;
+
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute();
+  my @photos = ();
+  while (my $photo_info = $sth->fetchrow_hashref) {
+    push @photos, $photo_info;
+  }
+  $sth->finish;
+  
+  return @photos ? \@photos : undef;
+}
+
+
+
+
+sub getRecentlyApprovedPhotos($) {
+  
+  my $self = shift;
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT upp.photo_id, upp.profile_id, up.profile_name,
+       upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
+       upp.kilobytes, upp.width, upp.height,
+       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
+       upp.caption,
+  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check
+FROM `user~profile~photo` upp
+INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
+WHERE upp.checked_date IS NOT NULL
+  AND upp.deleted_date IS NULL
+ORDER BY upp.checked_date DESC
 LIMIT 100
 ENDSQL
 ;
