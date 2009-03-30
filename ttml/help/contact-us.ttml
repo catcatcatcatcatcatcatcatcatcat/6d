@@ -21,7 +21,23 @@ and get help right now.</p>
      You will receive a response within the next 24 hours.</p>
   [% INCLUDE includes/footer.ttml %]
   [% RETURN %]
+[% ELSIF errors && errors.size > 0 %]
+<p class="err">[% errors.size %] small
+  problem[% IF errors.size && errors.size > 1 %]s[% END %]
+  occurred while processing this request:
+</p>
+<ul class="err">
+  [% FOREACH field = errors.keys %]
+  <li>[% errors.$field.title %] &nbsp; 
+    <span style="font-weight:normal">[% errors.$field.error %]</span>
+  </li>
+  [% END %]
+</ul>
+<br />
+[% ELSIF msg %]
+<p class="success">[% msg %]</p>
 [% ELSIF error %]
+[%# TODO: remove these errors and just use the above param_errors stuff %]
   <p class="err">The following problems occurred.  Please fix them and try again:<br />
   [% IF error == "noemail" %]
     Please enter an email address.
@@ -37,6 +53,8 @@ and get help right now.</p>
     Please enter a description.
   [% ELSIF error == "hackedform" %]
     Please don't try to hack the form. You git!
+  [% ELSIF error == "nopassphrase" %]
+    Please enter a passphrase.
   [% END %]
   </p>
 [% END %]
@@ -99,6 +117,24 @@ and get help right now.</p>
       <textarea rows="10" cols="40" style="width:300px" name="description">[% description %]</textarea>
     </td>
   </tr>
+[% UNLESS core.user_id %]
+  <tr>
+    <td colspan="2">
+      <input name="passphrase_id" value="[% passphrase_id %]" type="hidden" />
+      <img alt="passphrase" src="/passphrase.pl?[% passphrase_id %]" height="100" width="600" /></td>
+  </tr>
+  <tr>
+    <td colspan="2" style="font-size: 0.7em; color: #666; margin-top:0; ">
+      <p style="margin-top:0; line-height:1.0em; ">
+      The passphrase above should be a pronounceable combination of two very common, everyday words.<br />
+      If you cannot read it, please give it your best try and you will be given a new passphrase to try if you get it wrong.</p>
+    </td>
+  </tr>
+  <tr>
+    <td class="[% IF errors.passphrase %]input-error[% ELSE %]input[% END %]">Passphrase</td>
+    <td><input name="passphrase" maxlength="10" type="text" class="text" /></td>
+  </tr>
+[% END %]
   <tr>
     <td colspan="2">
       <input type="submit" name="submitted" value="Go!" />
