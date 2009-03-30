@@ -52,7 +52,7 @@ ENDSQL
   # the message_id of the so-called 'existing' draft was
   # invalid, then save a new copy.
   $query = <<ENDSQL
-INSERT INTO `user~profile~message`
+INSERT DELAYED INTO `user~profile~message`
        (sender_profile_id, draft_recipient_profile_name,
         is_draft, subject, body, reply_id, forward_id,
         sender_read_flag, sent_date)
@@ -172,7 +172,7 @@ sub sendMessage(@) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~message`
+INSERT DELAYED INTO `user~profile~message`
        (is_draft, sent_date, sender_profile_id, recipient_profile_id,
        subject, body)
 VALUES (0, NOW(), ?, ?, ?, ?)

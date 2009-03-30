@@ -238,7 +238,7 @@ sub requestFriendLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~friend_link`
+INSERT DELAYED INTO `user~profile~friend_link`
        (requester_profile_id, requestee_profile_id, requested_date, status)
 VALUES (?, ?, NOW(), 'unread')
 ENDSQL
@@ -331,7 +331,7 @@ sub addReciprocalFriendLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~friend_link`
+INSERT DELAYED INTO `user~profile~friend_link`
        (requester_profile_id, requestee_profile_id, decided_date, status)
 VALUES (?, ?, NOW(), 'reciprocal')
 ENDSQL
@@ -503,7 +503,7 @@ sub createFaveLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~fave_link`
+INSERT DELAYED INTO `user~profile~fave_link`
        (profile_id, fave_profile_id, added_date)
 VALUES (?, ?, NOW())
 ENDSQL
@@ -620,7 +620,7 @@ sub addBlockLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~block_link`
+INSERT DELAYED INTO `user~profile~block_link`
        (blocker_profile_id, blockee_profile_id, blocked_date)
 VALUES (?, ?, NOW())
 ENDSQL
@@ -736,7 +736,7 @@ sub createProfileNote($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~note`
+INSERT DELAYED INTO `user~profile~note`
        (profile_id, noted_profile_id, note, added_date)
 VALUES (?, ?, ?, NOW())
 ON DUPLICATE KEY

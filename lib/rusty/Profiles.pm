@@ -326,7 +326,7 @@ ENDSQL
     # entry and update both the viewer user's unique visited count
     # and the visted profile's unique visit count.
     $query = <<ENDSQL
-INSERT INTO `user~profile~visit`
+INSERT DELAYED INTO `user~profile~visit`
 (profile_id, visitor_profile_id, time) VALUES
 (?, ?, NOW())
 ENDSQL

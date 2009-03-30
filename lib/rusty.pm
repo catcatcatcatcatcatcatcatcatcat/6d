@@ -925,7 +925,7 @@ sub get_utf8_params {
       
       my $dbh = $self->DBH;
       my $query = <<ENDSQL
-INSERT INTO `site~stats~benchmarks`
+INSERT DELAYED INTO `site~stats~benchmarks`
 SET num_benchmarks = 1,
     total_time = ?,
     date = CURRENT_DATE(),
