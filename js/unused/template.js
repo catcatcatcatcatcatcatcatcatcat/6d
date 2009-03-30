@@ -84,11 +84,11 @@ function emulateBlink() {
   for(x = 0; x < objs.length; x++) {
     if(objs[x].getAttribute("blink") == "blink") {
       if(objs[x].style.visibility == "hidden") {
-	objs[x].style.visibility = "visible";
+        objs[x].style.visibility = "visible";
       } 
    
       else {
-	objs[x].style.visibility = "hidden";
+        objs[x].style.visibility = "hidden";
       }
     }
   }

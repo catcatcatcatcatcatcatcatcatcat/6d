@@ -401,7 +401,7 @@ SELECT upp.photo_id, upp.profile_id, up.profile_name,
        upp.kilobytes, upp.width, upp.height,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
-  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.uploaded_date)) AS elapsed_time_since_upload
+             SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.uploaded_date)) AS elapsed_time_since_upload
 FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NULL
@@ -437,7 +437,7 @@ SELECT upp.photo_id, upp.profile_id, up.profile_name,
        upp.kilobytes, upp.width, upp.height,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
-  	   SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check
+             SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check
 FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NOT NULL

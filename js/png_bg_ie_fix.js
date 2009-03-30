@@ -35,11 +35,11 @@ function fnPropertyChanged() {
 
 
 function fnFixPng(obj) {
-	var bg	= obj.currentStyle.backgroundImage;
-	var src = bg.substring(5,bg.length-2);
-	obj.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" +
+        var bg        = obj.currentStyle.backgroundImage;
+        var src = bg.substring(5,bg.length-2);
+        obj.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" +
                            src + "', sizingMethod='scale')";
-	obj.style.backgroundImage = "url(/images/thumbnail-shadow/x.gif)";
+        obj.style.backgroundImage = "url(/images/thumbnail-shadow/x.gif)";
 }
 
 

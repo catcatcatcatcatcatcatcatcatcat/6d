@@ -31,7 +31,7 @@ sub email_support();
 $rusty->{ttml} = "help/contact-us.ttml";
 
 $dept_options = $rusty->{data}->{dept_options} = { 'support' => 'Technical Support',
-						   'suggestions' => 'Suggestions' };
+                                                   'suggestions' => 'Suggestions' };
 
 $email = $rusty->{data}->{email} = lc($rusty->{params}->{email});
 $confirmemail = $rusty->{data}->{confirmemail} = lc($rusty->{params}->{confirmemail});
@@ -94,7 +94,7 @@ if ($rusty->{params}->{'error'}) {
     #                                   . "?error=nodescription" );
     #$rusty->exit;
   } elsif ($dept =~ /[^a-z\._]+/i &&
-	   grep /^$dept$/, keys %$dept_options) {
+           grep /^$dept$/, keys %$dept_options) {
     $rusty->{data}->{'error'} = "hackedform";
     #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
     #                                   . "?error=hackedform" );
@@ -123,7 +123,7 @@ ENDSQL
       warn "Passphrase id '$rusty->{params}->{passphrase_id}' expired.";
       
       $rusty->{param_errors}->{passphrase}->{error} =
-	'previous passphrase has expired - please enter the new passphrase';
+        'previous passphrase has expired - please enter the new passphrase';
       $rusty->{param_errors}->{passphrase}->{title} =
         $rusty->{param_info}->{passphrase}->{title};
       $num_param_errors++;
@@ -139,10 +139,10 @@ ENDSQL
       if ($rusty->{params}->{passphrase} ne $passphrase) {
         
         # Only if the form has no other errors, then check the passphrase.
-	# If the passphrase does not match then generate a new passphrase.
-	$passphrase_success_field = 'passphrase_miss';
-	
-	# Was this passphrase attempt a near miss?  Or just plain rubbish?
+        # If the passphrase does not match then generate a new passphrase.
+        $passphrase_success_field = 'passphrase_miss';
+        
+        # Was this passphrase attempt a near miss?  Or just plain rubbish?
         for (my $i=0; $i<=length($passphrase)-3; $i++) {
           my $chunk = substr($passphrase, $i, 3);
           if ($rusty->{params}->{passphrase} =~ /\Q$chunk\E/) {

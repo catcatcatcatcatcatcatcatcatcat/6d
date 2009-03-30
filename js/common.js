@@ -46,7 +46,7 @@ function getNewWindowLinks() {
         //link.appendChild(objWarningText);
         link.title = link.title + strNewWindowAlert;
         //link.onclick = openInNewWindow;
-	link.target = "_blank";
+        link.target = "_blank";
       }
 
     }

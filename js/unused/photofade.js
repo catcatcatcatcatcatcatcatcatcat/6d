@@ -48,7 +48,7 @@ function runSlideShow2(){
     
   if (document.all){
       document.images.SlideShow2.style.filter="progid:DXImageTransform.Microsoft.AlphaImageLoader"
-		+ "(src='" + preLoad2[j2].src + "', sizingMethod='scale')\n";
+                + "(src='" + preLoad2[j2].src + "', sizingMethod='scale')\n";
       /*document.images.SlideShow2.style.filter += " blendTrans(duration=crossFadeDuration)"
       document.images.SlideShow2.filters.blendTrans.Apply()*/
   }
@@ -58,7 +58,7 @@ function runSlideShow2(){
       //document.images.SlideShow2.filters.blendTrans.Play()
   }
   else {
-  	document.images.SlideShow2.src = preLoad2[j2].src
+          document.images.SlideShow2.src = preLoad2[j2].src
   }
   j2 = j2 + 1
   if (j2 > (num_pics2-1)) j2=0

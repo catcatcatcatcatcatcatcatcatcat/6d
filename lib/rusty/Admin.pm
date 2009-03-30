@@ -35,7 +35,7 @@ sub new() {
   if ($self->{core}->{'user_id'}) {
     $self->{core}->{'admin_level'} = $self->getAdminLevelFromUserId($self->{core}->{'user_id'});
     if ($self->{core}->{'admin_privileges'}) {
-	  die "UserID '$self->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
+          die "UserID '$self->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
     }
   } else {
     print $self->redirect( -url => '/login.pl' );

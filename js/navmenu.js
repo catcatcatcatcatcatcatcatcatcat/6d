@@ -18,18 +18,18 @@ function show(id) {
         var looped_menu = looped_menu_href.parentNode
         // Hide submenu that might be open for non-js users (emi/esmi)
         if (looped_menu.className.match(/Selected/)) {
-	  var looped_submenu_items = looped_menu.getElementsByTagName("li");
+          var looped_submenu_items = looped_menu.getElementsByTagName("li");
           for (j = 0; j < looped_submenu_items.length; ++j) {
             if (looped_submenu_items[j].className.match(/Selected/)) {
               looped_submenu_items[j].className = null;
               break;
             }
           }
-  	  looped_menu.className =
-	    looped_menu.className.replace(/ ?Selected/,'');
-  	  looped_menu.getElementsByTagName("ul").item(0).className =
-	    looped_menu.getElementsByTagName("ul").item(0).className.replace(/ ?Selected/,'');
-	  break;
+            looped_menu.className =
+            looped_menu.className.replace(/ ?Selected/,'');
+            looped_menu.getElementsByTagName("ul").item(0).className =
+            looped_menu.getElementsByTagName("ul").item(0).className.replace(/ ?Selected/,'');
+          break;
         }
       } else {
         break;

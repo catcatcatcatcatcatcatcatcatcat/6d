@@ -679,6 +679,7 @@ sub get_utf8_params {
       $data->{oldcore} = $data->{core};
       warn '$data->{core} should not be allowed! renamed to $data->{oldcore}';
     }
+    
     # Take our core values and add them to the data under 'core'.
     # 'core' values are things set up by default and constant to every
     # script (put into 'core' so as not to let individual scripts clobber
