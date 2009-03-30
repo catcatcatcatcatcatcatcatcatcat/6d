@@ -388,7 +388,6 @@ ENDSQL
   
   # First, let's catch out the smart-ass monster-truckers..
   unless ($rusty->ensure_post()) {
-    $rusty->{data} = $rusty->{params};
     $rusty->{data}->{not_posted} = 1;
     get_signup_select_options();
     $rusty->process_template();
@@ -550,7 +549,7 @@ ENDSQL
   } elsif ($num_param_errors == 0) {
     
     my $passphrase_success_field = 'passphrase_hit';
-    warn "arse";
+    
     if ($rusty->{params}->{passphrase} ne $passphrase) {
       
       # Only if the form has no other errors, then check the passphrase.
@@ -583,7 +582,7 @@ ENDSQL
     
     # Build query to log successful passphrase hits as well as misses in stats db.
     $query = <<ENDSQL
-INSERT INTO `site~stats`
+INSERT DELAYED INTO `site~stats`
 SET $passphrase_success_field = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE $passphrase_success_field = $passphrase_success_field + 1
@@ -735,7 +734,7 @@ ENDEMAIL
     
     # Update site stats for number of signups per day
     $query = <<ENDSQL
-INSERT INTO `site~stats`
+INSERT DELAYED INTO `site~stats`
 SET signups = 1,
 date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE signups = signups + 1
