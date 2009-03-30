@@ -277,7 +277,7 @@ ENDSQL
       # a pretty number! Whoop de jour.
       
       $query = <<ENDSQL
-INSERT INTO `site~stats`
+INSERT DELAYED INTO `site~stats`
 SET nocookies = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY
@@ -360,7 +360,7 @@ ENDSQL
     
     # Update site stats for number of logins per day
     $query = <<ENDSQL
-INSERT INTO `site~stats`
+INSERT DELAYED INTO `site~stats`
 SET logins = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE logins = logins + 1
