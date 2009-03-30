@@ -14,7 +14,9 @@ require Email; #qw( send_email create_html_from_text );
 
 use rusty::Profiles;
 
-our $rusty = rusty::Profiles->new;
+use vars qw($rusty $query $sth);
+
+$rusty = rusty::Profiles->new;
 
 use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref $dept_options $passphrase );
 
@@ -126,7 +128,7 @@ ENDSQL
         $rusty->{param_info}->{passphrase}->{title};
       $num_param_errors++;
       
-      $rusty->{params}->{passphrase_id} = generate_passphrase();
+      $rusty->{data}->{passphrase_id} = generate_passphrase();
       
       $rusty->{params}->{passphrase} = '';
       
@@ -161,7 +163,7 @@ ENDSQL
         $rusty->{params}->{passphrase} = '';
         
         # Generate new password for this session
-        generate_passphrase($rusty->{params}->{passphrase_id});
+        $rusty->{data}->{passphrase_id} = generate_passphrase($rusty->{params}->{passphrase_id});
       }
       
       # Build query to log successful passphrase hits as well as misses in stats db.
@@ -176,7 +178,8 @@ ENDSQL
       $sth->execute();
       $sth->finish;
     }
-    
+  }
+  
   if ($num_param_errors > 0) {
     
     # If errors in form, print signup form with errors flagged.
@@ -204,9 +207,11 @@ ENDSQL
   }
   
 } else {
-  
-  if ($rusty->{core}->{user_id} > 0) {
-    my $query = <<ENDSQL
+
+  # Only generate captcha if not signed in (should have aleady passed captcha by this point!)
+  # We are only doing this to stop bots who are not lovely users
+  if ($rusty->{core}->{user_id} == 0) {
+    $query = <<ENDSQL
 SELECT u.email, ui.real_name
 FROM `user` u
 INNER JOIN `user~info` ui ON ui.user_id = u.user_id
@@ -214,7 +219,7 @@ WHERE u.user_id = ?
 LIMIT 1
 ENDSQL
 ;
-    my $sth = $rusty->DBH->prepare_cached($query);
+    $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{core}->{user_id});
     ($rusty->{core}->{user_info}->{email}, $rusty->{core}->{user_info}->{real_name}) = $sth->fetchrow_array;
     $sth->finish;
