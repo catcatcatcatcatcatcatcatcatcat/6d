@@ -2,12 +2,13 @@
 <!-- START photo album -->
 
 [% UNLESS photo_album_mode == "admin" ||
+          photo_album_mode == "owner" ||
           photo_album_mode == "user" ||
           photo_album_mode == "guest" %]
   [% IF core.user_id;
-        photo_admin_mode == "user";
+        photo_album_mode == "user";
      ELSE;
-        photo_admin_mode == "guest";
+        photo_album_mode == "guest";
      END %]
 [% END %]
 
@@ -127,7 +128,7 @@
         </a>
       </p>
     </div>
-  [% ELSIF photo_album_mode == "admin" %]
+  [% ELSIF photo_album_mode == "owner" %]
     <div class="thumbnail-info-container"
          style="float:left">
     [% IF photo_id != main_photo_id %]
@@ -168,10 +169,8 @@
       </div>
     [% END %]
       <div class="thumbnail-extra-info">
-        <p style="text-align:right; padding-right:4px;">
+        <p style="text-align:right; padding-right:4px;  max-width:115px">
           [% caption %]</p>
-        <p style="text-align:right; padding-right:4px; font-size:0.9em; font-style:italic">
-          </p>
         [% IF photo_info.photo_id && photo_info.checked_date %]
         <p style="text-align:right; padding-right:4px; font-style:italic">
           Checked: [% photo_info.checked_date %]</p>
@@ -185,7 +184,7 @@
           <a class="thumbnail-status" title="Pending Approval..">P?</a></li>
           [% END %]
         <li class="opt">
-          <a title="Enlarge to full size" href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% core.profile_id %]&amp;a=1"
+          <a title="Enlarge to full size" href="photo-display.pl?photo_id=[% photo_id %]&amp;profile_id=[% core.profile_id %]&amp;mode=owner"
           ><img src="/images/icons/photo/enlarge_photo.gif" alt="Enlarge to full size" /></a></li>
         <li class="opt">
           <a title="Edit caption" href="photo-admin.pl?mode=editcaption&amp;photo_id=[% photo_id %]"
@@ -193,6 +192,54 @@
         <li class="opt2">
           <a title="Delete Photo" href="photo-admin.pl?mode=delete&amp;photo_id=[% photo_id %]"
           ><img src="/images/icons/photo/delete_photo.gif" alt="Delete Photo" /></a></li>
+      </ul>
+    </div>
+  [% ELSIF photo_album_mode == "admin" %]
+    [% photo_link = "/photos/${photo_info.profile_name}/${photo_info.thumbnail_filename}" %]
+    [% caption = photo_info.caption FILTER truncate(14) FILTER html_entity %]
+    <div class="thumbnail-info-container"
+         style="float:left">
+      <div class="thumbnail-container">
+        <div class="thumbnail-shadow"
+             style="background-image:url('/images/thumbnail-shadow/[% photo_info.tnnc_width %]/pink_rectangle_blurred_RGBA_[% photo_info.tnnc_width %]x[% photo_info.tnnc_height %].png');
+                    width:[% photo_info.tnnc_width %]px;
+                    height:[% photo_info.tnnc_height %]px;
+                    position:absolute;
+                    top:50%; margin-top:-[% (photo_info.tnnc_height+15) / 2 %]px;
+                    left:50%; margin-left:-[% (photo_info.tnnc_width+15) / 2 %]px;
+                    z-index:1; ">
+          <a href="/profile/photo-display.pl?photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]&mode=admin"
+             class="thumbnail-shadow"
+             title="[% full_caption %] :: Time since [% IF photo_info.elapsed_time_since_upload %]
+upload:[% photo_info.elapsed_time_since_upload %][% ELSE %]check:[% photo_info.elapsed_time_since_check %][% END %]">
+            <img src="[% photo_link %]"
+                 style="width:[% photo_info.tnnc_width %]px;
+                        height:[% photo_info.tnnc_height %]px;
+                        position:relative; z-index:10; "
+                 alt="[% full_caption %]" />
+          </a>
+        </div>
+      </div>
+      <div class="thumbnail-extra-info" style="display:block; padding-bottom:5px">
+        <p style="text-align:right; padding-right:4px; max-width:115px">
+          [% caption %]</p>
+      </div>
+      <ul class="opt" style="float:right; clear:none;">
+    [% IF photo_info.elapsed_time_since_upload %]
+        <li class="opt">
+          <a title="Approve photo" href="photo-approvals.pl?mode=approve&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
+          ><img src="/images/icons/photo/approve_photo.gif" alt="Approve photo" /></a></li>
+        <li class="opt">
+          <a title="Mark photo as Adult" href="photo-approvals.pl?mode=mark_as_adult&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
+          ><img src="/images/icons/photo/mark_photo_as_adult.gif" alt="Mark photo as Adult" /></a></li>
+        <li class="opt2">
+          <a title="Reject Photo" href="photo-approvals.pl?mode=reject&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
+          ><img src="/images/icons/photo/reject_photo.gif" alt="Reject Photo" /></a></li>
+    [% ELSE %]
+        <li class="opt2">
+          <a title="Undo photo checking" href="photo-approvals.pl?mode=undo_checking&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
+          ><img src="/images/icons/photo/undo_photo_checking.gif" alt="Undo photo checking" /></a></li>
+    [% END %]
       </ul>
     </div>
   [% END %]

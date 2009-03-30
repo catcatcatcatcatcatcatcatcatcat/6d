@@ -11,8 +11,11 @@ IF search_id;
   breadcrumbs.push("<a href=\"/profile/search.pl?mode=results&amp;search_id=$search_id&amp;rejoin_search=1\">Results</a>");
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=${photo.profile_name}&amp;search_id=$search_id\">$profile_title</a>");
   breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=${photo.profile_id}&amp;search_id=$search_id\">Photos</a>");
-ELSIF adminmode;
+ELSIF mode == 'owner';
   breadcrumbs.push("<a href=\"/profile/photo-admin.pl\">Manage Photos</a>");
+ELSIF mode == 'admin';
+  breadcrumbs.push("<a href=\"/admin/\">Admin</a>");
+  breadcrumbs.push("<a href=\"/admin/photo-approvals.pl\">Photo Approval</a>");
 ELSE;
   breadcrumbs.push("<a href=\"/profile/view.pl?profile_name=$photo.profile_name\">$profile_title</a>");
   breadcrumbs.push("<a href=\"/profile/photo-album.pl?profile_id=$photo.profile_id\">Photos</a>");
@@ -28,7 +31,7 @@ breadcrumbs.push("$title");
 [% END %]
 
 [% real_photo_link = "/photos/${photo.profile_name}/${photo.resized_filename}" %]
-[% IF adminmode;
+[% IF mode == 'owner' || mode == 'admin';
   photo_link = real_photo_link;
 ELSIF photo.photo_id && photo.adult && !adult_pass;
   photo_link = "/photos/adult.png";
