@@ -727,10 +727,31 @@ ENDEMAIL
     
     my $htmlmessage = Email::create_html_from_text($textmessage);
     
-    Email::send_email( To => [ "$rusty->{params}->{real_name} <$rusty->{params}->{email}>", ],
-                       Subject => 'Activate your account',
-                       TextMessage => $textmessage,
-                       HtmlMessage => $htmlmessage );
+    Email::send_email( 'To'          => [ "$rusty->{params}->{real_name} <$rusty->{params}->{email}>", ],
+                       'Reply-To'    => [ "$rusty->{params}->{real_name} ($rusty->{params}->{profile_name}) <$rusty->{core}->{email}>", ],
+                       'Subject'     => 'Activate your account',
+                       'TextMessage' => $textmessage,
+                       'HtmlMessage' => $htmlmessage );
+    
+    my $current_time = localtime();
+    $textmessage = <<ENDMSG
+  =============
+  Date:         $current_time
+  User ID:      $user_id
+  Email:        $rusty->{params}->{email}
+  Profile Name: $rusty->{params}->{profile_name}
+  Real Name:    $rusty->{params}->{real_name}
+  =============
+ENDMSG
+;
+    
+    $htmlmessage = Email::create_html_from_text($textmessage);
+    
+    Email::send_email( 'To'          => [ "support\@backpackingbuddies.com", ],
+                       'Reply-To'    => [ "$rusty->{params}->{real_name} ($rusty->{params}->{profile_name}) <$rusty->{params}->{email}>", ],
+                       'Subject'     => "New user signup",
+                       'TextMessage' => $textmessage,
+                       'HtmlMessage' => $htmlmessage );
     
     # Update site stats for number of signups per day
     $query = <<ENDSQL
