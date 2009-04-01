@@ -649,7 +649,7 @@ ENDSQL
   
   # If only one ID, no need to do an 'IN' and can cache query..
   if (@desired_msg_ids == 1) {
-    $query .= "WHERE upm.message_id = $desired_msg_ids[0]\n";
+    $query .= "WHERE upm.message_id = ?\n";
     $sth = $dbh->prepare_cached($query);
     $sth->execute($desired_msg_ids[0]);
   } else {
