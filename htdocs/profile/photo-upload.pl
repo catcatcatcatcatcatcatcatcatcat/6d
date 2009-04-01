@@ -469,7 +469,6 @@ ENDSQL
   $sth->finish;
 }
 
-#
 require Email; #qw( send_email create_html_from_text );
 require URI::Escape; # 'uri_escape';
 
@@ -479,11 +478,11 @@ my $current_time = localtime();
 
 my $textmessage = <<ENDMSG
   =============
-  Date: $current_time
-  User ID: $rusty->{core}->{user_id}
-  Email: $rusty->{core}->{email}
+  Date:         $current_time
+  User ID:      $rusty->{core}->{user_id}
+  Email:        $rusty->{core}->{email}
   Profile Name: $rusty->{core}->{profile_name}
-  Photo ID: $rusty->{data}->{photo_id}
+  Photo ID:     $rusty->{data}->{photo_id}
   =============
 ENDMSG
 ;

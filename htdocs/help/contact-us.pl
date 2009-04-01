@@ -290,9 +290,9 @@ sub email_support() {
   my $current_time = localtime();
   
   my $textmessage = <<ENDMSG
-Date: $current_time
-Name: $name
-Email: $email
+Date:         $current_time
+Name:         $name
+Email:        $email
 Phone Number: $phone
 
 ENDMSG
