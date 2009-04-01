@@ -18,7 +18,7 @@ use vars qw($rusty $query $sth);
 
 $rusty = rusty::Profiles->new;
 
-use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref $dept_options $passphrase );
+use vars qw ( $email $confirmemail $name $phone $dept $problem $subject $description $ref $dept_options );
 
 
 # Subroutine prototypes
@@ -31,7 +31,7 @@ sub email_support();
 $rusty->{ttml} = "help/contact-us.ttml";
 
 $dept_options = $rusty->{data}->{dept_options} = { 'support' => 'Technical Support',
-                                                   'suggestions' => 'Suggestions' };
+                                                   'suggestions' => 'Suggestion4s' };
 
 $email = $rusty->{data}->{email} = lc($rusty->{params}->{email});
 $confirmemail = $rusty->{data}->{confirmemail} = lc($rusty->{params}->{confirmemail});
@@ -41,7 +41,7 @@ $dept = $rusty->{data}->{dept} = $rusty->{params}->{dept};
 $problem = $rusty->{data}->{problem} = $rusty->{params}->{problem};
 $subject = $rusty->{data}->{subject} = $rusty->{params}->{subject};
 $description = $rusty->{data}->{description} = $rusty->{params}->{description};
-$passphrase = $rusty->{data}->{passphrase} = lc($rusty->{params}->{passphrase});
+$rusty->{data}->{passphrase_id} = $rusty->{params}->{passphrase_id};
 
 $ref = $rusty->{core}->{'ref'} = $rusty->{params}->{'ref'};
 
@@ -65,45 +65,25 @@ if ($rusty->{params}->{'error'}) {
   
   if (!$email) {
     $rusty->{data}->{'error'} = "noemail";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=noemail" );
-    #$rusty->exit;
   } elsif ($email ne $confirmemail) {
     $rusty->{data}->{'error'} = "emailmismatch";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=emailmismatch" );
-    #$rusty->exit;
   } elsif (!$dept) {
     $rusty->{data}->{'error'} = "noproblemtype";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=noproblemtype" );
-    #$rusty->exit;
   } elsif (!$problem) {
     $rusty->{data}->{'error'} = "noproblem";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=noproblem" );
-    #$rusty->exit;
   } elsif (!$subject) {
     $rusty->{data}->{'error'} = "nosubject";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=nosubject" );
-    #$rusty->exit;
   } elsif (!$description) {
     $rusty->{data}->{'error'} = "nodescription";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=nodescription" );
-    #$rusty->exit;
   } elsif ($dept =~ /[^a-z\._]+/i &&
            grep /^$dept$/, keys %$dept_options) {
     $rusty->{data}->{'error'} = "hackedform";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=hackedform" );
-    #$rusty->exit;
-  } elsif (!$passphrase) {
-    $rusty->{data}->{'error'} = "nopassphrase";
-    #print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-    #                                   . "?error=nopassphrase" );
-    #$rusty->exit;
+  } elsif (!$rusty->{params}->{passphrase}) {
+    $rusty->{param_errors}->{passphrase}->{error} =
+      'passphrase needs to be filled in';
+    $rusty->{param_errors}->{passphrase}->{title} =
+      $rusty->{param_info}->{passphrase}->{title};
+    $num_param_errors++;
   } else {
     
     # Verify that the passphrase matches
@@ -129,8 +109,6 @@ ENDSQL
       $num_param_errors++;
       
       $rusty->{data}->{passphrase_id} = generate_passphrase();
-      
-      $rusty->{params}->{passphrase} = '';
       
     } elsif ($num_param_errors == 0) {
       
@@ -160,8 +138,6 @@ ENDSQL
           $rusty->{param_info}->{passphrase}->{title};
         $num_param_errors++;
         
-        $rusty->{params}->{passphrase} = '';
-        
         # Generate new password for this session
         $rusty->{data}->{passphrase_id} = generate_passphrase($rusty->{params}->{passphrase_id});
       }
@@ -180,7 +156,7 @@ ENDSQL
     }
   }
   
-  if ($num_param_errors > 0) {
+  if ($rusty->{data}->{'error'} || $num_param_errors > 0) {
     
     # If errors in form, print signup form with errors flagged.
     $rusty->{data}->{errors} = $rusty->{param_errors};
