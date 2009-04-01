@@ -242,7 +242,7 @@ of [% message_cache_count %].</h3>
                alt="Draft message" />
           [% END %]
           <a href="/profile/message.pl?mode=[% IF tray == "drafts" %]editdraft[% ELSE %]read[% END %]&amp;tray=[% tray %]&amp;message_id=[% message.message_id %]"
-             title="[% message.body FILTER truncate(200) FILTER html_entity %]">[% IF message.subject.length > 0 %][% message.subject FILTER truncate(50) FILTER html_entity %][% ELSE %]<em>(no subject)</em>[% END %]</a></td>
+             title="[% message.body FILTER truncate(200) FILTER html_entity %]">[% IF message.subject && message.subject.length > 0 %][% message.subject FILTER truncate(50) FILTER html_entity %][% ELSE %]<em>(no subject)</em>[% END %]</a></td>
       <td>[% IF tray == "drafts" %][% message.draft_recipient_profile_name %][% ELSE %]<a href="/[% message.profile_name %]">[% message.profile_name %]</a>[% END %]</td>
     </tr>
     [% END %]
