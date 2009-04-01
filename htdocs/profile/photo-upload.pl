@@ -481,6 +481,7 @@ my $textmessage = <<ENDMSG
   Date:         $current_time
   User ID:      $rusty->{core}->{user_id}
   Email:        $rusty->{core}->{email}
+  Real Name:    $rusty->{core}->{user_info}->{real_name}
   Profile Name: $rusty->{core}->{profile_name}
   Photo ID:     $rusty->{data}->{photo_id}
   =============
@@ -510,7 +511,7 @@ ENDHTML
 ;
     
 Email::send_email( 'To'          => [ "support\@backpackingbuddies.com", ],
-                   'Reply-To'    => [ "$rusty->{core}->{profile_name} <$rusty->{core}->{email}>", ],
+                   'Reply-To'    => [ "$rusty->{core}->{user_info}->{real_name} ($rusty->{core}->{profile_name}) <$rusty->{core}->{email}>", ],
                    'Subject'     => "Photo uploaded",
                    'TextMessage' => $textmessage,
                    'HtmlMessage' => $htmlmessage );
