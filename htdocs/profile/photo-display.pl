@@ -117,7 +117,7 @@ ENDSQL
     $rusty->{data}->{photo}->{total_visit_count}++;
     
   }
-  
+  $rusty->{data}->{warn} = $rusty->{params}->{warn};
   $rusty->process_template;
 }
 

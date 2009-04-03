@@ -54,9 +54,10 @@ if ($rusty->{core}->{'user_id'}) {
         $rusty->exit;
       }
     }
-    print $rusty->redirect( -url => "/profile/display-photo.pl?ph="
-                                . $main_photo->{photo_id} . "&pr="
-                                . $rusty->{data}->{'profile_id'} );
+    print $rusty->redirect( -url => "/profile/photo-display.pl?photo_id="
+                                . $main_photo->{photo_id} . "&profile_id=" . $rusty->{data}->{'profile_id'}
+                                . ($rusty->{params}->{search_id} ? "&search_id=$rusty->{params}->{search_id}" : "")
+                                . '&warn=This%20is%20the%20only%20photo%20in%20the%20album' );
     $rusty->exit;
   }
   

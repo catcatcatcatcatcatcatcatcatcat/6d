@@ -29,6 +29,9 @@ breadcrumbs.push("$title");
   [% INCLUDE includes/footer.ttml %]
   [% RETURN %]
 [% END %]
+[% IF warn %]
+  <p class="err">[% warn %]</p>
+[% END %]
 
 [% real_photo_link = "/photos/${photo.profile_name}/${photo.resized_filename}" %]
 [% IF mode == 'owner' || mode == 'admin';
