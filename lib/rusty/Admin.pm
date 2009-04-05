@@ -34,11 +34,15 @@ sub new() {
   
   if ($self->{core}->{'user_id'}) {
     $self->{core}->{'admin_level'} = $self->getAdminLevelFromUserId($self->{core}->{'user_id'});
-    if ($self->{core}->{'admin_privileges'}) {
-          die "UserID '$self->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
+    if (!$self->{core}->{'admin_level'}) {
+      warn "UserID '$self->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
+      print $self->redirect( -url => "/" );
+      exit;
     }
   } else {
-    print $self->redirect( -url => '/login.pl' );
+    require URI::Escape;
+    print $self->redirect( -url => "/login.pl?ref="
+                                  . URI::Escape::uri_escape($self->{core}->{'self_url'}) );
     exit;
   }
   
