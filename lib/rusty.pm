@@ -447,6 +447,11 @@ sub benchmark() { return $_[0]->{benchmark}; }
                            { 'RaiseError' => 0, 'PrintError' => 1,
                              'mysql_enable_utf8' => 1 } )) {
         
+        # This is a hack to get UTF-8 to work for us - it was working with
+        # the mysql_enable_utf8 flag above but then suddenly stopped working
+        # This seems to get around that!  Shame we have to though.. Not anymore!
+        #$_dbh->do("SET NAMES utf8");
+        
         # Set up some info about our database (SQL_DBMS_VER)
         $DATABASE_VERSION = $1 if $_dbh->get_info(18) =~ /([\d\.]+)/; 
         
