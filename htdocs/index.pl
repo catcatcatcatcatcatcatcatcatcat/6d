@@ -42,7 +42,8 @@ $rusty->{data}->{countries} = [
     table => "lookup~continent~country",
     id    => "country_code",
     data  => "name",
-                                  ),
+    order => "name",
+                                 ),
                               ];
 
 # Truncate long country names
