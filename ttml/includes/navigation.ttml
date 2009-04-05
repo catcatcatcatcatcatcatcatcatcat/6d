@@ -75,25 +75,6 @@
   </form>
   [% END %]
   
-<!--
-  <form id="Search" action="/multisearch.bml" method="post">
-  <fieldset>
-    <label for="SearchTerm">Search:</label>
-    <input id="SearchTerm" type="text" name="q" size="15" value="" />
-    <label for="SearchType">Category:</label>
-    <select id="SearchType" name="type">
-      <option value="nav_and_user" selected="selected">Site &amp; Username</option>
-      <option value="nav">Site</option>
-      <option value="user">Username</option>
-      <option value="email">E-mail</option>
-      <option value="region">Region</option>
-      <option value="int">Interest</option>
-    </select>
-    <input type="submit" value="Search" />
-  </fieldset>
-  </form>
--->
-  
   <h2 id="NavMenuListTitle">Menu:</h2>
   
   <ul id="NavMenuList">
@@ -234,11 +215,9 @@
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/help/forgotten-login-details.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                >Lost Username or Password</a></li>
-        [% IF (core.env == 'testing') || (core.env == 'local') %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
-           ><a href="#/help/sitemap.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
+           ><a href="/help/sitemap.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                ><span style="text-decoration: line-through; ">Site Map</span></a></li>
-        [% END %]
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/help/contact-us.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                >Contact&nbsp;Us</a></li>
@@ -246,7 +225,7 @@
   </ul>
   
   <ul id="FooterNav">
-    <li><a href="#/help/sitemap.pl">Site Map</a></li>
+    <li><a href="/help/sitemap.pl">Site Map</a></li>
     <li><a href="#/help/stylechange.pl?ref=[% FILTER html %][% IF core.ref %][% core.ref_escaped %][% ELSE %][% core.self_url_escaped %][% END %][% END %]"
            onclick="change_theme(); return false; "
            >I Don't Like This Colour!</a></li>
