@@ -114,7 +114,16 @@ ENDSQL
   }
   
   # Assuming the login info was alright at this point;
-  # First check that the user isn't already logged on.
+  
+  # Send admins to the admin page for fun and games
+  require rusty::Admin;
+  my $admin_level = $rusty->rusty::Admin::getAdminLevelFromUserId($user_id);
+  require Data::Dumper;
+  if ($admin_level) {
+    $ref = '/admin/photo-approvals.pl';
+  }
+  
+  # Now check that the user isn't already logged on.
   # Note: There can be more than one valid session left
   # awaiting cleanup (if user logs in and out repeatedly
   # within half an hour), so we only pick the latest one!
@@ -399,7 +408,7 @@ ENDSQL
       
       $ref = "/profile/account.pl?welcome=1&ref=" . URI::Escape::uri_escape($rusty->{params}->{ref});
       
-    } elsif ($ref) {
+    } elsif ($ref && $ref ne '/') {
       
       require URI;
       require URI::QueryParam;
@@ -411,7 +420,7 @@ ENDSQL
       
       $ref = '/?login=1';
     }
-
+    
     
     print $rusty->redirect( -url => $ref,
                             -cookie => [ $test_cookie_delete,
