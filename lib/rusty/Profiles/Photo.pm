@@ -38,6 +38,8 @@ ENDSQL
 }
 
 
+# This returns the number of photos uploaded and visible to the owner
+# (pending review, approved and adult) that count towards an upload limit
 sub getPhotoCount($) {
   
   my $self = shift;
@@ -51,6 +53,7 @@ SELECT COUNT(*)
 FROM `user~profile~photo` photo
 WHERE photo.profile_id = ?
   AND deleted_date IS NULL
+  AND rejected != 1
 GROUP BY profile_id
 ENDSQL
 ;
@@ -64,6 +67,8 @@ ENDSQL
 }
 
 
+# Returns number of checked and approved photos (adult and normal)
+# which is the number visible to the outside user and visitor
 sub getCheckedPhotoCount($) {
   
   my $self = shift;
@@ -78,6 +83,7 @@ FROM `user~profile~photo` photo
 WHERE photo.profile_id = ?
   AND checked_date IS NOT NULL
   AND deleted_date IS NULL
+  AND rejected != 1
 GROUP BY profile_id
 ENDSQL
 ;
@@ -91,7 +97,7 @@ ENDSQL
 }
 
 
-# checks if this profile has adult photos in it
+# Checks if this profile has adult photos in it
 sub hasAdultPics($) {
 
   my $self = shift;
@@ -106,6 +112,7 @@ FROM `user~profile~photo`
 WHERE profile_id = ?
   AND adult = 1
   AND deleted_date IS NULL
+  AND rejected != 1
 GROUP BY profile_id
 ENDSQL
 ;
@@ -178,6 +185,7 @@ FROM `user~profile~photo` upp
 LEFT JOIN `user~profile` up ON up.main_photo_id = upp.photo_id
 WHERE upp.profile_id = ?
   AND upp.deleted_date IS NULL
+  AND upp.rejected != 1
 ORDER BY up.main_photo_id DESC, upp.uploaded_date ASC
 LIMIT 1
 ENDSQL
@@ -264,24 +272,10 @@ SELECT photo_id,
 FROM `user~profile~photo`
 WHERE profile_id = ?
   AND deleted_date IS NULL
+  AND rejected != 1
 ORDER BY uploaded_date ASC
 ENDSQL
 ;
-#SELECT up.profile_name,
-#       upp.photo_id,
-#       upp.filename, upp.resized_filename, upp.thumbnail_filename, upp.original_filename,
-#       upp.kilobytes, upp.width, upp.height,
-#       upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
-#       upp.caption,
-#       DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
-#       DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
-#       upp.adult, upp.total_visit_count
-#FROM `user~profile~photo` upp
-#LEFT JOIN `user~profile` up ON up.main_photo_id = upp.photo_id
-#WHERE upp.profile_id = ?
-#  AND upp.deleted_date IS NULL
-#ORDER BY upp.uploaded_date ASC
-
   my $sth = $dbh->prepare_cached($query);
   $sth->execute($profile_id);
   my @photos = ();
@@ -314,7 +308,7 @@ SELECT photo_id,
        caption,
        DATE_FORMAT(uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
        DATE_FORMAT(checked_date, '%d/%m/%y %H:%i') AS checked_date,
-       adult, deleted_date, total_visit_count
+       adult, rejected, checked_by_user_id, deleted_date, total_visit_count
 FROM `user~profile~photo`
 WHERE photo_id = ?
 LIMIT 1
@@ -406,6 +400,7 @@ FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NULL
   AND upp.deleted_date IS NULL
+  AND upp.rejected != 1
 ORDER BY upp.uploaded_date ASC
 LIMIT 100
 ENDSQL
@@ -442,6 +437,7 @@ FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NOT NULL
   AND upp.deleted_date IS NULL
+  AND upp.rejected != 1
 ORDER BY upp.checked_date DESC
 LIMIT 100
 ENDSQL

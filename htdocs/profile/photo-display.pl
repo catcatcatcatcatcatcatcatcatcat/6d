@@ -57,6 +57,7 @@ FROM `user~profile~photo` upp
 LEFT JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.photo_id = ?
   AND upp.deleted_date IS NULL
+  AND rejected != 1
 LIMIT 1
 ENDSQL
 ;
