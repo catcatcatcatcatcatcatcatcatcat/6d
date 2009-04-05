@@ -1,0 +1,44 @@
+[% IF popup == 1; SET core.no_nav_links = 1; END %]
+[% title = 'Sitemap' %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('<a href="/help.pl">Help</a>') %]
+[% breadcrumbs.push("$title") %]
+
+<h1>Sitemap</h1>
+
+<p>For now, this is just to help bots find the pages that you would otherwise need forms
+to get to.  For a non-logged-in user, this is currently just profiles.  Most non-profile
+things are a click or two away from the front page and everything else is a click or two
+away from a profile page.  This map just contains some bits you have to use more than
+clicks to get to</p>
+
+<dl>
+  <dt>All Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=any&sexuality=any&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Profiles</a></dd>
+  <dt>All Male Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=male&sexuality=any&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Male Profiles</a></dd>
+  <dt>All Female Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=female&sexuality=any&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Female Profiles</a></dd>
+  <dt>Single Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=any&sexuality=any&age_min=any&age_max=any&relationship_status_id=1&profile_name=&profile_name_search=partial">All Single Profiles</a></dd>
+  <dt>Single Male Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=male&sexuality=any&age_min=any&age_max=any&relationship_status_id=1&profile_name=&profile_name_search=partial">All Single Male Profiles</a></dd>
+  <dt>Single Female Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=female&sexuality=any&age_min=any&age_max=any&relationship_status_id=1&profile_name=&profile_name_search=partial">All Single Female Profiles</a></dd>
+  <dt>Young Single Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=any&sexuality=any&age_min=any&age_max=25&relationship_status_id=1&profile_name=&profile_name_search=partial">All Young Single Profiles</a></dd>
+  <dt>Young Male Single Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=male&sexuality=any&age_min=any&age_max=25&relationship_status_id=1&profile_name=&profile_name_search=partial">All Young Male Single Profiles</a></dd>
+  <dt>Young Female Single Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=female&sexuality=any&age_min=any&age_max=25&relationship_status_id=1&profile_name=&profile_name_search=partial">All Young Female Single Profiles</a></dd>
+  <dt>Gay Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=any&sexuality=gay%2Flesbian&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Gay Profiles</a></dd>
+  <dt>Gay Male Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=male&sexuality=gay%2Flesbian&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Gay Male Profiles</a></dd>
+  <dt>Gay Female Backpackers</dt>
+    <dd><a href="/profile/search.pl?mode=search&country_code=any&gender=female&sexuality=gay%2Flesbian&age_min=any&age_max=any&relationship_status_id=any&profile_name=&profile_name_search=partial">All Gay Female Profiles</a></dd>
+  <dt></dt>
+    <dd></dd>
+</dl>
+
+[% INCLUDE includes/footer.ttml %]
