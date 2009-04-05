@@ -209,7 +209,7 @@ $rusty->incrementVisitCount($profile->{'profile_id'}) unless $profile->{own_prof
 
 # Sort out main profile photo and caption
 $profile->{'main_photo'} = $rusty->getMainPhoto($profile->{'profile_id'});
-$profile->{'photo_count'} = $rusty->getPhotoCount($profile->{'profile_id'});
+$profile->{'photo_count'} = $rusty->getCheckedPhotoCount($profile->{'profile_id'});
 
 #$profile->{website} = lc($profile->{website});
 $profile->{website} =~ s@^(?!(:ht|f)tps?://)@@o;
