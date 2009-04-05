@@ -57,6 +57,7 @@ while (my ($subentity_code, $subentity_name, $latitude, $longitude,
   $gmt_offset =~ s/\.0$//o; $gmt_offset =~ s/^(?!-)/\+/;
   $dst_offset =~ s/\.0$//o; $dst_offset =~ s/^(?!-)/\+/;
   $elevation ||= 'unknown';
+  utf8::decode($subentity_name);
   $output_text .= $subentity_code.'|'.HTML::Entities::encode_entities($subentity_name).'|'.$latitude.'|'.$longitude.'|'
                  .$population.'|'.$elevation.'|'.$timezone.'|'."GMT${gmt_offset}/DST${dst_offset}".'|'
                  .$latitude_formatted.'|'.$longitude_formatted.'||';

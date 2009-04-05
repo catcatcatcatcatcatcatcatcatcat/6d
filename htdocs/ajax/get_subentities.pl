@@ -32,6 +32,7 @@ $sth->execute($params->{country_code});
 my $output_text = "";
 use HTML::Entities 'encode_entities';
 while (my ($subentity_code, $subentity_name) = $sth->fetchrow_array) {
+  utf8::decode($subentity_name);
   $output_text .= $subentity_code.'|'.HTML::Entities::encode_entities($subentity_name).'||';
 }
 
