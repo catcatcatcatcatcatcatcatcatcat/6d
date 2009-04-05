@@ -211,7 +211,7 @@
           <a href="/profile/photo-display.pl?photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]&mode=admin"
              class="thumbnail-shadow"
              title="[% full_caption %] :: Time since [% IF photo_info.elapsed_time_since_upload %]
-upload:[% photo_info.elapsed_time_since_upload %][% ELSE %]check:[% photo_info.elapsed_time_since_check %][% END %]">
+upload:[% photo_info.elapsed_time_since_upload %][% ELSE %]check:[% photo_info.elapsed_time_since_check %] (took [% photo_info.time_waited_for_check %])[% END %]">
             <img src="[% photo_link %]"
                  style="width:[% photo_info.tnnc_width %]px;
                         height:[% photo_info.tnnc_height %]px;
@@ -236,6 +236,20 @@ upload:[% photo_info.elapsed_time_since_upload %][% ELSE %]check:[% photo_info.e
           <a title="Reject Photo" href="photo-approvals.pl?mode=reject&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
           ><img src="/images/icons/photo/reject_photo.gif" alt="Reject Photo" /></a></li>
     [% ELSE %]
+      [% IF photo_info.deleted_date %]
+        <li class="opt">
+          <img src="/images/icons/photo/delete_photo.gif" alt="Deleted by user since check" /></li>
+      [% END %]
+      [% IF photo_info.rejected == 1 %]
+        <li class="opt">
+          <img src="/images/icons/photo/reject_photo.gif" alt="Rejected" /></li>
+      [% ELSIF photo_info.adult == 1 %]
+        <li class="opt">
+          <img src="/images/icons/photo/mark_photo_as_adult.gif" alt="Marked as Adult" /></li>
+      [% ELSE %]
+        <li class="opt">
+          <img src="/images/icons/photo/approve_photo.gif" alt="Approved" /></li>
+      [% END %]
         <li class="opt2">
           <a title="Undo photo checking" href="photo-approvals.pl?mode=undo_checking&amp;photo_id=[% photo_id %]&profile_id=[% photo_info.profile_id %]"
           ><img src="/images/icons/photo/undo_photo_checking.gif" alt="Undo photo checking" /></a></li>

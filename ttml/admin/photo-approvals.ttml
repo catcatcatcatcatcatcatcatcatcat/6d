@@ -5,10 +5,10 @@
 
 
 <h1>Photo Approval</h1>
-[% IF mode == "recently_approved" %]
-<h2 style="display: inline; ">Recently approved..</h2><a href="[% self_uri %]?mode=list">See to be approved</a>
+[% IF mode == "recently_checked" %]
+<h2 style="display: inline; ">Recently checked..</h2><a href="[% self_uri %]?mode=list">See to be approved</a>
 [% ELSE %]
-<h2 style="display: inline; ">To be approved..</h2><a href="[% self_uri %]?mode=recently_approved">See recently approved</a>
+<h2 style="display: inline; ">To be approved..</h2><a href="[% self_uri %]?mode=recently_checked">See recently checked</a>
 [% END %]
 
 
@@ -38,11 +38,13 @@
 
 <p style="clear:both;margin-bottom:32px">
 [% IF photos && photos.size > 0 %]
+  [% IF mode != "recently_checked" %]
 There are [% photos.size %] photos to approve.  Get going!
+  [% END %]
 [% SET photo_album_mode = "admin";
    INCLUDE "profile/includes/photos-block.ttml" %]
 [% ELSE %]
-There are no photos to approve!
+There are no photos to play with!
 [% END %]
 </p>
 

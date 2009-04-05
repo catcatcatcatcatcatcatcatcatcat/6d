@@ -381,7 +381,7 @@ sub profile_thumbnail($) {
 
 
 
-# The following function is mainly used for administrative purposes..
+# The following function is only used for administrative purposes..
 # so use with caution! :P
 sub getAllPhotosPendingApproval($) {
   
@@ -400,7 +400,6 @@ FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NULL
   AND upp.deleted_date IS NULL
-  AND upp.rejected != 1
 ORDER BY upp.uploaded_date ASC
 LIMIT 100
 ENDSQL
@@ -419,8 +418,8 @@ ENDSQL
 
 
 
-
-sub getRecentlyApprovedPhotos($) {
+# Only for admin use!  Will return rejected photos which would be VERY bad to display
+sub getRecentlyCheckedPhotos($) {
   
   my $self = shift;
   
@@ -432,12 +431,13 @@ SELECT upp.photo_id, upp.profile_id, up.profile_name,
        upp.kilobytes, upp.width, upp.height,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
-             SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check
+             SEC_TO_TIME(UNIX_TIMESTAMP(upp.checked_date) - UNIX_TIMESTAMP(upp.uploaded_date)) AS time_waited_for_check,
+             SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check,
+       upp.adult, upp.rejected
 FROM `user~profile~photo` upp
 INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NOT NULL
   AND upp.deleted_date IS NULL
-  AND upp.rejected != 1
 ORDER BY upp.checked_date DESC
 LIMIT 100
 ENDSQL
@@ -453,7 +453,6 @@ ENDSQL
   
   return @photos ? \@photos : undef;
 }
-
 
 
 

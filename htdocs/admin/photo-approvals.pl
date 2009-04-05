@@ -20,7 +20,7 @@ $_ = ($rusty->{data}->{mode} = $rusty->{params}->{mode});
 SWITCH:
 {
   &processphotos($_), last SWITCH if /^(?:approve|reject|mark_as_adult|undo_checking)$/;
-  &list, last SWITCH if /^(?:list|recently_approved)$/;
+  &list, last SWITCH if /^(?:list|recently_checked)$/;
   
   # Default behaviour: list
   $rusty->{data}->{errors}->{mode} = "mode $_ is not defined" if $_;
@@ -33,8 +33,8 @@ sub list {
   
   $rusty->{ttml} = "admin/photo-approvals.ttml";
   
-  if ($rusty->{params}->{mode} eq 'recently_approved') {
-    $rusty->{data}->{photos} = $rusty->getRecentlyApprovedPhotos();
+  if ($rusty->{params}->{mode} eq 'recently_checked') {
+    $rusty->{data}->{photos} = $rusty->getRecentlyCheckedPhotos();
   } else {
     $rusty->{data}->{photos} = $rusty->getAllPhotosPendingApproval();
   }
@@ -149,7 +149,7 @@ ENDSQL
     $sth->finish;
     
     print $rusty->redirect( -url => $rusty->CGI->url( -relative => 1 )
-                                       . "?mode=recently_approved&prev_action=$action"
+                                       . "?mode=recently_checked&prev_action=$action"
                                        . "&success="
                                        . ($rows eq '0E0' ? "0&reason=unknown" : "1") );
     $rusty->exit;

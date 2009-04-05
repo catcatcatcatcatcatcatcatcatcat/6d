@@ -102,5 +102,18 @@ sub getAllPhotosPendingApproval($) {
 
 
 
+sub getRecentlyCheckedPhotos($) {
+  
+  # Returns all photos that have just been checked by an admin..
+  
+  my $self = shift;
+  
+  return unless $self->{core}->{'admin_level'}->{photo_approval};
+  
+  return $self->SUPER::getRecentlyCheckedPhotos();
+}
+
+
+
 
 1;
