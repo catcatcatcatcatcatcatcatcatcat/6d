@@ -39,6 +39,6 @@ $sth->finish;
 
 chop($output_text);
 chop($output_text);
-print "Content-type: text/plain\n\n";
+print "Content-type: text/plain; charset=UTF-8\n\n";
 print $output_text;
 
