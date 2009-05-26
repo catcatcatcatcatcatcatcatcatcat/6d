@@ -142,8 +142,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
     $rusty->get_lookup_hash(
       table => "lookup~relationship_status",
       id    => "relationship_status_id",
-      data  => "name",
-      where => "relationship_status_id != 1" );
+      data  => "name" );
   
   $query = <<ENDSQL
 SELECT up.profile_id
