@@ -1,0 +1,21 @@
+{"search_age_in_mins":"[%
+  search_age_in_mins %]","search_string":"[%
+  search_string %]","num_results":"[%
+  num_results %]","offset":"[%
+  offset %]","prev_page_offset":"[%
+  prev_page_offset %]","next_page_offset":"[%
+  next_page_offset %]","first_results_page":"[%
+  first_results_page %]","last_results_page":"[%
+  last_results_page %]","num_profiles_returned":"[%
+  num_profiles_returned %]","num_results_per_page":"[%
+  num_results_per_page %]","results_pages":"[%
+  FILTER replace('"', '\\"'); FILTER replace('\'', '\\\''); FILTER replace('\s+', ' ') %]
+[% # TODO: add backlash escaping (do via JSON::encode in future) %]
+  [% INCLUDE "profile/includes/search-results-pagelinks-block.ttml" %]
+[% END; END; END %]","profiles":"[%
+  FILTER replace('"', '\\"'); FILTER replace('\'', '\\\''); FILTER replace('\s+', ' ') %]
+[% # TODO: add backlash escaping (do via JSON::encode in future) %]
+  [% FOREACH p = profiles %]
+    [% INCLUDE "profile/includes/search-results-profile-block.ttml" %]
+  [% END %]
+[% END; END; END %]"}
