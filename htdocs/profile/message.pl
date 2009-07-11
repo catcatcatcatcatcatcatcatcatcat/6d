@@ -19,8 +19,7 @@ $rusty = rusty::Profiles->new;
 
 if (!$rusty->{core}->{'user_id'}) {
   require URI::Escape;
-  print $rusty->redirect( -url => "/login.pl?ref="
-                                     . URI::Escape::uri_escape($rusty->{core}->{'self_url'}) );
+  $rusty->redirectToLoginPage($rusty->{core}->{'self_url'});
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
   print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
