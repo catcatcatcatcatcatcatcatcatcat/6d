@@ -42,7 +42,7 @@ if ($passphrase_id eq "") {
 
 my $query = <<ENDSQL
 SELECT passphrase
-FROM `signup~passphrase`
+FROM `passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
