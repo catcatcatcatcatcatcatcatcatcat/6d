@@ -1,0 +1,112 @@
+[% title = 'Admin' %]
+[% IF core.ref %]
+  [% header_js = BLOCK %]
+function chooseAdmin() {
+  if(confirm("Continue to previous destination?\n  --> [% core.ref %]\n(Clicking 'Cancel' will keep you on this admin page)")) {
+    location.href='[% core.ref %]';
+  }
+}
+  [% END %]
+  [% SET onload = onload _ "chooseAdmin();" %]
+[% END %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push('Admin'); %]
+
+<ul>
+  <li><a href="/admin/photo-approvals.pl">Photo Approval</a></li>
+  <li><a href="/garbageman.pl">Garbageman</a></li>
+</ul>
+
+  <div style="width:150px; float:right; margin:0 0 10px 15px">
+    <table style="margin-top: 4px; background-color: #ddd; color: inherit; border: 0; width: 100%; " cellpadding="1" cellspacing="0">
+      <tr style="background-color: #ddd; color: inherit; ">
+        <td style="background-color: #ddd; color: inherit; "><b>&nbsp;<a href="#">Website Stats</a></b></td>
+      </tr>
+      <tr>
+        <td>
+          <table style="background-color: #fff; color: inherit; width: 100%; ">
+            <tr>
+              <td valign='top' align='right' style="padding: 0em 0.3em 0em 0.3em;">
+                <div class="smalltext" style="margin: 0.75em 0; ">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.signups.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>signups
+                </div>
+                <div class="smalltext" style="margin-top: 4px"><a href="#">Latest Profiles</a></div>
+                <div class="smalltext" style="margin: 0.75em 0; ">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.logins.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>logins
+                </div>
+                <div class="smalltext" style="margin: 0.75em 0; ">
+                    <table class='stats-meter'>
+                      <tr>
+                        [% SET commafied_number = site_stats.online.chunk(-3).join(',') %]
+                        [% SET loop_count = 9 %]
+                        [% WHILE loop_count > commafied_number.length %]
+                          [% loop_count = loop_count - 1 %]
+                          <td>&nbsp;</td>
+                        [% END %]
+                        [% FOREACH char = commafied_number.chunk(1) %]
+                          <td>[% char %]</td>
+                        [% END %]
+                      </tr>
+                    </table>online
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<table class="hovertable" style="border:1px solid #222; ">
+  <tr style="border:1px solid #CCC; background-color: #444; color: #FFF; "><th>date</th><th>hits</th><th>mean</th></tr>
+[% FOREACH stat = bydate.day %]
+  <tr style="border:1px solid #CCC; "><td>[% stat.date %]</td><td>[% stat.hits %]</td><td>[% stat.mean %]</td></tr>
+[% END %]
+</table>
+
+<table class="hovertable" style="border:1px solid #222; ">
+  <tr style="border:1px solid #CCC; background-color: #444; color: #FFF; "><th>request</th><th>hits</th><th>mean</th></tr>
+[% FOREACH stat = benchmarks.byrequest.speed %]
+  <tr style="border:1px solid #CCC; "><td>[% stat.request %]</td><td>[% stat.hits %]</td><td>[% stat.mean %]</td></tr>
+[% END %]
+</table>
+
+<table class="hovertable" style="border:1px solid #222; ">
+  <tr style="border:1px solid #CCC; background-color: #444; color: #FFF; "><th>request</th><th>hits</th><th>mean</th></tr>
+[% FOREACH stat = benchmarks.byrequest.popularity %]
+  <tr style="border:1px solid #CCC; "><td>[% stat.request %]</td><td>[% stat.hits %]</td><td>[% stat.mean %]</td></tr>
+[% END %]
+</table>
+
+<table class="hovertable" style="border:1px solid #222; ">
+  <tr style="border:1px solid #CCC; background-color: #444; color: #FFF; "><th>period</th><th>signups</th><th>logins</th><th>nocookies</th><th>warnings</th><th>deaths</th><th>pass</th><th>near</th><th>miss</th></tr>
+[% FOREACH stat = stats %]
+  <tr style="border:1px solid #CCC; "><td>[% stat.period %]</td><td>[% stat.signups %]</td><td>[% stat.logins %]</td><td>[% stat.nocookies %]</td><td>[% stat.warnings %]</td><td>[% stat.deaths %]</td><td>[% stat.passphrase_hit %]</td><td>[% stat.passphrase_near_miss %]</td><td>[% stat.passphrase_miss %]</td></tr>
+[% END %]
+</table>
+
+[% INCLUDE includes/footer.ttml %]
