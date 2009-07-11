@@ -1,0 +1,52 @@
+    [% caption = p.photo.caption FILTER html_entity %]
+    
+    [% IF (p.photo.photo_id && (p.photo.adult || !p.photo.checked_date) && !adult_pass)
+          || !p.photo.photo_id; # Quick and Nasty Kludge!
+       p.photo.tnnc_width = 100;
+       p.photo.tnnc_height = 100;
+       END %]
+    [% real_photo_link = "/photos/${p.profile_name}/${p.photo.thumbnail_nocrop_filename}" %]
+    [% IF p.photo.photo_id && p.photo.adult && !adult_pass;
+         photo_link = "/photos/adult.png";
+       ELSIF p.photo.photo_id && !p.photo.checked_date && !adult_pass;
+         photo_link = "/photos/pending.png";
+       ELSIF !p.photo.photo_id;
+         photo_link = "/photos/default.png";
+       ELSE;
+         photo_link = real_photo_link;
+      END %]
+  
+  <div class="thumbnail-info-container"
+       style="float:left">
+    <div class="thumbnail-container">
+      <div class="thumbnail-shadow"
+           style="background-image:url('/images/thumbnail-shadow/[% p.photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% p.photo.tnnc_width %]x[% p.photo.tnnc_height %].png');
+                  width:[% p.photo.tnnc_width %]px;
+                  height:[% p.photo.tnnc_height %]px;
+                  position:absolute;
+                  top: 50%; margin-top:-[% (p.photo.tnnc_height+15) / 2 %]px;
+                  left: 50%; margin-left:-[% (p.photo.tnnc_width+15) / 2 %]px;
+                  z-index:1; ">
+        <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1"
+           class="thumbnail-shadow"
+           title="[% caption %] :: Location: [% IF p.subentity %][% p.subentity %], [% END %][% p.country %]">
+          <img src="[% photo_link %]"
+               style="width:[% p.photo.tnnc_width %]px;
+                      height:[% p.photo.tnnc_height %]px;
+                      position:relative; z-index:10; "
+               alt="[% caption %]" />
+        </a>
+      </div>
+    </div>
+    <p>
+      <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1">[% p.profile_name %]</a>
+      [% IF p.adult %]<span style="color:red;font-weight:bold" title="This profile contains adult pictures"> [A!]</span>[% END %]
+    </p>
+    <p>
+      <span class="extra">
+        [% IF p.age %][% p.age %][% ELSE %] - [% END %],
+        [% p.gender.search('female') ? 'f' : 'm' %], 
+        [% p.sexuality.replace('bisexual/curious','bi/curious') %]
+      </span>
+    </p>
+  </div>
