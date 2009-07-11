@@ -28,7 +28,7 @@ $dbh = $rusty->DBH;
 # Delete all expired passphrase sessions (older than 30 mins)
 
 $query = <<ENDSQL
-DELETE FROM `signup~passphrase`
+DELETE FROM `passphrase`
 WHERE created < DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 ENDSQL
 ;
@@ -151,7 +151,7 @@ while (my $expired_session = $sth->fetchrow_hashref) {
   push @{$rusty->{data}->{messages}},
     "Updated user as "
   . "last online at ".$expired_session->{'updated'}." with "
-  . $expired_session->{'mins_online'}." more mins online &amp; "
+  . $expired_session->{'mins_online'}." more mins online and "
   . $expired_session->{'clicks'}." clicks, thanks to session '"
   . $expired_session->{'session_id'}."', which is now deleted.";
 }
@@ -175,6 +175,12 @@ if (($rows = $dbh->do($site_benchmarks_query)) ne '0E0') {
     "$rows site benchmarks stats' averages calculated.";
 }
 
+
+#use GTop ( ); 
+#print "Shared memory of the current process: ", 
+#    GTop->new->proc_mem($$)->share, "\n"; 
+#print "Total shared memory: ",
+#    GTop->new->mem->share, "\n"; 
 
 
 $rusty->{ttml} = "garbageman.ttml";
