@@ -169,9 +169,7 @@ addEvent(window, 'load', getNewWindowLinks);
 [% END %]
 
 [% IF core.timed_out %]
-  <p class="err">Your last session timed out due to inactivity.<br />
-  It will do this if you don't clicky for 30 mins.<br />
-  The moral of the story?  Get clicky clicky!</p>
+  <p class="err">You have been logged out due to inactivity.  Please log in again.<br />
 [% END %]
 
 <!-- Content -->
