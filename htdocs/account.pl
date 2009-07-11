@@ -523,7 +523,7 @@ ENDSQL
   
   $query = <<ENDSQL
 SELECT passphrase
-FROM `signup~passphrase`
+FROM `passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
@@ -607,7 +607,7 @@ ENDSQL
     # If the form was filled out correctly;
     # First, remove old passphrase session so it cannot be re-used.
     $query = <<ENDSQL
-DELETE FROM `signup~passphrase`
+DELETE FROM `passphrase`
 WHERE passphrase_id = ?
 ENDSQL
 ;
@@ -787,10 +787,9 @@ ENDSQL
                                            -value   => $session_id );
     
     require URI::Escape;
-    print $rusty->redirect( -url => "/login.pl?mode=signup_test"
-                                       . ($ref ? "&ref=" . URI::Escape::uri_escape($ref) : ''),
-                                 -cookie => $test_cookie );
-    
+    print $rusty->redirect( -url => '/login.pl?mode=signup_test'
+                                  . ($ref ? '&ref=' . URI::Escape::uri_escape($ref) : ''),
+                            -cookie => $test_cookie );
     $rusty->exit;
     
   }
@@ -813,7 +812,7 @@ sub generate_passphrase(@) {
     # If we were handed a passphrase id, we are
     # generating a new passphrase for this session
     $query = <<ENDSQL
-UPDATE `signup~passphrase`
+UPDATE `passphrase`
 SET passphrase = ?
 WHERE passphrase_id = ?
 ENDSQL
@@ -831,7 +830,7 @@ ENDSQL
     $phrase_id = $ENV{'UNIQUE_ID'};
     
     $query = <<ENDSQL
-INSERT INTO `signup~passphrase`
+INSERT INTO `passphrase`
 ( passphrase_id, passphrase )
 VALUES
 ( ?, ? )
