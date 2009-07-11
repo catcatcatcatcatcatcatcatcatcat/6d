@@ -1,6 +1,6 @@
 [% title = 'Photo Approval' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push('<a href="/admin/">Admin</a>'); %]
+[% breadcrumbs.push('<a href="/admin.pl">Admin</a>'); %]
 [% breadcrumbs.push("$title"); %]
 
 
