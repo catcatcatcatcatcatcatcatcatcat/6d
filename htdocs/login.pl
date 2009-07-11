@@ -116,11 +116,12 @@ ENDSQL
   # Assuming the login info was alright at this point;
   
   # Send admins to the admin page for fun and games
+  # but also note in case they asked to go elsewhere..
   require rusty::Admin;
   my $admin_level = $rusty->rusty::Admin::getAdminLevelFromUserId($user_id);
-  require Data::Dumper;
   if ($admin_level) {
-    $ref = '/admin/photo-approvals.pl';
+    use URI::Escape;
+    $ref = '/admin.pl?ref=' . URI::Escape::uri_escape($ref);
   }
   
   # Now check that the user isn't already logged on.
@@ -252,15 +253,11 @@ ENDSQL
   push @{$rusty->{cookies}}, $rusty->CGI->cookie( -name    => "test",
                                                   -value   => $session_id );
   
-  if ($ref) {
-    # On first call to login, escape the referrer's url..
-    require URI::Escape;
-    $ref = URI::Escape::uri_escape($ref);
-  }
   # Call self with test parameter and test cookie (plus remember me cookie, if set)
+  use URI::Escape;
   print $rusty->redirect( -url    => $rusty->CGI->url( -relative => 1 ) .
-                                          "?mode=test" .
-                                          ($ref ? "&ref=$ref" : ''),
+                                          '?mode=test' .
+                                          ($ref ? '&ref=' . URI::Escape::uri_escape($ref) : ''),
                           -cookie => $rusty->{cookies} );
   $rusty->exit;
   
@@ -428,10 +425,12 @@ ENDSQL
     $rusty->exit;
   }
   
+# First call to login page
 } else {
   
   # Make sure we do not redirect them back to this page..
   #undef $rusty->{core}->{'self_url'};
+  $rusty->{core}->{'timed_out'} = $rusty->{params}->{timed_out};
   
   # If called with a ref to a page, then let's make sure
   # we take them back there after logging in!
