@@ -167,7 +167,7 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
             %] (unread)[%
          ELSIF link.status == "read"
             %] (read/pending)[% END %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfriend&amp;friend_profile_id=[% link.profile_id %][% query_string_params | html %]"
+      <a href="/profile/friendsandblocks.pl?mode=delfriend&amp;friend_profile_id=[% link.profile_id %][% query_string_params FILTER html %]"
          title="delete friend [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_friend.gif"
                                                                  alt="delete friend [% link.profile_name %]" /></a>
     </li>
@@ -233,7 +233,7 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
          onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
          onmouseout="htm()"
       >[% link.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=delfave&amp;fave_profile_id=[% link.profile_id %][% query_string_params | html %]"
+      <a href="/profile/friendsandblocks.pl?mode=delfave&amp;fave_profile_id=[% link.profile_id %][% query_string_params FILTER html %]"
          title="delete favourite [% link.profile_name %]"><img src="/images/icons/friendsandblocks/delete_fave.gif"
                                                                  alt="delete favourite [% link.profile_name %]" /></a>
     </li>
@@ -296,7 +296,7 @@ friends, favourite profiles, blocked profiles and notes attached to profiles.</p
          onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
          onmouseout="htm()"
       >[% block.profile_name %]</a>
-      <a href="/profile/friendsandblocks.pl?mode=unblock&amp;block_profile_id=[% block.profile_id %][% query_string_params | html %]"
+      <a href="/profile/friendsandblocks.pl?mode=unblock&amp;block_profile_id=[% block.profile_id %][% query_string_params FILTER html %]"
          title="unblock [% block.profile_name %]"><img src="/images/icons/friendsandblocks/unblock.gif"
                                                                  alt="unblock [% link.profile_name %]" /></a>
     </li>
@@ -347,10 +347,10 @@ You can add/edit a profile note by clicking on &quot;Add Note&quot; on their pro
          onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
          onmouseout="htm()"
       >[% note.profile_name %]</a>
-      <a href="/profile/view.pl?profile_name=[% note.profile_name %]&amp;mode=editnote[% query_string_params | html %]"
+      <a href="/profile/view.pl?profile_name=[% note.profile_name %]&amp;mode=editnote[% query_string_params FILTER html %]"
          title="edit note for [% note.profile_name %]"><img src="/images/icons/friendsandblocks/add_note.gif"
                                                                  alt="Edit note for [% note.profile_name %]" /></a>
-      <a href="/profile/friendsandblocks.pl?mode=delnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params | html %]"
+      <a href="/profile/friendsandblocks.pl?mode=delnote&amp;noted_profile_id=[% note.profile_id %][% query_string_params FILTER html %]"
          title="delete note for [% note.profile_name %]"><img src="/images/icons/friendsandblocks/delete_note.gif"
                                                                  alt="Delete note for [% note.profile_name %]" /></a>
     </li>
