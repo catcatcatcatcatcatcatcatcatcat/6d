@@ -15,6 +15,8 @@
 [% ELSIF search_id_invalid %]
 <p class="err">Sorry, but you are trying to view a set of search results
                that is expired/invalid!  Please search again.</p>
+[% ELSIF search_id_missing %]
+<p class="err">We couldn't find your last search - sorry!  Please search again.</p>
 [% ELSIF errors && errors.size > 0 %]
 <p class="err">[% errors.size %] small
   problem[% IF errors.size && errors.size > 1 %]s[% END %]
@@ -31,7 +33,7 @@
 <hp class="success">[% msg %]</p>
 [% END %]
 
-<div style="float: left; border:1px solid #d6d3d6; margin: 0 0 16px 16px; padding: 16px">
+<div style="float: left; border:1px solid #d6d3d6; margin: 6px 16px 16px 16px; padding: 16px">
   
   <p style="margin-left:16px">Please select the criteria for your search below.</p>
   <form method="post" action="/profile/search.pl">
@@ -77,7 +79,7 @@
           [% ELSE %]
             <option value="any"[% IF !subentity_code || subentity_code == "any" %] selected="selected"[% END %]>Any</option>
             <option value="OTHER"[% IF subentity_code == "OTHER" %] selected="selected"[% END %]>Other (Not Listed)</option>
-            [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_code %] selected="selected"[% END %]>[% s.name FILTER html_entity %]</option>
+            [% FOREACH s = subentities %]<option value="[% s.value %]"[% IF s.value == subentity_code %] selected="selected"[% END %]>[% s.name %]</option>
             [% END %]
           [% END %]
         </select>
@@ -207,16 +209,7 @@
           <option value="end"[% IF profile_name_search == "end" %] selected="selected"[% END %]>Match at end</option>
         </select><br />
         <a href="/profile/search.pl?[% UNLESS advancedsearchtips %]advancedsearchtips=1[% ELSE %]advancedsearch=1[% END %][% IF repopulate %]&amp;repopulate=1[% END %]"
-           onclick="o = document.getElementById('advanced_search_tips');
-        t = document.getElementById('advanced_search_tips_switch');
-        if (o.style.display == 'inline') {
-          o.style.display = 'none';
-          t.innerHTML = 'Show';
-        } else {
-          o.style.display = 'inline';
-          t.innerHTML = 'Hide';
-        }
-        return false" style="font-size:0.8em"><span id="advanced_search_tips_switch">
+           onclick="toggle_advanced_search_tips(); return false" style="font-size:0.8em"><span id="advanced_search_tips_switch">
             [% IF advancedsearchtips %]Hide[% ELSE %]Show[% END %]</span>&nbsp;advanced search tips</a>
       </td>
     </tr>
@@ -232,12 +225,34 @@
     </tr>
     
     [% input_count = input_count + 1 %]
+    <tr id="input[% input_count %]" class="input" style="disabled">
+      <td><label for="onlyphotos">Only People<br />Online Now</label></td>
+      <td>
+        <input type="checkbox" class="checkbox" name="onlyonline" id="onlyonline" value="1"
+               onclick="choose([% input_count %]); /*checkify(this)*/"
+         [% IF onlyonline == 1 %]checked="checked" [% END %] />
+      </td>
+    </tr>
+    
+    [% input_count = input_count + 1 %]
     <tr id="input[% input_count %]" class="input">
       <td><label for="onlyadult">Only with<br />adult photos</label></td>
       <td>
         <input type="checkbox" class="checkbox" name="onlyadult" id="onlyadult" value="1"
                onclick="choose([% input_count %]); /*checkify(this)*/"
          [% IF onlyadult == 1 %]checked="checked" [% END %] />
+      </td>
+    </tr>
+    
+    [% input_count = input_count + 1 %]
+    <tr id="input[% input_count %]" class="input">
+      <td><label for="num_results_per_page">Results<br />per page</label></td>
+      <td>
+        <select name="num_results_per_page" id="num_results_per_page" style="width:4em"
+          onclick="choose([% input_count %])" onfocus="/*focusify(this)*/" onblur="/*blurify(this)*/">
+          [% FOREACH n = [8 12 16 20 25 50 75 100] %]<option value="[% n %]"[% IF n == num_results_per_page %] selected="selected"[% END %]>[% n %]</option>
+          [% END %]
+        </select>
       </td>
     </tr>
     
@@ -263,35 +278,41 @@
 
 </div>
 
-<div id="info_pane" style="float: left; ">
+<div id="info_pane" style="">
   <img id="country_flag_image" alt="Country Flag"
-       src="[% IF country_code && country_code != "any" %]/images/country_flags/[% country_code | lower %]_flag.gif[% ELSE %]/images/colourdots/trans.gif[% END %]" height="54" />
-  <div id="country_info_facts" style="border: 1px solid #666; ">
-    <h4>Country Facts: <span id="country_info_name">[% IF country_info %][% country_info.name %][% END %]</span></h4>
-    Capital: <span id="country_info_capital">[% IF country_info %][% country_info.capital %][% END %]</span><br />
-    Population: <span id="country_info_population">[% IF country_info %][% country_info.population %][% END %]</span><br />
-    Area: <span id="country_info_area">[% IF country_info %][% country_info.areaInSqKm %] km&sup2;[% END %]</span><br />
-    Currency: <span id="country_info_currency">[% IF country_info %][% country_info.currency %][% END %]</span><br />
-    Languages: <span id="country_info_languages">[% IF country_info %][% country_info.languages %][% END %]</span><br />
-    Latitude: <span id="country_info_latitude">[% IF country_info %][% country_info.latitude %][% END %]</span><br />
-    Longitide: <span id="country_info_longitude">[% IF country_info %][% country_info.longitude %][% END %]</span><br />
-  </div>
-  <div id="subentity_info_facts" style="border: 1px solid #666; ">
-    <h4>Subentity Facts: <span id="subentity_info_name">[% IF subentity_info %][% subentity_info.name %][% END %]</span></h4>
-    Population: <span id="subentity_info_population">[% IF subentity_info %][% subentity_info.population %][% END %]</span><br />
-    Elevation: <span id="subentity_info_elevation">[% IF subentity_info %][% subentity_info.elevation %][% END %]</span><br />
-    Timezone: <span id="subentity_info_timezone">[% IF subentity_info %][% subentity_info.timezone %][% END %]</span><br />
-    Offset: <span id="subentity_info_timezone_offset">[% IF subentity_info %][% subentity_info.timezone_offset %][% END %]</span><br />
-    Latitude: <span id="subentity_info_latitude">[% IF subentity_info %][% subentity_info.latitude %][% END %]</span><br />
-    Longitide: <span id="subentity_info_longitude">[% IF subentity_info %][% subentity_info.longitude %][% END %]</span><br />
-  </div>
+       src="[% IF country_code && country_code != "any" %]/images/country_flags/[% country_code FILTER lower %]_flag.gif[% ELSE %]/images/colourdots/trans.gif[% END %]" height="54" />
+<!--  <div id="country_info_facts" style="border: 1px solid #666; "> -->
+  <span id="country_info_facts"[% UNLESS country_info %] style="display: none; "[% END %]>
+    <h3>All about <em><strong><span id="country_info_name">[% IF country_info %][% country_info.name %][% ELSE %]the country[% END %]</span></strong></em>:</h3>
+    <span id="country_info_population">[% IF country_info %][% country_info.population %][% END %]</span> people live in
+    <span id="country_info_area">[% IF country_info %][% country_info.areaInSqKm.chunk(-3).join(',') %] km&sup2;[% END %]</span> of land
+    speaking <span id="country_info_languages">[% IF country_info %][% country_info.languages %][% END %]</span>
+    and spending <span id="country_info_currency">[% IF country_info %][% country_info.currency %][% END %]</span>.&nbsp;
+    The capital is <span id="country_info_capital">[% IF country_info %][% country_info.capital %][% END %]</span> and the
+    latitude is <span id="country_info_latitude">[% IF country_info %][% country_info.latitude %][% END %]</span> and the
+    longitide is <span id="country_info_longitude">[% IF country_info %][% country_info.longitude %][% END %]</span>
+     - in case that sort of thing interested you. :)<br />
+<!--  </div> -->
+  </span>
+<!--  <div id="subentity_info_facts" style="border: 1px solid #666; display: none; "> -->
+  <span id="subentity_info_facts"[% UNLESS subentity_info %] style="display: none; "[% END %]>
+    <h3>Facts about <em><strong><span id="subentity_info_name">[% IF subentity_info %][% subentity_info.name %][% ELSE %]the area[% END %]</span></strong></em>:</h3>
+    <span id="subentity_info_population">[% IF subentity_info %][% subentity_info.population.chunk(-3).join(',') %][% END %]</span> of the population live here, <span id="subentity_info_elevation">[% IF subentity_info %][% subentity_info.elevation.chunk(-3).join(',') %][% END %]</span>m above ground.&nbsp;
+    Clocks are set to: <span id="subentity_info_timezone">[% IF subentity_info %][% subentity_info.timezone %][% END %]</span> (<span id="subentity_info_timezone_offset">[% IF subentity_info %][% subentity_info.timezone_offset %][% END %]</span>) and the precise
+    lat/long is <span id="subentity_info_latitude">[% IF subentity_info %][% subentity_info.latitude FILTER format('%.3f') %][% END %]</span> / <span id="subentity_info_longitude">[% IF subentity_info %][% subentity_info.longitude FILTER format('%.3f') %][% END %]</span> and I know you're interested in this.<br />
+<!--  </div> -->
+  </span>
   <div id="map_canvas" style="width: 500px; height: 500px; clear: left; "></div>
 </div>
 
 <div id="advanced_search_tips"
-     style="font-size:0.8em; line-height:1.0em; color:#999[% UNLESS advancedsearchtips %]; display:none[% END %]">
-  <strong>Advanced search tips:</strong><br />
-  <ol style="margin:0;padding:0">
+     style="font-size:0.8em; padding: 10px; line-height:1.0em; color:#666[% UNLESS advancedsearchtips %]; display:none[% END %];
+            background-color: #FCFCFC; border: 2px solid #AAE; position: absolute; top: 20%; left: 20%; width: 70%; z-index: 999; ">
+  <span style="font-color: orange; text-decoration: underline; font-weight: bold"><a
+    href="/profile/search.pl?[% UNLESS advancedsearchtips %]advancedsearchtips=1[% ELSE %]advancedsearch=1[% END %][% IF repopulate %]&amp;repopulate=1[% END %]"
+    onclick="toggle_advanced_search_tips(); return false; ">Click here to close</a></span>
+  <h4>Advanced search tips:</h4><br />
+  <ol>
     <li>An asterisk (*) will match any number of letters (0, 1 or many)
         (eg. 'b*ms' matches 'bottoms' &amp; 'bums'
         and 'ha*m' matches 'ham', 'harm' &amp; 'harlem')</li>
@@ -325,6 +346,9 @@
         I have not slept for 24 hours so I'm sorry if any of it's not clear.&nbsp;
         Nothing is very clear at the moment..&nbsp; Mmmm coffee..</li>
   </ol>
+  <span style="font-color: orange; text-decoration: underline; font-weight: bold"><a
+    href="/profile/search.pl?[% UNLESS advancedsearchtips %]advancedsearchtips=1[% ELSE %]advancedsearch=1[% END %][% IF repopulate %]&amp;repopulate=1[% END %]"
+    onclick="toggle_advanced_search_tips(); return false; ">Click here to close</a></span>
 </div>
 
 
@@ -400,6 +424,19 @@ if (google_maps_enabled)
 <script src="/js/xmlhttp.js" type="text/javascript"></script>
 <script type="text/javascript">
 //<!--
+
+  function toggle_advanced_search_tips() {
+    o = document.getElementById('advanced_search_tips');
+    t = document.getElementById('advanced_search_tips_switch');
+    if (o.style.display == 'inline') {
+      o.style.display = 'none';
+      t.innerHTML = 'Show';
+    } else {
+      o.style.display = 'inline';
+      t.innerHTML = 'Hide';
+    }
+  }
+
   var ajax_cache = new Array();
   
   var xmlhttp1 = new_xmlhttp();
@@ -500,6 +537,7 @@ if (google_maps_enabled)
     if (ajax_cache['subentity_info'] != undefined) {
       if ((valueLabelPair = ajax_cache['subentity_info'][country_code][subentity_code]) != undefined) {
         
+        document.getElementById('subentity_info_facts').style.display = 'inline';
         // Add info on area to page..
         document.getElementById('subentity_info_name').innerHTML = 
             valueLabelPair[1];
@@ -605,6 +643,8 @@ if (google_maps_enabled)
         flag_img_src = '/images/colourdots/trans.gif';
       document.getElementById('country_flag_image').src = flag_img_src;
       
+      document.getElementById('country_info_facts').style.display = 'inline';
+      document.getElementById('subentity_info_facts').style.display = 'none';
       document.getElementById('country_info_name').innerHTML = 
           returnElements[0];
       document.getElementById('country_info_capital').innerHTML = 
@@ -612,7 +652,7 @@ if (google_maps_enabled)
       document.getElementById('country_info_population').innerHTML = 
           returnElements[2];
       document.getElementById('country_info_area').innerHTML = 
-          returnElements[3] + (returnElements[3].length > 0 ? 'km&sup2;' : 'N/A');
+          returnElements[3] + (returnElements[3].length > 0 ? 'km&sup2;' : 'some amount');
       document.getElementById('country_info_currency').innerHTML = 
           returnElements[4];
       document.getElementById('country_info_languages').innerHTML = 
