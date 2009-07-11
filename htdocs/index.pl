@@ -10,6 +10,8 @@ no warnings qw(uninitialized);
 
 use CarpeDiem;
 
+use Constants;
+
 use rusty::Profiles;
 
 my $rusty = rusty::Profiles->new;
