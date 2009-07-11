@@ -18,7 +18,7 @@ $rusty = rusty::Profiles->new;
 
 
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->redirect( -url => "/login.pl?ref=/profile/photo-admin.pl" );
+  $rusty->redirectToLoginPage($rusty->{core}->{'self_url'});
   $rusty->exit;
 } elsif ($rusty->{core}->{profile_info}->{'deleted_date'}) {
   print $rusty->redirect( -url => "/profile/account.pl?deleted=1" );
