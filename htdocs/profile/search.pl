@@ -12,6 +12,8 @@ use CarpeDiem;
 
 use rusty::Profiles;
 
+use Constants;
+
 use vars qw($rusty $query $sth);
 
 $rusty = rusty::Profiles->new;
@@ -19,17 +21,19 @@ $rusty = rusty::Profiles->new;
 
 # Prototypes:
 sub populate_common_data();
-sub retrieve_search_prefs();
 sub _retrieve_previous_search($);
 sub populate_previous_search($);
 
 
-our $RESULTS_PER_PAGE = 12;
-our $MAX_RESULTS = 1000;
-
 if ($rusty->{params}->{'nomatches'}) {
   $rusty->{data} = $rusty->{params}; #dirty but it works for now..
   $rusty->{data}->{'nomatches'} = 1;
+} elsif ($rusty->{params}->{'search_id_invalid'}) {
+  $rusty->{data} = $rusty->{params}; #dirty but it works for now..
+  $rusty->{data}->{'search_id_invalid'} = 1;
+} elsif ($rusty->{params}->{'search_id_missing'}) {
+  $rusty->{data} = $rusty->{params}; #dirty but it works for now..
+  $rusty->{data}->{'search_id_missing'} = 1;
 } elsif ($rusty->{params}->{'advancedsearch'}) {
   $rusty->{data} = $rusty->{params}; #dirty but it works for now..
   $rusty->{data}->{'advancedsearch'} = 1;
@@ -43,8 +47,8 @@ if ($rusty->{params}->{'nomatches'}) {
 
 
 $rusty->{param_info} = {
-  country_code             => { title => "Country" },
-  subentity_code           => { title => "City" },
+  country_code           => { title => "Country" },
+  subentity_code         => { title => "City" },
   gender                 => { title => "Gender",
                              regexp => '^(?:any|male|female)$' },
   sexuality              => { title => "Sexuality",
@@ -61,8 +65,12 @@ $rusty->{param_info} = {
                              regexp => '^(?:partial|full|start|end)$' },
   onlyphotos             => { title => "Only Profiles with Photos",
                              regexp => '^1?$' },
+  onlyonline             => { title => "Only People Online Now",
+                             regexp => '^1?$' },
   onlyadult              => { title => "Only Adult Profiles",
                              regexp => '^1?$' },
+  num_results_per_page   => { title => "Results per Page",
+                             regexp => '^\\d+$' },
   offset                 => { title => "Page Offset",
                              regexp => '^\\d*$' }
 };
@@ -90,6 +98,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
     
     if ($rusty->{core}->{'user_id'}) {
       $rusty->{data}->{search_prefs} = retrieve_search_prefs();
+      $rusty->{data}->{remember} = $rusty->{data}->{search_prefs}->{remember_previous_search};
       populate_previous_search($rusty->{data}->{search_prefs}->{search_id})
         if $rusty->{data}->{search_prefs}->{search_id};
     }
@@ -148,7 +157,26 @@ if ($rusty->{params}->{'mode'} eq 'search') {
 SELECT up.profile_id
 FROM `user~profile` up
 INNER JOIN `user~info` ui ON ui.user_id = up.user_id
+ENDSQL
+;
+  
+  if ($rusty->{params}->{onlyonline} && $rusty->{params}->{onlyonline} == 1) {
+    $query .= <<ENDSQL
+LEFT JOIN `user~session` usess ON usess.user_id = up.user_id
+ENDSQL
+;
+  }
+  
+  if (($rusty->{params}->{onlyadult} && $rusty->{params}->{onlyadult} == 1) ||
+      ($rusty->{params}->{onlyphotos} && $rusty->{params}->{onlyphotos} == 1)) {
+    $query .= <<ENDSQL
 LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
+ENDSQL
+;
+
+  }
+  
+  $query .= <<ENDSQL
 WHERE up.updated IS NOT NULL
 ENDSQL
 ;
@@ -280,14 +308,20 @@ ENDSQL
     delete $rusty->{params}->{profile_name};
   }
   
+  my $profile_type_string = 'showing';
+  if ($rusty->{params}->{onlyonline} && $rusty->{params}->{onlyonline} == 1) {
+    $query .= " AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE) ";
+    $profile_type_string .= ' online profiles';
+    push @search_params, $profile_type_string . ' only';
+  }
   if ($rusty->{params}->{onlyadult} && $rusty->{params}->{onlyadult} == 1) {
     $query .= " AND ph.adult != 0 ";
-    push @search_params, "showing profiles with adult photos only";
+    push @search_params, $profile_type_string . ' with adult photos only';
   } else {
     delete $rusty->{params}->{onlyadult};
     if ($rusty->{params}->{onlyphotos} && $rusty->{params}->{onlyphotos} == 1) {
       $query .= " AND up.main_photo_id != 0 ";
-      push @search_params, "showing profiles with photos only";
+      push @search_params, $profile_type_string . ' with photos only';
     } else {
       delete $rusty->{params}->{onlyphotos};
     }
@@ -298,7 +332,7 @@ GROUP BY up.profile_id DESC
 ORDER BY up.updated DESC
 ENDSQL
 ;
-  $query .= "LIMIT " . ($MAX_RESULTS + 1);
+  $query .= "LIMIT " . (Constants::PROFILE_SEARCH_MAX_RESULTS + 1);
   
   #warn "query: $query\n\nvars: ".join(', ',@bind_vars);
   $sth = $rusty->DBH->prepare($query);
@@ -310,7 +344,7 @@ ENDSQL
     # If we have got the one extra result past the amount we are
     # allowed on a page, we can tell the user that their search
     # exceeded this and has been truncated to the max allowed..
-    last if ++$count > $MAX_RESULTS;
+    last if ++$count > Constants::PROFILE_SEARCH_MAX_RESULTS;
     push @profiles, $profile->{'profile_id'};
   }
   $sth->finish;
@@ -327,10 +361,12 @@ SET user_id = ?,
     subentity_code = ?,
     profile_name = ?,
     onlyphotos = ?,
+    onlyonline = ?,
     onlyadult = ?,
     relationship_status_id = ?,
     search_string = ?,
     num_results = ?,
+    num_results_per_page = ?,
     result_set = ?
 ENDSQL
 ;
@@ -346,10 +382,12 @@ ENDSQL
     $rusty->{params}->{subentity_code},
     $rusty->{params}->{profile_name},
     $rusty->{params}->{onlyphotos},
+    $rusty->{params}->{onlyonline},
     $rusty->{params}->{onlyadult},
     $rusty->{params}->{relationship_status_id},
     join(', ', @search_params),
     ($count || 0),
+    $rusty->{params}->{num_results_per_page},
     join(',', @profiles)
   );
   $sth->finish;
@@ -374,10 +412,12 @@ ENDSQL
 INSERT INTO `user~profile~search~prefs`
 SET user_id = ?,
     remember_previous_search = ?,
-    search_id = ?
+    search_id = ?,
+    num_results_per_page = ?
 ON DUPLICATE KEY
 UPDATE remember_previous_search = ?,
-       search_id = ?
+       search_id = ?,
+       num_results_per_page = ?
 ENDSQL
 ;
     $sth = $rusty->DBH->prepare_cached($query);
@@ -385,8 +425,10 @@ ENDSQL
       $rusty->{core}->{'user_id'},
       ($rusty->{params}->{remember} || 0),
       $search_id,
+      $rusty->{params}->{num_results_per_page},
       ($rusty->{params}->{remember} || 0),
-      $search_id
+      $search_id,
+      $rusty->{params}->{num_results_per_page}
     );
     $sth->finish;
     
@@ -406,10 +448,12 @@ ENDSQL
 INSERT INTO `visitor~profile~search~prefs`
 SET visitor_id = ?,
     remember_previous_search = ?,
-    search_id = ?
+    search_id = ?,
+    num_results_per_page = ?
 ON DUPLICATE KEY
 UPDATE remember_previous_search = ?,
-       search_id = ?
+       search_id = ?,
+       num_results_per_page = ?
 ENDSQL
 ;
     $sth = $rusty->DBH->prepare_cached($query);
@@ -417,8 +461,10 @@ ENDSQL
       $rusty->{core}->{'visitor_id'},
       ($rusty->{params}->{remember} || 0),
       $search_id,
+      $rusty->{params}->{num_results_per_page},
       ($rusty->{params}->{remember} || 0),
-      $search_id
+      $search_id,
+      $rusty->{params}->{num_results_per_page}
     );
     $sth->finish;
   }
@@ -443,202 +489,54 @@ ENDSQL
   
   $rusty->{ttml} = "profile/search-results.ttml";
   
-  $query = <<ENDSQL
-SELECT created, search_id,
-       user_id, visitor_id,
-       search_string, num_results,
-       result_set, last_page_offset
-FROM `user~profile~search~cache`
-WHERE search_id = ?
-LIMIT 1
-ENDSQL
-;
-  $sth = $rusty->DBH->prepare_cached($query);
-  $sth->execute($rusty->{params}->{search_id});
-  my $search_cache = $sth->fetchrow_hashref;
-  $sth->finish;
+  # I love this feature so now it's on by default (unless it's explictly off (rejoin_search=0)!)
+  $rusty->{params}->{rejoin_search} = 1 if !defined($rusty->{params}->{rejoin_search});
   
-  $rusty->{data}->{search_date} = $search_cache->{created};
-  
-  if (!$search_cache->{search_id}) {
-    
-    warn "user trying to view search result that doesn't exist!";
-    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
-    $rusty->exit;
-    
-  } elsif ($rusty->{core}->{'user_id'} && $rusty->visitor_cookie &&
-           !$search_cache->{'user_id'} && $search_cache->{'visitor_id'}) {
-    
-    # If the person viewing the search is logged in but the search they
-    # are requesting is linked to a visitor, check to see if it is them
-    # as a visitor just before they logged in and if it is, then add this
-    # user as the owner, letting them access it and stopping future checks.
-    $query = <<ENDSQL
-UPDATE `user~profile~search~cache` upsc
-INNER JOIN `visitor` v ON v.visitor_id = upsc.visitor_id
-SET upsc.user_id = ?
-WHERE upsc.search_id = ?
-  AND upsc.user_id IS NULL
-  AND v.visitor_ref = ?
-ENDSQL
-;
-    $sth = $rusty->DBH->prepare_cached($query);
-    my $rows = $sth->execute($rusty->{core}->{'user_id'},
-                             $rusty->{params}->{search_id},
-                             $rusty->visitor_cookie);
-    $sth->finish;
-    if ($rows eq '0E0') {
-      warn "user trying to view search result that isn't theirs!";
-      print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
-      $rusty->exit;
+  # If no search id given, grab the last search they did and send them to those results
+  # and if no last search found, send them back to the search page!
+  if (!$rusty->{params}->{search_id}) {
+    my $search_prefs = $rusty->getSearchPrefs();
+    $rusty->{params}->{search_id} = $search_prefs->{search_id};
+    if (!$rusty->{params}->{search_id}) {
+      print $rusty->redirect( -url => '/profile/search.pl?search_id_missing=1' );
     } else {
-      warn "converted search result from visitor to logged in user for search $rusty->{params}->{search_id}";
+      print $rusty->redirect( -url => '/profile/search.pl?mode=results&search_id='
+                                    . $rusty->{params}->{search_id} . '&rejoin_search='
+                                    . $rusty->{params}->{rejoin_search} );
     }
-    
-  } elsif ($rusty->{core}->{'user_id'} &&
-           ($search_cache->{'user_id'} != $rusty->{core}->{'user_id'})) {
-    
-    # If the person viewing the search is logged in, check the search
-    # they are requesting belongs to them..  If not, complain!
-    warn "user trying to view search result that isn't theirs! (user_id: "
-       . $rusty->{core}->{'user_id'} . " trying to view search_id: "
-       . $rusty->{params}->{search_id} . ")";
-    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
     $rusty->exit;
-    
-  } elsif ($rusty->{core}->{'visitor_id'} &&
-           ($search_cache->{'visitor_id'} != $rusty->{core}->{'visitor_id'})) {
-    
-    # If the person viewing the search is not logged in but has a visitor
-    # session (cookies enabled), check the search belongs to them..
-    # If not, complain!
-    warn "visitor trying to view search result that isn't theirs! (visitor_id: "
-       . $rusty->{core}->{'visitor_id'} . " trying to view search_id: "
-       . $rusty->{params}->{search_id} . ")";
-    print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
+  }
+  
+  my $search_results = $rusty->getSearchResults($rusty->{params}->{search_id},
+                                                $rusty->{params}->{offset},
+                                                $rusty->{params}->{num_results_per_page},
+                                                $rusty->{params}->{rejoin_search});
+  if (!$search_results) {
+    if ($! == Constants::STATUS_REQUIRE_LOGIN) {
+      $rusty->redirectToLoginPage($rusty->{core}->{'self_url'});
+    } elsif (!$rusty->{params}->{search_id}) {
+      print $rusty->redirect( -url => '/profile/search.pl?search_id_missing=1' );
+    } else {
+      print $rusty->redirect( -url => '/profile/search.pl?search_id_invalid=1' );
+    }
     $rusty->exit;
-    
-  } elsif (!$rusty->{core}->{'user_id'} && !$rusty->{core}->{'visitor_id'} &&
-           !$search_cache->{'user_id'} && !$search_cache->{'visitor_id'}) {
-    
-    # If this user doesn't have cookies enabled so is neither logged in nor
-    # tracked as a visitor, then let them see this search result (as long
-    # as it is also not linked to a visitor or a user!) - i am not sure why
-    # i am doing this option but hey ho, completeness is fun and perhaps
-    # we should make the site work for everyone we can before they sign up!
-    # this shouldn't be open to abuse as there won't be many people without
-    # cookies and nobody else would ever guess their search id!
-    warn "someone requesting search results without a user_id or visitor_id"
-       . " (almost certainly not got cookies enabled)";
   }
   
-  $rusty->{data}->{search_string} = $search_cache->{search_string};
-  $rusty->{data}->{search_string} ||= "All Profiles";
-  $rusty->{data}->{num_results} =
-    $search_cache->{num_results} > $MAX_RESULTS ?
-      "over $MAX_RESULTS" : "$search_cache->{num_results}";
+  $rusty->{data}->{search_id}            = $search_results->{search_id};
+  $rusty->{data}->{search_age_in_mins}   = $search_results->{search_age_in_mins};
+  $rusty->{data}->{search_string}        = $search_results->{search_string};
+  $rusty->{data}->{num_results}          = $search_results->{num_results};
+  $rusty->{data}->{num_results_per_page} = $search_results->{num_results_per_page};
+  $rusty->{data}->{offset}               = $search_results->{offset};
+  $rusty->{data}->{prev_page_offset}     = $search_results->{prev_page_offset};
+  $rusty->{data}->{next_page_offset}     = $search_results->{next_page_offset};
+  $rusty->{data}->{first_results_page}   = $search_results->{first_results_page};
+  $rusty->{data}->{last_results_page}    = $search_results->{last_results_page};
+  $rusty->{data}->{results_pages}        = $search_results->{results_pages};
+  $rusty->{data}->{total_results_pages}  = $search_results->{total_results_pages};
+  $rusty->{data}->{current_results_page} = $search_results->{current_results_page};
+  $rusty->{data}->{profiles}             = $search_results->{profiles};
   
-  if ($rusty->{params}->{rejoin_search} == 1) {
-    $rusty->{params}->{offset} = $search_cache->{last_page_offset};
-  }
-  
-  $rusty->{params}->{offset} ||= 0;
-  
-  my $page_limit = $RESULTS_PER_PAGE;
-  
-  # If the offset requested will get profiles past our total limit,
-  # change the number retrieved for the page to end at this limit.
-  if (($rusty->{params}->{offset} + $RESULTS_PER_PAGE) > $MAX_RESULTS) {
-    $page_limit = $MAX_RESULTS - $rusty->{params}->{offset};
-  }
-  
-  # Generate link back to first X results (we are offset already).
-  if ($rusty->{params}->{offset} > 0) {
-    my $last_page_offset = $rusty->{params}->{offset} - $RESULTS_PER_PAGE;
-    #warn "prev_page_link: $last_page_offset = $rusty->{params}->{offset} - $RESULTS_PER_PAGE";
-    $last_page_offset = 0 if ($last_page_offset < 0);
-    $rusty->{data}->{prev_page_offset} = $last_page_offset;
-  }
-  
-  my @profile_ids = split /,/, $search_cache->{result_set};
-  
-  # Do extra robust check just to make sure that our indexes are not going to
-  # take us out of the array of results (shouldn't happen, but good to check!
-  if ($rusty->{params}->{offset} > $#profile_ids) {
-    # If the lower boundary is out of array range, send them to the search page.
-    print $rusty->redirect( -url => '/profile/search.pl?outofrange=1' );
-    $rusty->exit;
-  } elsif (($rusty->{params}->{offset} + ($page_limit - 1)) > $#profile_ids) {
-    # If just the upper boundary is out of array range, lower it to end of array.
-    $page_limit = @profile_ids - $rusty->{params}->{offset}; #is this right??
-  }
-  
-  my @desired_profile_ids = splice(@profile_ids, $rusty->{params}->{offset}, $page_limit);
-  
-  $query = <<ENDSQL
-SELECT DISTINCT(up.profile_name) AS profile_name, up.profile_id,
-ui.gender, ui.sexuality, ui.age,
-lco.name AS country, lcs.name AS subentity
-#up.height, up.weight, up.waist,
-#up.hair, up.website, up.profession,
-#up.perfect_partner, up.bad_habits,
-#up.happy, up.sad, up.own_words,
-#up.interests, up.weight_type,
-#up.fave_food, up.fave_music, up.fave_tvshow,
-#up.fave_author, up.fave_movie, up.fave_club_bar,
-#up.fave_animal, up.fave_person, up.fave_website,
-#up.fave_place, up.fave_thing,
-#up.thought_text
-FROM `user~profile` up
-INNER JOIN `user~info` ui ON ui.user_id = up.user_id
-LEFT JOIN `lookup~continent~country` lco ON lco.country_code = ui.country_code
-LEFT JOIN `lookup~continent~country~city1000` lcs ON lcs.subentity_code = ui.subentity_code
-LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
-WHERE up.updated IS NOT NULL
-AND up.profile_id = ?
-ENDSQL
-;
-  $sth = $rusty->DBH->prepare_cached($query);
-  
-  foreach my $profile_id (@desired_profile_ids) {
-    # Just get the info we need.
-    #my $profile = $rusty->getProfileInfo($profile_id);
-    $sth->execute($profile_id);
-    my $profile = $sth->fetchrow_hashref;
-    
-    $profile->{photo} = $rusty->getMainPhoto($profile_id);
-    $profile->{adult} = $rusty->hasAdultPics($profile_id);
-    push @{$rusty->{data}->{profiles}}, $profile;
-  }
-  $sth->finish;
-  
-  # Generate link for next X results (if there are any more to come
-  # and if there are any more allowed (this should already be limited
-  # by the original search to be within the max limit..)).
-  if ((($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $search_cache->{num_results}) &&
-      (($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $MAX_RESULTS)) {
-    #warn "next_page_link: ($rusty->{params}->{offset} + $RESULTS_PER_PAGE) < $MAX_RESULTS";
-    $rusty->{data}->{next_page_offset} = $rusty->{params}->{offset} + $RESULTS_PER_PAGE;
-  }
-  
-  $rusty->{data}->{offset} = $rusty->{params}->{offset};
-  
-  # Update our search cache so we know how much the search has been used
-  # (how many search results pages have been requested)
-  $query = <<ENDSQL
-UPDATE `user~profile~search~cache`
-SET results_pages_requested = results_pages_requested + 1,
-    last_page_offset = ?,
-    last_request_date = NOW()
-WHERE search_id = ?
-LIMIT 1
-ENDSQL
-;
-  $sth = $rusty->DBH->prepare_cached($query);
-  $sth->execute($rusty->{params}->{offset}, $rusty->{params}->{search_id});
-  $sth->finish;
-  
-  $rusty->{data}->{search_id} = $rusty->{params}->{search_id};
   $rusty->process_template;
   $rusty->exit;
   
@@ -648,8 +546,8 @@ ENDSQL
   
   if ($rusty->{core}->{'user_id'} || $rusty->{core}->{'visitor_id'}) {
     
-    $rusty->{data}->{search_prefs} = retrieve_search_prefs();
-    
+    $rusty->{data}->{search_prefs} = $rusty->getSearchPrefs();
+    $rusty->{data}->{num_results_per_page} = $rusty->{data}->{search_prefs}->{num_results_per_page};
     if ($rusty->{data}->{search_prefs}->{remember_previous_search} ||
         $rusty->{params}->{'nomatches'} ||
         #$rusty->{params}->{'advancedsearch'} ||
@@ -725,6 +623,7 @@ ENDSQL
       where => "relationship_status_id != 1" )];
   
   my $country_code = ($rusty->{params}->{country_code} || $rusty->{data}->{country_code});
+  
   # TODO: don't we zoom in on a place if it has been remembered from a previous search?
   if ($country_code && $country_code ne 'any') {
     $query = <<ENDSQL
@@ -764,7 +663,7 @@ ENDSQL
 ;
     
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{params}->{country_code});
+    $sth->execute($country_code);
     $rusty->{data}->{country_info} = $sth->fetchrow_hashref;
     $rusty->{data}->{country_info}->{areaInSqKm} =~ s/\.0$//;
     $rusty->{data}->{country_info}->{capital} ||= 'N/A';
@@ -772,44 +671,40 @@ ENDSQL
     $rusty->{data}->{country_info}->{languages} ||= 'N/A';
     $sth->finish;
   }
-}
 
-
-
-
-sub retrieve_search_prefs() {
+  my $subentity_code = ($rusty->{params}->{subentity_code} || $rusty->{data}->{subentity_code});
   
-  if ($rusty->{core}->{'user_id'}) {
-    
+  if ($subentity_code && $subentity_code ne 'any') {
     $query = <<ENDSQL
-SELECT remember_previous_search, search_id,
-       show_search_history, show_advanced_search
-FROM `user~profile~search~prefs`
-WHERE user_id = ?
+SELECT SQL_CACHE c.subentity_code, c.name,
+       c.latitude, c.longitude,
+       c.population, c.elevation,
+       c.TimeZoneId AS timezone,
+       t.GMT_offset_2007_01_01 AS timezone_offset,
+       IF(c.latitude>=0,
+          CONCAT(FORMAT(c.latitude,3),'&deg;N'),
+          CONCAT(FORMAT(c.latitude*-1,3),'&deg;S')) AS latitude_formatted,
+       IF(c.longitude>=0,
+          CONCAT(FORMAT(c.longitude,3),'&deg;E'),
+          CONCAT(FORMAT(c.longitude*-1,3),'&deg;W')) AS longitude_formatted
+FROM `lookup~continent~country~city1000` c
+LEFT JOIN `lookup~continent~country~city1000~timezones` t
+       ON t.TimeZoneId = c.TimeZoneId
+WHERE c.subentity_code = ?
 LIMIT 1
 ENDSQL
 ;
+
     $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{core}->{'user_id'});
-    my $search_prefs = $sth->fetchrow_hashref;
+    $sth->execute($subentity_code);
+    $rusty->{data}->{subentity_info} = $sth->fetchrow_hashref;
+    #$rusty->{data}->{subentity_info}->{languages} ||= 'N/A';
+    $rusty->{data}->{subentity_info}->{timezone_offset} =~ s/\.0$//o;
+    $rusty->{data}->{subentity_info}->{timezone_offset} =~ s/^(?!-)/\+/;
+    $rusty->{data}->{subentity_info}->{timezone_offset} = 'GMT' . $rusty->{data}->{subentity_info}->{timezone_offset};
+    $rusty->{data}->{subentity_info}->{elevation} ||= 'unknown';
+    utf8::decode($rusty->{data}->{subentity_info}->{subentity_name});
     $sth->finish;
-    return $search_prefs;
-    
-  } elsif ($rusty->{core}->{'visitor_id'}) {
-    
-    $query = <<ENDSQL
-SELECT remember_previous_search, search_id,
-       show_search_history, show_advanced_search
-FROM `visitor~profile~search~prefs`
-WHERE visitor_id = ?
-LIMIT 1
-ENDSQL
-;
-    $sth = $rusty->DBH->prepare_cached($query);
-    $sth->execute($rusty->{core}->{'visitor_id'});
-    my $search_prefs = $sth->fetchrow_hashref;
-    $sth->finish;
-    return $search_prefs;
   }
 }
 
@@ -823,7 +718,8 @@ sub populate_previous_search($) {
   my $query = <<ENDSQL
 SELECT search_id, created,
        gender, sexuality, age_min, age_max,
-       country_code, subentity_code, profile_name, onlyphotos, onlyadult,
+       country_code, subentity_code, profile_name,
+       onlyphotos, onlyonline, onlyadult,
        relationship_status_id
 FROM `user~profile~search~cache`
 WHERE search_id = ?
@@ -836,7 +732,7 @@ ENDSQL
   $sth->finish;
   return unless $previous_search->{search_id};
   
-  $rusty->{data}->{search_date} = $previous_search->{created};
+  $rusty->{data}->{search_age_in_mins} = $previous_search->{search_age_in_mins};
   $rusty->{data}->{gender} = $previous_search->{gender};
   $rusty->{data}->{sexuality} = $previous_search->{sexuality};
   $rusty->{data}->{age_min} = $previous_search->{age_min};
@@ -849,6 +745,7 @@ ENDSQL
   $rusty->{data}->{subentity_code} = $previous_search->{subentity_code};
   $rusty->{data}->{profile_name} = $previous_search->{profile_name};
   $rusty->{data}->{onlyphotos} = $previous_search->{onlyphotos};
+  $rusty->{data}->{onlyonline} = $previous_search->{onlyonline};
   $rusty->{data}->{onlyadult} = $previous_search->{onlyadult};
   $rusty->{data}->{relationship_status_id} = $previous_search->{relationship_status_id};
   $rusty->{data}->{previous_search} = $previous_search;
