@@ -30,7 +30,7 @@ use constant THUMB_HEIGHT => 100;
 
 
 if (!$rusty->{core}->{'user_id'}) {
-  print $rusty->redirect( -url => "/login.pl?ref=/profile/photo-upload.pl" );
+  $rusty->redirectToLoginPage($rusty->{core}->{'self_url'});
   $rusty->exit;
 }
 
