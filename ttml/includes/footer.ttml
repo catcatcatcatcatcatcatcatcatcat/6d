@@ -76,6 +76,13 @@ addEvent(window, 'load', slide_down_notification());
   [% END %]
 [% END %]
 
+[% IF (core.env == 'testing') || (core.env == 'local') %]
+<pre style="background-color: green; color: red;
+            padding: 1px; margin: 5px; float: left;
+            font-size: 1.2em; font-weight: bold; "
+>U:[% core.user_id %], V:[% core.visitor_id %]</pre>
+[% END %]
+
 [% UNLESS core.no_nav_links %]
 
 <!--
@@ -94,7 +101,7 @@ addEvent(window, 'load', slide_down_notification());
 -->
 
 <div style="margin-top: 10px; text-align: center; ">
-<a href="http://validator.w3.org/check?url=[% core.self_url_escaped | html %]"
+<a href="http://validator.w3.org/check?url=[% core.self_url_escaped FILTER html %]"
    title="Valid XHTML 1.1"><img 
      style="margin: 5px; "
      src="/images/icons/technologylinks/valid_xhtml11.gif"
