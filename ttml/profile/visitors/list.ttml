@@ -119,7 +119,7 @@
            onmouseover="stmu_test('[% photo_link %]', this.title, '0', '0', '0', '0', '0')"
            onmouseout="htm()">[% visit.profile_name %]</a>
       </td><td>
-        [% visit.gender | ucfirst %]
+        [% visit.gender FILTER ucfirst %]
       </td><td>
         [% visit.age %]
       </td><td>
