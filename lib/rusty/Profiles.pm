@@ -17,10 +17,12 @@ use rusty;
 # These are not our children, these are our little helpers!
 # (splitting up old functions that used to be in here..)
 use rusty::Profiles::Photo;
+use rusty::Profiles::Search;
 use rusty::Profiles::Message;
 use rusty::Profiles::FriendsAndBlocks;
 our @ISA = qw( rusty
                rusty::Profiles::Photo
+               rusty::Profiles::Search
                rusty::Profiles::Message
                rusty::Profiles::FriendsAndBlocks );
 
