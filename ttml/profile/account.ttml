@@ -73,7 +73,7 @@ and remember to upload a photo of yourself when you've finished!</p>
 <fieldset>
 
 <input type="hidden" name="submitting" id="submitting" value="1" />
-[% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref | html %]" />[% END %]
+[% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref FILTER html %]" />[% END %]
 [% IF welcome %]<input type="hidden" name="welcome" value="1" />[% END %]
 
 <h3 style="margin-top:32px;border-bottom:1px solid #d6d3d6">About Me</h3>
