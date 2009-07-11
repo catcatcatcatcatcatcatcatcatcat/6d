@@ -4,6 +4,8 @@ use Image::Magick;
 
 use strict;
 
+use lib "../..";
+
 use warnings qw( all );
 
 no warnings qw( uninitialized );
