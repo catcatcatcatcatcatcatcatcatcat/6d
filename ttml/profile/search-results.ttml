@@ -21,105 +21,130 @@
   <p class="err">Sorry, but there are currently no more members matching your search criteria.<br />
   <a href="/profile/search.pl">Click here</a> to search for more.</p>
 [% ELSE %]
-  [% IF prev_page_offset.defined || next_page_offset.defined %]
-    <ul class="opt" style="float:right;">
-    [% IF prev_page_offset.defined %]
-      <li class="opt[% UNLESS next_page_offset.defined %]2[% END %]"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% prev_page_offset %]">Prev</a></li>
-    [% END %]
-    [% IF next_page_offset.defined %]
-      <li class="opt2"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% next_page_offset %]">Next</a></li>
-    [% END %]
-    </ul>
-  [% END %]
-  <h1 style="margin-bottom:0; ">Search Results: [% search_string %]</h1>
-  <h5 style="margin-left:15px;margin-top:0;">Snapshot created [% search_date %]
-[% IF (core.env == 'testing') || (core.env == 'local') %]
-<span class="testing_todo_list">
-put this here if the search date is over a minute old or something like that..
-and get it to add any new profiles found on this search criteria and add them to
-the end of this search results set then take user back to this page with a msg
-telling them how many new profiles were found and added to this search set..
-Maybe also tell them how many that they searched for have gone offline and give
-them the option to remove these now :)
-make sure we take the user back to the profile that is
-on the start of this page or the first one that still exists when we remove
-profiles as the offset may leave us looking at things way ahead of where we were
-in the search results..
-</span>
-    <a class="testing_todo_list" href="#this_is_another_option">Append new online</a> |
-    <a class="testing_todo_list" href="#as_is_this">Remove offline</a> |
-    <a class="testing_todo_list" href="#oooh.._with_all_of_these,_the_ordering_will_be_messed_up_(see_comment_above)!">Update (Both)</a>
-[% END %]
+  <span id="search_results_pagelinks_block1">
+        [% INCLUDE "profile/includes/search-results-pagelinks-block.ttml" %]
+  </span>
+  <h1 style="margin-bottom:0; ">Search Results: <span id="search_string">[% search_string %]</span></h1>
+  <h5 style="margin-left:15px;margin-top:0;">These results were created <span id="search_age_in_mins">
+      [% IF search_age_in_mins < 1 %]less than a minute
+      [% ELSIF search_age_in_mins < 60 %][% search_age_in_mins %] minute[% IF search_age_in_mins >= 2 %]s[% END %]
+      [% ELSIF search_age_in_mins < (60 * 24) %][% search_age_in_mins / 60 FILTER format('%i') %] hour[% IF search_age_in_mins >= (60 * 2) %]s[% END %]
+      [% ELSE %][% search_age_in_mins / (60 * 24) FILTER format('%i') %] day[% IF search_age_in_mins > (60 * 24 * 2) %]s[% END %][% END %] ago.
   </h5>
-  <h5 style="margin-left:30px;margin-top:0;">Showing [% offset + 1 %] - [% offset + profiles.size %]
-                                             from [% num_results %] matching profiles.</h5>
-  <!--<div style="background-color:#fdf7fa;border:2px #fdfbfc solid">-->
+<form action="search.pl" id="change_num_results_per_page" method="get">
+<fieldset>
+  
+  <input type="hidden" name="mode" value="results" />
+  
+  <h5 style="margin-left:30px;margin-top:0;">Showing <span id="offset_start">[% offset + 1 %]</span> -
+                                             <span id="offset_end">[% offset + profiles.size %]</span>
+                                             from <span id="num_results">[% num_results %]</span> matching profiles.&nbsp;
+                                             Showing
+    <select id="num_results_per_page" name="num_results_per_page" style="width:4em"
+            onchange="get_profile_search_results('num')">
+      [% FOREACH n = [8 12 16 20 25 50 75 100] %]<option value="[% n %]"[% IF n == num_results_per_page %] selected="selected"[% END %]>[% n %]</option>
+      [% END %]
+    </select>
+    <noscript>
+      <fieldset style="display: inline; ">
+        <input type="submit" value="Update!" />
+      </fieldset>
+    </noscript> per page.</h5>
+</fieldset>
+</form>
+  <span id="search_results_profile_block">
   [% FOREACH p = profiles %]
-  [% caption = p.photo.caption FILTER html_entity %]
-  
-  [% IF (p.photo.photo_id && (p.photo.adult || !p.photo.checked_date) && !adult_pass)
-        || !p.photo.photo_id; # Quick and Nasty Kludge!
-     p.photo.tnnc_width = 100;
-     p.photo.tnnc_height = 100;
-     END %]
-  [% real_photo_link = "/photos/${p.profile_name}/${p.photo.thumbnail_nocrop_filename}" %]
-  [% IF p.photo.photo_id && p.photo.adult && !adult_pass;
-       photo_link = "/photos/adult.png";
-     ELSIF p.photo.photo_id && !p.photo.checked_date && !adult_pass;
-       photo_link = "/photos/pending.png";
-     ELSIF !p.photo.photo_id;
-       photo_link = "/photos/default.png";
-     ELSE;
-       photo_link = real_photo_link;
-    END %]
-  
-  <div class="thumbnail-info-container"
-       style="float:left">
-    <div class="thumbnail-container">
-      <div class="thumbnail-shadow"
-           style="background-image:url('/images/thumbnail-shadow/[% p.photo.tnnc_width %]/pink_rectangle_blurred_RGBA_[% p.photo.tnnc_width %]x[% p.photo.tnnc_height %].png');
-                  width:[% p.photo.tnnc_width %]px;
-                  height:[% p.photo.tnnc_height %]px;
-                  position:absolute;
-                  top: 50%; margin-top:-[% (p.photo.tnnc_height+15) / 2 %]px;
-                  left: 50%; margin-left:-[% (p.photo.tnnc_width+15) / 2 %]px;
-                  z-index:1; ">
-        <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1"
-           class="thumbnail-shadow"
-           title="[% caption %] :: Location: [% IF p.subentity %][% p.subentity %], [% END %][% p.country %]">
-          <img src="[% photo_link %]"
-               style="width:[% p.photo.tnnc_width %]px;
-                      height:[% p.photo.tnnc_height %]px;
-                      position:relative; z-index:10; "
-               alt="[% caption %]" />
-        </a>
-      </div>
-    </div>
-    <p>
-      <a href="/profile/view.pl?profile_name=[% p.profile_name %]&amp;search_id=[% search_id %]&amp;from_search=1">[% p.profile_name %]</a>
-      [% IF p.adult %]<span style="color:red;font-weight:bold" title="This profile contains adult pictures"> [A!]</span>[% END %]
-    </p>
-    <p>
-      <span class="extra">
-        [% IF p.age %][% p.age %][% ELSE %] - [% END %],
-        [% p.gender.search('female') ? 'f' : 'm' %], 
-        [% p.sexuality.replace('bisexual/curious','bi/curious') %]
-      </span>
-    </p>
-  </div>
+    [% INCLUDE "profile/includes/search-results-profile-block.ttml" %]
   [% END %]
+  </span>
   <div style="clear:both"></div>
-  <!--</div>-->
-  [% IF prev_page_offset.defined || next_page_offset.defined %]
-    <ul class="opt" style="clear:both;float:right;margin-top:-24px">
-    [% IF prev_page_offset.defined %]
-      <li class="opt[% UNLESS next_page_offset.defined %]2[% END %]"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% prev_page_offset %]">Prev</a></li>
-    [% END %]
-    [% IF next_page_offset.defined %]
-      <li class="opt2"><a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% next_page_offset %]">Next</a></li>
-    [% END %]
-    </ul>
-  [% END %]
+
+  <span id="search_results_pagelinks_block2">
+        [% INCLUDE "profile/includes/search-results-pagelinks-block.ttml" %]
+  </span>
 [% END %]
+
+
+
+<script src="/js/xmlhttp.js" type="text/javascript"></script>
+<script type="text/javascript">
+//<!--
+  var search_id = '[% search_id %]';
+  var prev_page_offset = '[% prev_page_offset %]';
+  var next_page_offset = '[% next_page_offset %]';
+  var offset = '[% offset %]';
+  var num_results_per_page = '[% num_results_per_page %]';
+  var xmlhttp1 = new_xmlhttp();
+  function get_profile_search_results(mode, new_offset) {
+    var returnElements = new Array();
+    if (mode == 'prev') {
+      offset = prev_page_offset;
+    } else if (mode == 'next') {
+      offset = next_page_offset;
+    } else if (mode == 'num') {
+      num_results_per_page = document.getElementById('num_results_per_page').value;
+    } else if (mode == 'offset') {
+      offset = new_offset;
+    }
+    url="/ajax/" + "get_profile_search_results." + "pl?search_id=" + search_id
+      + "&offset=" + offset + "&num_results_per_page=" + num_results_per_page + "&random=" + Math.random();
+    xmlhttp1.open('GET',url,true);
+    xmlhttp1.onreadystatechange=function() {
+      if (xmlhttp1.readyState == 4 || xmlhttp1.readyState == "complete") { // Complete
+        if (xmlhttp1.status == 200) { // OK response
+          textToSplit = xmlhttp1.responseText;
+          //alert(textToSplit);
+          if (textToSplit != "") {
+            // Simulate JSON decoding
+            textToSplit = textToSplit.replace(/"}$/,''); textToSplit = textToSplit.replace(/^{"/,'');
+            returnElementBits = textToSplit.split(/","/);
+            for (var i=0; i<returnElementBits.length; i++) {
+              returnElementKeyValue = returnElementBits[i].split(/":"/);
+              returnElementKeyValue[0] = returnElementKeyValue[0].replace(/\\(["'\\])/g,"$1");
+              returnElementKeyValue[1] = returnElementKeyValue[1].replace(/\\(["'\\])/g,"$1");
+              returnElements[returnElementKeyValue[0]] = returnElementKeyValue[1];
+            }
+            populate_profile_search_results();
+          }
+        } else if (xmlhttp1.status == 401) { // Login required response {
+          document.location = '/login.pl?ref=' + escape('/profile/search.pl?mode=results&search_id=[% search_id %]');
+        } else if (xmlhttp1.status == 404) { // Info not retrieved response {
+          alert("Couldn't get your stuffs.  Not sure why.  Please try again!");
+        } else {
+          alert("Oops - something unknown just went wrong!  Please try again. :)");
+        }
+      }
+    }
+    xmlhttp1.send(null);
+    
+    function populate_profile_search_results() {
+      // Don't update the date - it won't have changed and the logic to
+      // make a nice time string is far too minging and in the tmpl code. :P
+      //document.getElementById('search_age_in_mins').innerHTML = 
+      //  returnElements['search_age_in_mins'];
+      document.getElementById('search_string').innerHTML = 
+        returnElements['search_string'];
+      document.getElementById('num_results').innerHTML = 
+        returnElements['num_results'];
+      document.getElementById('offset_start').innerHTML = 
+        new Number(returnElements['offset']) + 1;
+      document.getElementById('offset_end').innerHTML = 
+        new Number(returnElements['offset']) + new Number(returnElements['num_profiles_returned']);
+      prev_page_offset = returnElements['prev_page_offset'];
+      next_page_offset = returnElements['next_page_offset'];
+      // Loop over both sets of prev and next search result links and update
+      for (var i=1; i<=2; i++) {
+        document.getElementById('search_results_pagelinks_block' + i).innerHTML = 
+          returnElements['results_pages'];
+      }
+      document.getElementById('search_results_profile_block').innerHTML = 
+        returnElements['profiles'];
+      sweetTitlesPageLoader(document.getElementById('search_results_profile_block'));
+    }
+    return true;
+  }
+  
+//-->
+</script>
 
 [% INCLUDE includes/footer.ttml %]
