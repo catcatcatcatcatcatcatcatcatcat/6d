@@ -68,7 +68,7 @@ ENDSQL
   
   # If the photo id requested does not exist, go crazy!
   if (!$rusty->{data}->{photo}->{photo_id}) {
-    warn "photo id requested simply does not exist (photo id: $rusty->{data}->{photo_id})";
+    warn "photo id requested simply does not exist in DB (could be rejected/deleted - photo id: $rusty->{data}->{photo_id})";
     $rusty->{data}->{error} = "Photo not found";
     $rusty->process_template;
     $rusty->exit;
@@ -78,15 +78,28 @@ ENDSQL
   # Let's make sure that if owner mode was requested, we are
   # looking at one of our own photos. If so, we give access regardless.
   if ($rusty->{data}->{mode} eq 'owner') {
-    if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
-      warn "admin mode requested for photo that isn't theirs: "
+    if ($rusty->{core}->{'profile_id'} &&
+        $rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
+      warn "owner mode requested for photo that isn't theirs: "
          . " profile id '$rusty->{core}->{profile_id}' and photo id "
          . "'$rusty->{data}->{photo_id}'.";
       delete $rusty->{data}->{mode};
     }
   } elsif ($rusty->{data}->{mode} eq 'admin') {
+    require rusty::Admin;
     #check if user is admin user with privileges
-    
+    if ($rusty->{core}->{'user_id'}) {
+      require rusty::Admin;
+      $rusty->{core}->{'admin_level'} = $rusty->rusty::Admin::getAdminLevelFromUserId($rusty->{core}->{'user_id'});
+      if (!$rusty->{core}->{'admin_level'}) {
+        warn "UserID '$rusty->{core}->{user_id}' trying to access admin pages but has no admin privileges set";
+        print $rusty->redirect( -url => "/" );
+        $rusty->exit;
+      }
+    } else {
+      $rusty->redirectToLoginPage($rusty->{core}->{'self_url'});
+      $rusty->exit;
+    }
   }
   
   
