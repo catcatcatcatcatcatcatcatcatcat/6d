@@ -69,7 +69,7 @@ breadcrumbs.push("$title");
       <p class="err"><strong>[% friend_profile_name %]</strong> is already a linked friend.</p>
     [% ELSIF (existing_friend_link.status == 'unread') OR (existing_friend_link.status == 'read') %]
       <p class="err">You've already sent a request to <strong>[% friend_profile_name %]</strong> to link profiles.
-        If they haven't replied, you could always <a href="/profile/messages/send.pl?mode=compose&amp;profile_id=[% friend_profile_id %][% query_string_params | html %]">send them a reminder</a>.
+        If they haven't replied, you could always <a href="/profile/messages/send.pl?mode=compose&amp;profile_id=[% friend_profile_id %][% query_string_params FILTER html %]">send them a reminder</a>.
       </p>
     [% END %]
   [% ELSIF existing_friend_link.requestee_profile_id == core.profile_id %]
@@ -79,7 +79,7 @@ breadcrumbs.push("$title");
       [% ELSIF existing_friend_link.status == 'unread' %]
         Ooh OOH!  A new unread message too.. How exciting and what a coincidence!  You are made for each other.
       [% END %]<br />
-      You should be able to find it in <a href="/profile/message.pl?mode=list&amp;tray=inbox[% query_string_params | html %]">your inbox</a>.
+      You should be able to find it in <a href="/profile/message.pl?mode=list&amp;tray=inbox[% query_string_params FILTER html %]">your inbox</a>.
     </p>
   [% END %]
 [% ELSE %]
