@@ -27,12 +27,23 @@ DBI->install_driver("mysql");
 ######################
 
 use CarpeDiem;
+use Constants;
 use Email;
 use ImagePwd;
+
 use conf::db_conf;
 use conf::mail_conf;
-#use rusty; # This doesn't work! :)
-#use rusty::Profiles; # Just won't work. :(
+##### This all doesn't work! :)  Or does it now?
+use rusty;
+use rusty::Admin;
+use rusty::Profiles;
+use rusty::Profiles;
+use rusty::Profiles::FriendsAndBlocks;
+use rusty::Profiles::Message;
+use rusty::Profiles::Photo;
+use rusty::Profiles::Search;
+##################
+
 #
 ## This doesn't seem to make a difference!
 ##require conf::db_conf;
