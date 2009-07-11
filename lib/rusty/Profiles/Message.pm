@@ -2,6 +2,8 @@ package rusty::Profiles::Message;
 
 use strict;
 
+use lib "../..";
+
 use warnings qw( all );
 
 no warnings qw( uninitialized );
