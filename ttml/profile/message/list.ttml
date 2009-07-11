@@ -135,8 +135,8 @@ of [% message_cache_count %].</h3>
     [% END %]
   </select> messages per page.
   <noscript>
-    <fieldset>
-      <input type="submit" value="Go!" />
+    <fieldset style="display: inline; ">
+      <input type="submit" value="Update!" />
     </fieldset>
   </noscript>
   
