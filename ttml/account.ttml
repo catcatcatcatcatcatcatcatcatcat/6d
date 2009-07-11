@@ -30,7 +30,7 @@
 <fieldset>
 
 <input type="hidden" name="submitting" id="submitting" value="1" />
-[% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref | html%]" />[% END %]
+[% IF core.ref %]<input type="hidden" name="ref" value="[% core.ref FILTER html %]" />[% END %]
 
 <table>
   <tr>
