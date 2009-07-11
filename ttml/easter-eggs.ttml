@@ -1,0 +1,11 @@
+[% title = 'Easter Eggs' %]
+[% INCLUDE includes/header.ttml %]
+[% breadcrumbs.push("$title") %]
+
+<h1>Easter Eggs</h1>
+
+<h3>Happy hunting!</h3>
+<img src="/images/easter-egg.jpg" />
+<p>We weren't going to tell you where they all were, were we?</p>
+
+[% INCLUDE includes/footer.ttml %]
