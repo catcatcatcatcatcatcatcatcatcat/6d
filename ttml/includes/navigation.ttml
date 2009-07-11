@@ -59,9 +59,9 @@
   </form>
   [% ELSE %]
   <div id="Userpic"><a href="[% IF core.profile_info.main_photo_id %]/profile/photo-admin.pl"
-                        title="[% core.profile_info.main_photo.caption | html %]"
+                        title="[% core.profile_info.main_photo.caption FILTER html %]"
                         ><img src="/photos/[% core.profile_name %]/[% core.profile_info.main_photo.thumbnail_filename %]"
-                        alt="[% core.profile_info.main_photo.caption | html %]"
+                        alt="[% core.profile_info.main_photo.caption FILTER html %]"
                     [% ELSE %]/profile/photo-upload.pl"><img src="/images/navigation/[% core.themes.${core.theme} %]/navbar-right.jpg" alt="Backpacking Friends"
                     [% END %] /></a></div>
   <form id="Greeting" action="/logout.pl" method="post">
@@ -190,10 +190,13 @@
     [% END %]
     [% mi_count = mi_count + 1; smi_count = 0 %]
     <li[% IF core.emi == mi_count %] class="Selected"[% END %]
-       ><a href="/profile/search.pl?emi=[% mi_count %]" onmouseover="show([% mi_count %])"
+       ><a href="/profile/search.pl?mode=results[% IF search_id %]&amp;search_id=[% search_id %][% END %]&amp;emi=[% mi_count %]" onmouseover="show([% mi_count %])"
            onfocus="show([% mi_count %])" id="Menu[% mi_count %]"
            >Search Profiles</a>
       <ul class="NavSubMenuList[% IF core.emi == mi_count %] Selected[% END %]">
+        <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
+           ><a href="/profile/search.pl?mode=results[% IF search_id %]&amp;search_id=[% search_id %][% END %]&amp;emi=[% mi_count %]&amp;esmi=[% smi_count %]"
+               >Revisit Last Search</a></li>
         <li[% smi_count = smi_count + 1; IF core.emi == mi_count && core.esmi == smi_count %] class="Selected"[% END %]
            ><a href="/profile/search.pl?emi=[% mi_count %]&amp;esmi=[% smi_count %]"
                >Basic</a></li>
