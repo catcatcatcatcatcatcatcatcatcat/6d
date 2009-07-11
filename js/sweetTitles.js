@@ -15,20 +15,24 @@ var sweetTitles = {
   obj : Object,              // @Element: That of which you're hovering over
   tip : Object,              // @Element: The actual toolTip itself
   active : 0,                // @Number: 0: Not Active || 1: Active
-  init : function() {
+  init : function(e) {
     if ( !document.getElementById ||
       !document.createElement ||
       !document.getElementsByTagName ) {
       return;
     }
     var i,j;
-    this.tip = document.createElement('div');
-    this.tip.id = 'toolTip';
-    document.getElementsByTagName('body')[0].appendChild(this.tip);
-    this.tip.style.top = '0';
-    this.tip.style.visibility = 'hidden';
-    var content = document.getElementById('Content'); // Only search within our content.
-    if (content == null) content = document; // If the Content div exists!
+    if (this.tip.id == undefined) {
+      this.tip = document.createElement('div');
+      this.tip.id = 'toolTip';
+      document.getElementsByTagName('body')[0].appendChild(this.tip);
+      this.tip.style.top = '0';
+      this.tip.style.visibility = 'hidden';
+      var content = document.getElementById('Content'); // Only search within our content.
+      if (content == null) content = document; // If the Content div exists!
+    } else {
+      content = e;
+    }
     var tipLen = this.tipElements.length;
     for ( i=0; i<tipLen; i++ ) {
       var current = content.getElementsByTagName(this.tipElements[i]);
@@ -142,7 +146,7 @@ var sweetTitles = {
     }
   }
 };
-function pageLoader() {
-  sweetTitles.init();
+function sweetTitlesPageLoader(content) {
+  sweetTitles.init(content);
 }
-addEvent(window,'load',pageLoader);
+addEvent(window,'load',sweetTitlesPageLoader);
