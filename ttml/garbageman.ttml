@@ -1,6 +1,6 @@
 [% title = 'Garbageman Collection' %]
 [% INCLUDE includes/header.ttml %]
-[% breadcrumbs.push('<a href="#/easter-eggs.pl">Easter Eggs</a>') %]
+[% breadcrumbs.push('<a href="/easter-eggs.pl">Easter Eggs</a>') %]
 [% breadcrumbs.push("$title") %]
 
 
@@ -14,7 +14,7 @@
 <hr>
 
 [% FOREACH msg = messages %]
-<p>[%msg%]</p>
+<p>[% msg %]</p>
 [% END %]
 
 [% INCLUDE includes/footer.ttml %]
