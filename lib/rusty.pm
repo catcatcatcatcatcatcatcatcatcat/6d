@@ -9,6 +9,10 @@ use warnings qw(all);
 
 no  warnings qw(uninitialized);
 
+#our specific constants;
+
+use Constants;
+
 
 use vars qw( *LOG *BENCHMARK $site_files_root $DATABASE_VERSION);
 
@@ -224,6 +228,10 @@ sub new() {
       $self->{core}->{'timed_out'} = 1;
     }
     
+    # Now that we're finished with the session (deleting it on this request), let's
+    # remove it from the internal records so we don't get confused. :)
+    $self->_clear_session_cookie_var;
+    
     if ($self->{core}->{'remembered_profile_name'} = $self->_grab_profile_name_cookie()) {
       $self->{core}->{'remember_me'} = 1;
     }
@@ -274,7 +282,7 @@ sub new() {
   #warn "self: " . $self_url;
   # Make url relative when working with just one TLD - if we develop more
   # sharing same login, maybe change this to use full TLD in self_url again
-  $self_url =~ s!^(?:https?|ftp)\://\Q$ENV{SERVER_NAME}\E!!o;
+  $self_url =~ s!^(?:https?|ftp)\://\Q$ENV{SERVER_NAME}\E(?:\:$ENV{SERVER_PORT})?!!o;
   $self->{core}->{'self_url'} = $self_url;
   require URI::Escape;
   $self->{core}->{'self_url_escaped'} = URI::Escape::uri_escape($self_url);
@@ -356,6 +364,9 @@ sub benchmark() { return $_[0]->{benchmark}; }
   sub session_cookie() {
     return $_session_cookie;
   }
+  sub _clear_session_cookie_var() {
+    undef($_session_cookie);
+  }
   sub _grab_session_cookie() {
     my $self = shift;
     $_session_cookie = $self->CGI->cookie( -name => "session" );
@@ -374,6 +385,9 @@ sub benchmark() { return $_[0]->{benchmark}; }
   my $_visitor_cookie;
   sub visitor_cookie() {
     return $_visitor_cookie;
+  }
+  sub _clear_visitor_cookie_var() {
+    undef($_visitor_cookie);
   }
   sub _grab_visitor_cookie() {
     my $self = shift;
@@ -508,6 +522,7 @@ sub init {
   
   my $self = shift;
   
+  undef($!); # Reset error num
   &_user_info_DESTROY;
   &_DBH_destroy;
   &_CGI_destroy;
@@ -712,8 +727,14 @@ sub get_utf8_params {
       $data->{benchmark} = $self->{benchmark};
     }
     
-    $_template->process($filename, $data)
-      || die $_template->error(), "\n";
+    my $output = undef;
+    if ($opts->{return_output}) {
+      $_template->process($filename, $data, \$output)
+        || die $_template->error(), "\n";
+    } else {
+      $_template->process($filename, $data)
+        || die $_template->error(), "\n";
+    }
     
     # This will be added to a benchmark log - and
     # all results here are accurate(ish)!
@@ -732,6 +753,8 @@ sub get_utf8_params {
     }
     
     $self->{template_processed} = 1;
+    
+    return $output if defined $output;
   }
   
   # This function encodes any 'bla_id' fields so that important auto-increment IDs
@@ -749,7 +772,14 @@ sub get_utf8_params {
     # Add the visible (easily faked param signature of a '!1' prefix and '5' before last digit
     $_[0] =~ s/^(\d+?)(\d)$/!1${1}5$2/o;
   }
-  
+
+  # This function html encodes anything that scares me and makes me think someone is trying to
+  # inject XSS attacks or otherwise.  It should clean up all possibilities of html/JS coming
+  # in as GET or POST data, whether HTML/URL encoded, character code refed and spat out again.
+  sub _clean_data_html($) {
+    use HTML::Entities 'encode_entities';
+    $_[0] = HTML::Entities::encode_entities($_[0]);
+  }
   # This can be used all over the place to redirect - it alsos handles automagic translations of
   # 'bla_id' query string params into encoded IDs (see above)..
   # It tries to take the args as if it were CGI::redirect and pass them through..
@@ -807,13 +837,17 @@ sub get_utf8_params {
     
     my $reftype = ref($_[0]);
     if (!$reftype) {
+      return unless defined($_[0]);
       _decode_if_utf8($_[0]);
       _encode_id_param($_[0])
         if $_[1] && $_[1] =~ /_id$/o;
+      _clean_data_html($_[0]);
     } elsif ($reftype eq 'SCALAR') {
+      return unless defined(${$_[0]});
       _decode_if_utf8(${$_[0]});
       _encode_id_param(${$_[0]})
         if $_[1] && $_[1] =~ /_id$/o;
+      _clean_data_html(${$_[0]});
     } elsif ($reftype eq 'ARRAY') {
       foreach my $el (@{$_[0]}) {
         # check each element as if it could be anything!
@@ -1251,6 +1285,27 @@ ENDSQL
     }
   }
 }
+
+
+
+
+sub redirectToLoginPage($) {
+  
+  my $self = shift;
+  my $ref = shift;
+  
+  if ($ref) {
+    require URI::Escape;
+    $ref = URI::Escape::uri_escape($ref);
+  }
+  
+  print $self->redirect( -url => '/login.pl?'
+                               . ($ref ? "ref=$ref&" : '')
+                               . ($self->{core}->{timed_out} ? 'timed_out=1' : '') );
+  
+  return Constants::STATUS_OK;
+}
+
 
 
 
