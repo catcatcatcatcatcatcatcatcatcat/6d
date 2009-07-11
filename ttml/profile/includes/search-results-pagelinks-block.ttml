@@ -1,0 +1,26 @@
+  <ul class="opt" style="clear:both;float:right;margin-top:-24px">
+    <li class="opt[% UNLESS next_page_offset.defined %]2[% END %]"[% UNLESS prev_page_offset.defined %] style="display: none; "[% END %]>
+      <a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% prev_page_offset %]&amp;num_results_per_page=[% num_results_per_page %]"
+         onclick="get_profile_search_results('prev'); return false; ">Prev</a></li>
+    [% IF first_results_page %]
+    <li class="opt">
+      <a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% first_results_page.offset %]&amp;num_results_per_page=[% num_results_per_page %]"
+         onclick="get_profile_search_results('offset','[% first_results_page.offset %]'); return false; ">[% first_results_page.number %]&lt;&lt;</a></li>
+    [% END %]
+    [% FOREACH i = [0..8] #create 9 links - hide those not required.. %]
+    <li class="opt"[% IF i > results_pages.max %] style="display: none; "[% END %]>
+      <a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% results_pages.$i.offset %]&amp;num_results_per_page=[% num_results_per_page %]"
+         [% IF results_pages.$i.number == current_results_page %]style="font-weight: bold; padding: 1px; background-color: #FAFADD"[% END %]
+         onclick="get_profile_search_results('offset','[% results_pages.$i.offset %]'); return false; ">[% results_pages.$i.number %]</a></li>
+    [% END %]
+    [% IF last_results_page %]
+    <li class="opt">
+      <a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% last_results_page.offset %]&amp;num_results_per_page=[% num_results_per_page %]"
+         onclick="get_profile_search_results('offset','[% last_results_page.offset %]'); return false; ">&gt;&gt;[% last_results_page.number %]</a></li>
+    [% END %]
+    <li class="opt2"[% UNLESS next_page_offset.defined %] style="display: none; "[% END %]>
+      <a href="/profile/search.pl?mode=results&amp;search_id=[% search_id %]&amp;offset=[% next_page_offset %]&amp;num_results_per_page=[% num_results_per_page %]"
+         onclick="get_profile_search_results('next'); return false; ">Next</a></li>
+  </ul>
+  </span>
+
