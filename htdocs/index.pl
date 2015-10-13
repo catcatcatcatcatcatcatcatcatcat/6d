@@ -55,5 +55,7 @@ foreach (@{$rusty->{data}->{countries}}) {
   }
 }
 
+$rusty->{data}->{pokes} = $rusty->getPokes();
+
 $rusty->process_template;
 $rusty->exit;
