@@ -1,4 +1,5 @@
-[% SET js = [ "/js/textarea-grow.js" ] %]
+[% SET js = [ "/js/textarea-grow.js",
+              "http://yui.yahooapis.com/combo?2.8.0r4/build/yahoo-dom-event/yahoo-dom-event.js&2.8.0r4/build/connection/connection-min.js&2.8.0r4/build/json/json-min.js" ] %]
 [% title = "${profile_name}'s Profile" %]
 [% INCLUDE includes/header.ttml %]
 [%
@@ -77,6 +78,10 @@ END;
          [% IF !note %]onclick="document.getElementById('profilenote-edit').style.display='block'; return false; "[% END %]><img src="/images/icons/friendsandblocks/[% IF note %]delete[% ELSE %]add[% END %]_note.gif" alt="Remove Note" /></a>
     </li>
     [% UNLESS block %]
+    <li class="opt"><a
+      href="/profile/pokes.pl?mode=poke&amp;profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
+      onClick="makeRequest();"
+      title="Send a Poke"><img src="/images/icons/friendsandblocks/delete_fave.gif" alt="Send a Poke" /></a></li>
     <li class="opt"><a [% IF fave %]
       href="/profile/friendsandblocks.pl?mode=delfave&amp;fave_profile_name=[% profile_name %]&amp;from_profile=[% profile_name %][% IF search_id %]&amp;search_id=[% search_id %][% END %]"
       title="Remove From Favourites"><img src="/images/icons/friendsandblocks/delete_fave.gif" alt="Remove From Favourites" /></a></li>
@@ -556,5 +561,57 @@ Viewed: [% total_visit_count %] times since it was created on [% created %]<br /
 The user joined on [% joined %]</p>
 <br />
 
+<script type="text/javascript">
+//<!--
+// Successful XHR response handler
+var handleSuccess = function(o) {
+	var messages = [];
+        
+	// Use the JSON Utility to parse the data returned from the server
+	try {
+	    messages = YAHOO.lang.JSON.parse(o.responseText);
+	}
+	catch (x) {
+	    alert("JSON Parse failed!");
+	    return;
+	}
+        
+	// The returned data was parsed into an array of objects.
+	// Add a P element for each received message
+	for (var i = 0, len = messages.length; i < len; ++i) {
+	    var m = messages[i];
+	    var p = document.createElement('p');
+	    var message_text = document.createTextNode(
+	            m.animal + ' says "' + m.message + '"');
+	    p.appendChild(message_text);
+	    msg_section.appendChild(p);
+	}
+}
 
+var handleFailure = function(o) {
+	if(o.responseText !== undefined){
+		alert('HTTP status: ' + o.status);
+		alert('Status code message: ' + o.statusText);
+	} else {
+	    alert('unknown issue - probably timeout? HMMMMMM!');
+	}
+}
+
+var callbacks =
+{
+  success: handleSuccess,
+  failure: handleFailure,
+  argument: { foo:"foo", bar:"bar" },
+  timeout: 1500 // How long is this? 1.5 secs?
+};
+
+
+function makeRequest(){
+    $sUrl = '/ajax/send_poke.pl';
+    var request = YAHOO.util.Connect.asyncRequest('GET', sUrl, callback);
+    //YAHOO.log("Initiating request; tId: " + request.tId + ".", "info", "example");
+}
+
+//-->
+</script>
 [% INCLUDE includes/footer.ttml %]
