@@ -1062,5 +1062,116 @@ ENDSQL
 
 
 
+##################
+### POKEY FUN: ###
+##################
+
+
+# Send a poke!
+sub sendPoke(@) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  if (!$profile_id) {
+    warn "user with profile id '" . $self->{core}->{profile_id}
+      . "' trying to send a poke without specifying a profile id";
+    return undef;
+  }
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT last_poke_date, pokee_responded
+FROM `user~profile~poke`
+WHERE poker_profile_id = ?
+  AND pokee_profile_id = ?
+LIMIT 1
+ENDSQL
+  ;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute( $self->{core}->{profile_id},
+                 $profile_id );
+  my $poke_exists = $sth->fetchrow_hashref;
+  $sth->finish;
+  
+  # Create new poking relationship between these people.
+  # If poke has happened before, refresh the poke status
+  # unless the poke link has not been acknowledged yet.
+  if ($poke_exists->{last_poke_date}) {
+    
+    # If user hasn't responded to the last one, give up!
+    if ($poke_exists->{pokee_responded}) {
+      return undef;
+    }
+    
+    $query = <<ENDSQL
+UPDATE `user~profile~poke`
+SET total_pokes = total_pokes + 1,
+    pokee_responded = NULL,
+    last_poke_date = NOW()
+WHERE poker_profile_id = ?
+  AND pokee_profile_id = ?
+  AND pokee_responded IS NOT NULL
+ENDSQL
+    ;
+    
+  # If no relationship existed, create a new one with an unresponded poke
+  } else {
+    
+    $query = <<ENDSQL
+INSERT DELAYED INTO `user~profile~poke`
+       (poker_profile_id, pokee_profile_id,
+        pokee_responded, total_pokes, last_poke_date)
+VALUES (?, ?, NULL, 1, NOW())
+ENDSQL
+    ;
+  }
+  $sth = $dbh->prepare_cached($query);
+  my $rows = $sth->execute( $self->{core}->{profile_id},
+                            $profile_id );
+  $sth->finish;
+  
+  return ($rows eq '0E0' ? 0 : 1);
+}
+
+
+# Simply gets unresponded pokes from the inbox of a given profile_id
+sub getPokes($$) {
+  
+  my $self = shift;
+  
+  my $profile_id = shift;
+  
+  if (!$profile_id) {
+    warn "user trying to get pokes without a profile id";
+    return undef;
+  }
+  
+  my $dbh = $self->DBH;
+  
+  my $query = <<ENDSQL
+SELECT upp.poker_profile_id AS profile_id, up.profile_name AS profile_name,
+       upp.last_poke_date AS last_poke_date, upp.total_pokes AS total_pokes
+FROM `user~profile~poke` upp
+INNER JOIN `user~profile` up ON up.poker_profile_id = upp.profile_id
+WHERE pokee_profile_id = ?
+  AND pokee_responded IS NULL
+ORDER BY last_poke_date ASC
+ENDSQL
+;
+  my $sth = $dbh->prepare_cached($query);
+  $sth->execute($profile_id);
+  my @pokes = ();
+  while (my $poke = $sth->fetchrow_hashref) {
+    push @pokes, $poke;
+  }
+  $sth->finish;
+  
+  return \@pokes;
+}
+
+
 
 1;
