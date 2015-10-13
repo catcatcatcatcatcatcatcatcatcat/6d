@@ -339,10 +339,12 @@ VALUES (?, ?, NOW(), 'reciprocal')
 ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
-  $sth->execute($profile_id, $friend_profile_id);
+  my $rows = $sth->execute($profile_id, $friend_profile_id);
   $sth->finish;
   
-  return $dbh->{mysql_insertid};
+  # If performing DELAYED insert, we won't have the inserted record auto_increment ID
+  #return $dbh->{mysql_insertid};
+  return $rows;
 }
 
 
@@ -511,10 +513,12 @@ VALUES (?, ?, NOW())
 ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
-  $sth->execute($profile_id, $fave_profile_id);
+  my $rows = $sth->execute($profile_id, $fave_profile_id);
   $sth->finish;
   
-  return $dbh->{mysql_insertid};
+  warn "so we have rows: $rows and we have insert id: " . $dbh->{mysql_insertid};
+  #return $dbh->{mysql_insertid};
+  return 1;
 }
 
 
