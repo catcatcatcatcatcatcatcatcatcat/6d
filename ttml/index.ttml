@@ -10,6 +10,17 @@ if (window.addEventListener)
 [% INCLUDE includes/header.ttml %]
 
 
+<h4>Pokes</h4>
+[% IF pokes %]
+<ul>
+  [% FOREACH poke = pokes %]
+<li>[% poke.profile_name %] <a href="">Poke</a> <a href="">Ignore</a></li>
+  [% END %]
+</ul>
+[% ELSE %]
+You have no pokes.  Aww. :)
+[% END %]
+
 [% # Let's cheat a little bit! :) %]
 [% #site_stats.signups = site_stats.signups + 1234567 %]
 [% #site_stats.logins  = site_stats.logins  + 54321 %]
