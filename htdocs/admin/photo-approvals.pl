@@ -109,7 +109,7 @@ sub processphotos {
     }
     
     $query = <<ENDSQL
-UPDATE `user~profile~photo`
+UPDATE `user_profile_photo`
 SET checked_date = NOW(),
     checked_by_user_id = ?,
     adult = ?,
@@ -133,7 +133,7 @@ ENDSQL
   } elsif ($action eq 'undo_checking') {
 
     $query = <<ENDSQL
-UPDATE `user~profile~photo`
+UPDATE `user_profile_photo`
 SET checked_date = NULL,
     checked_by_user_id = ?,
     adult = NULL,

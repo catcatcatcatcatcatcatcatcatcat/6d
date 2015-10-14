@@ -56,8 +56,8 @@ if ($rusty->{params}->{'sent'}) {
   $query = <<ENDSQL
 SELECT u.email, u.password, ui.real_name
 FROM `user` u
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
+INNER JOIN `user_info` ui ON ui.user_id = u.user_id
+INNER JOIN `user_profile` up ON up.user_id = u.user_id
 WHERE up.profile_name = ?
 LIMIT 1
 ENDSQL
@@ -97,8 +97,8 @@ ENDSQL
   $query = <<ENDSQL
 SELECT up.profile_name, u.password, ui.real_name
 FROM `user` u
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
+INNER JOIN `user_info` ui ON ui.user_id = u.user_id
+INNER JOIN `user_profile` up ON up.user_id = u.user_id
 WHERE u.email = ?
 LIMIT 1
 ENDSQL

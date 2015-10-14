@@ -17,7 +17,7 @@ my $DBH = rusty::db_connect();
 my $session_cookie = rusty::CGI->cookie( -name => "session" );
 
 my $query = <<ENDSQL
-UPDATE `user~session` SET
+UPDATE `user_session` SET
 created = DATE_SUB(created, INTERVAL 1 HOUR),
 updated = DATE_SUB(updated, INTERVAL 1 HOUR)
 WHERE session_id = ?

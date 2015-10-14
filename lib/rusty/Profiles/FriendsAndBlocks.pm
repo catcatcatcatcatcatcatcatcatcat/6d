@@ -32,9 +32,9 @@ SELECT upf.friend_link_id,
        DATE_FORMAT(upf.read_date, '%d/%m/%y %H:%i') AS read_date,
        DATE_FORMAT(upf.decided_date, '%d/%m/%y %H:%i') AS decided_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
-FROM `user~profile~friend_link` upf
-INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+FROM `user_profile_friend_link` upf
+INNER JOIN `user_profile` up ON upf.requestee_profile_id = up.profile_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.requester_profile_id = ?
   AND upf.deleted_date IS NULL
   AND upf.status != 'rejected'
@@ -74,12 +74,12 @@ SELECT upf.friend_link_id,
        DATE_FORMAT(upf.decided_date, '%d/%m/%y %H:%i') AS decided_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult,
        usess.updated AS online_now
-FROM `user~profile~friend_link` upf
-INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
-LEFT JOIN `user~session` usess ON up.user_id = usess.user_id
+FROM `user_profile_friend_link` upf
+INNER JOIN `user_profile` up ON upf.requestee_profile_id = up.profile_id
+LEFT JOIN `user_session` usess ON up.user_id = usess.user_id
                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                               AND usess.created IS NOT NULL
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.requester_profile_id = ?
   AND upf.deleted_date IS NULL
   AND upf.status != 'rejected'
@@ -109,9 +109,9 @@ sub getOnlineFriendProfileNames($) {
   
   my $query = <<ENDSQL
 SELECT up.profile_name
-FROM `user~profile~friend_link` upf
-INNER JOIN `user~profile` up ON upf.requestee_profile_id = up.profile_id
-INNER JOIN `user~session` usess ON up.user_id = usess.user_id
+FROM `user_profile_friend_link` upf
+INNER JOIN `user_profile` up ON upf.requestee_profile_id = up.profile_id
+INNER JOIN `user_session` usess ON up.user_id = usess.user_id
                                AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                                AND usess.created IS NOT NULL
 WHERE upf.requester_profile_id = ?
@@ -146,7 +146,7 @@ SELECT friend_link_id, requester_profile_id, requestee_profile_id, status,
        DATE_FORMAT(decided_date, '%d/%m/%y %H:%i') AS decided_date,
        DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date,
        message_id
-FROM `user~profile~friend_link`
+FROM `user_profile_friend_link`
 WHERE friend_link_id = ?
 LIMIT 1
 ENDSQL
@@ -175,7 +175,7 @@ SELECT friend_link_id, requester_profile_id, requestee_profile_id, status,
        DATE_FORMAT(decided_date, '%d/%m/%y %H:%i') AS decided_date,
        DATE_FORMAT(deleted_date, '%d/%m/%y %H:%i') AS deleted_date,
        message_id
-FROM `user~profile~friend_link`
+FROM `user_profile_friend_link`
 WHERE requester_profile_id = ?
   AND requestee_profile_id = ?
   AND deleted_date IS NULL
@@ -206,7 +206,7 @@ SELECT friend_link_id, requester_profile_id, requestee_profile_id, status,
        DATE_FORMAT(requested_date, '%d/%m/%y %H:%i') AS requested_date,
        DATE_FORMAT(read_date, '%d/%m/%y %H:%i') AS read_date,
        DATE_FORMAT(decided_date, '%d/%m/%y %H:%i') AS decided_date
-FROM `user~profile~friend_link`
+FROM `user_profile_friend_link`
 WHERE deleted_date IS NULL
   AND (
     (    requester_profile_id = ?
@@ -240,7 +240,7 @@ sub requestFriendLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~friend_link`
+INSERT DELAYED INTO `user_profile_friend_link`
        (requester_profile_id, requestee_profile_id, requested_date, status)
 VALUES (?, ?, NOW(), 'unread')
 ENDSQL
@@ -262,7 +262,7 @@ sub addMsgIdToFriendLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~friend_link`
+UPDATE `user_profile_friend_link`
 SET message_id = ?
 WHERE friend_link_id = ?
 LIMIT 1
@@ -285,7 +285,7 @@ sub readFriendLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~friend_link`
+UPDATE `user_profile_friend_link`
 SET status = 'read',
     read_date = NOW()
 WHERE friend_link_id = ?
@@ -309,7 +309,7 @@ sub acceptFriendLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~friend_link`
+UPDATE `user_profile_friend_link`
 SET status = 'accepted',
     decided_date = NOW()
 WHERE friend_link_id = ?
@@ -333,7 +333,7 @@ sub addReciprocalFriendLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~friend_link`
+INSERT DELAYED INTO `user_profile_friend_link`
        (requester_profile_id, requestee_profile_id, decided_date, status)
 VALUES (?, ?, NOW(), 'reciprocal')
 ENDSQL
@@ -357,7 +357,7 @@ sub rejectFriendLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~friend_link`
+UPDATE `user_profile_friend_link`
 SET status = 'rejected',
     decided_date = NOW()
 WHERE friend_link_id = ?
@@ -381,7 +381,7 @@ sub deleteFriendLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~friend_link`
+UPDATE `user_profile_friend_link`
 SET deleted_date = NOW()
 WHERE friend_link_id = ?
 LIMIT 1
@@ -419,9 +419,9 @@ SELECT upf.fave_link_id, upf.fave_profile_id AS profile_id,
        up.profile_name, up.main_photo_id,
        DATE_FORMAT(upf.added_date, '%d/%m/%y %H:%i') AS added_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
-FROM `user~profile~fave_link` upf
-INNER JOIN `user~profile` up ON upf.fave_profile_id = up.profile_id
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+FROM `user_profile_fave_link` upf
+INNER JOIN `user_profile` up ON upf.fave_profile_id = up.profile_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upf.profile_id = ?
   AND upf.removed_date IS NULL
 ORDER BY upf.added_date DESC
@@ -451,9 +451,9 @@ sub getOnlineFaveProfileNames($) {
   
   my $query = <<ENDSQL
 SELECT up.profile_name
-FROM `user~profile~fave_link` upf
-INNER JOIN `user~profile` up ON upf.fave_profile_id = up.profile_id
-INNER JOIN `user~session` usess ON up.user_id = usess.user_id
+FROM `user_profile_fave_link` upf
+INNER JOIN `user_profile` up ON upf.fave_profile_id = up.profile_id
+INNER JOIN `user_session` usess ON up.user_id = usess.user_id
                                AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                                AND usess.created IS NOT NULL
 WHERE upf.profile_id = ?
@@ -483,7 +483,7 @@ sub findExistingFaveLink($$) {
   my $query = <<ENDSQL
 SELECT fave_link_id, profile_id, fave_profile_id,
        DATE_FORMAT(added_date, '%d/%m/%y %H:%i') AS added_date
-FROM `user~profile~fave_link`
+FROM `user_profile_fave_link`
 WHERE (profile_id = ? AND fave_profile_id = ?)
   AND removed_date IS NULL
 LIMIT 1
@@ -507,7 +507,7 @@ sub createFaveLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~fave_link`
+INSERT DELAYED INTO `user_profile_fave_link`
        (profile_id, fave_profile_id, added_date)
 VALUES (?, ?, NOW())
 ENDSQL
@@ -531,7 +531,7 @@ sub deleteFaveLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~fave_link`
+UPDATE `user_profile_fave_link`
 SET removed_date = NOW()
 WHERE fave_link_id = ?
 LIMIT 1
@@ -572,9 +572,9 @@ SELECT upb.block_link_id, upb.blockee_profile_id AS profile_id,
        up.profile_name, up.main_photo_id,
        DATE_FORMAT(upb.blocked_date, '%d/%m/%y %H:%i') AS blocked_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
-FROM `user~profile~block_link` upb
-INNER JOIN `user~profile` up ON up.profile_id = upb.blockee_profile_id
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+FROM `user_profile_block_link` upb
+INNER JOIN `user_profile` up ON up.profile_id = upb.blockee_profile_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upb.blocker_profile_id = ?
   AND upb.unblocked_date IS NULL
 ENDSQL
@@ -602,7 +602,7 @@ sub findBlockLink($$) {
   my $query = <<ENDSQL
 SELECT block_link_id, blocker_profile_id, blockee_profile_id,
        DATE_FORMAT(blocked_date, '%d/%m/%y %H:%i') AS blocked_date
-FROM `user~profile~block_link`
+FROM `user_profile_block_link`
 WHERE (blocker_profile_id = ? AND blockee_profile_id = ?)
   AND unblocked_date IS NULL
 LIMIT 1
@@ -626,7 +626,7 @@ sub addBlockLink($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~block_link`
+INSERT DELAYED INTO `user_profile_block_link`
        (blocker_profile_id, blockee_profile_id, blocked_date)
 VALUES (?, ?, NOW())
 ENDSQL
@@ -648,7 +648,7 @@ sub unblockBlockLink($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile~block_link`
+UPDATE `user_profile_block_link`
 SET unblocked_date = NOW()
 WHERE block_link_id = ?
 LIMIT 1
@@ -687,9 +687,9 @@ SELECT upn.note, upn.noted_profile_id AS profile_id,
        up.profile_name, up.main_photo_id,
        DATE_FORMAT(upn.added_date, '%d/%m/%y %H:%i') AS added_date,
        upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
-FROM `user~profile~note` upn
-INNER JOIN `user~profile` up ON up.profile_id = upn.noted_profile_id
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
+FROM `user_profile_note` upn
+INNER JOIN `user_profile` up ON up.profile_id = upn.noted_profile_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
 WHERE upn.profile_id = ?
 ORDER BY upn.added_date DESC
 LIMIT ?
@@ -717,7 +717,7 @@ sub findExistingProfileNote($$) {
   
   my $query = <<ENDSQL
 SELECT note, DATE_FORMAT(added_date, '%d/%m/%y %H:%i') AS added_date
-FROM `user~profile~note`
+FROM `user_profile_note`
 WHERE profile_id = ?
   AND noted_profile_id = ?
 LIMIT 1
@@ -742,7 +742,7 @@ sub createProfileNote($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~note`
+INSERT DELAYED INTO `user_profile_note`
        (profile_id, noted_profile_id, note, added_date)
 VALUES (?, ?, ?, NOW())
 ON DUPLICATE KEY
@@ -769,7 +769,7 @@ sub deleteProfileNote($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-DELETE FROM `user~profile~note`
+DELETE FROM `user_profile_note`
 WHERE profile_id = ?
   AND noted_profile_id = ?
 LIMIT 1
@@ -803,7 +803,7 @@ sub getProfileDisplayPrefs($) {
   
   my $query = <<ENDSQL
 SELECT showfaves, showfriends
-FROM `user~profile`
+FROM `user_profile`
 WHERE profile_id = ?
 LIMIT 1
 ENDSQL
@@ -826,7 +826,7 @@ sub updateProfileDisplayPrefs($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile` SET
+UPDATE `user_profile` SET
 ENDSQL
 ;
   my @params = ();

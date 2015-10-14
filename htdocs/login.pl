@@ -94,7 +94,7 @@ if ($mode eq 'login') {
   # Then make sure the login info given checks out..
   $query = <<ENDSQL
 SELECT up.user_id
-FROM `user~profile` up
+FROM `user_profile` up
 INNER JOIN `user` u ON u.user_id = up.user_id
 WHERE up.profile_name = ?
   AND u.password = ?
@@ -132,7 +132,7 @@ ENDSQL
   # failed test session to see if cookies were working!
   $query = <<ENDSQL
 SELECT ip_address, session_id
-FROM `user~session`
+FROM `user_session`
 WHERE user_id = ?
   AND created IS NOT NULL
   AND updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
@@ -173,7 +173,7 @@ ENDSQL
         # Their cookie has been removed so continue as usual.
         # UPDATE: But what if they're just on a different browser on the
         # same machine/network?  Haha. The key is to not allow any more than
-        # one session at the time!  UserID is now a unique key on `user~session`
+        # one session at the time!  UserID is now a unique key on `user_session`
         # so it never happens..
         warn "Recent session '$session_id' already exists for user '$user_id' but no cookie found";
       }
@@ -200,7 +200,7 @@ ENDSQL
       # NB. Be careful putting all of this 'time forward by 10 years' stuff
       # back in here - it is not being checked for anywhere else anymore! :)
       #
-      #$query = " UPDATE `user~session` "
+      #$query = " UPDATE `user_session` "
       #       . " SET updated = DATE_SUB(updated, INTERVAL 10 YEAR), "
       #       . " created = DATE_SUB(created, INTERVAL 10 YEAR) "
       #       . " WHERE session_id = ? "
@@ -239,7 +239,7 @@ ENDSQL
   $session_id = $ENV{'UNIQUE_ID'};
   
   $query = <<ENDSQL
-INSERT INTO `user~session`
+INSERT INTO `user_session`
 ( session_id, user_id, ip_address )
 VALUES
 ( ?, ?, ? )
@@ -283,7 +283,7 @@ ENDSQL
       # a pretty number! Whoop de jour.
       
       $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats`
+INSERT DELAYED INTO `site_stats`
 SET nocookies = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY
@@ -323,7 +323,7 @@ ENDSQL
     # user has spent online and when to logout due to inactivity).
     
     $query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET created = NOW(),
     updated = NOW()
 WHERE session_id = ?
@@ -349,8 +349,8 @@ ENDSQL
     
     # Update user statistics to reflect successful login
     $query = <<ENDSQL
-UPDATE `user~stats` stats
-INNER JOIN `user~session` session
+UPDATE `user_stats` stats
+INNER JOIN `user_session` session
         ON session.user_id = stats.user_id
 SET stats.num_logins = stats.num_logins + 1
 WHERE session.session_id = ?
@@ -360,13 +360,13 @@ ENDSQL
     my $rows = $sth->execute($session_id);
     $sth->finish;
     
-    warn "user_id $rusty->{core}->{user_id} has no `user~stats` entry to update"
+    warn "user_id $rusty->{core}->{user_id} has no `user_stats` entry to update"
       if $rows eq '0E0';
     
     
     # Update site stats for number of logins per day
     $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats`
+INSERT DELAYED INTO `site_stats`
 SET logins = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE logins = logins + 1

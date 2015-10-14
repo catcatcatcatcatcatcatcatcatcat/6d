@@ -60,7 +60,7 @@ if ($rusty->{params}->{from_search} && $rusty->{params}->{search_id}) {
   # (how many profiles have been requested from the search results)
   # but only do so if this search belongs to the current user/visitor..
   $query = <<ENDSQL
-UPDATE `user~profile~search~cache`
+UPDATE `user_profile_search_cache`
 SET profiles_viewed_from_search = profiles_viewed_from_search + 1
 WHERE search_id = ?
   AND ( ( user_id > 0
@@ -110,24 +110,24 @@ up.hide_empty_info, up.updated, up.created, up.total_visit_count,
 DATE_FORMAT(up.deleted_date, '%a %d/%m/%y %H:%i') AS deleted_date,
 up.showfaves, up.showfriends
 
-FROM `user~profile` up
-LEFT JOIN `user~stats` us ON up.user_id = us.user_id
-LEFT JOIN `user~session` usess ON up.user_id = usess.user_id
+FROM `user_profile` up
+LEFT JOIN `user_stats` us ON up.user_id = us.user_id
+LEFT JOIN `user_session` usess ON up.user_id = usess.user_id
                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                               AND usess.created IS NOT NULL
-LEFT JOIN `lookup~body_hair` lbh ON up.body_hair_id = lbh.body_hair_id
-LEFT JOIN `lookup~body_type` lbt ON up.body_type_id = lbt.body_type_id
-LEFT JOIN `lookup~drinker` ldi ON up.drinker_id = ldi.drinker_id
-LEFT JOIN `lookup~drug_user` ldu ON up.drug_user_id = ldu.drug_user_id
-LEFT JOIN `lookup~ethnic_origin` leo ON up.ethnic_origin_id = leo.ethnic_origin_id
-LEFT JOIN `lookup~eye_colour` lec ON up.eye_colour_id = lec.eye_colour_id
-LEFT JOIN `lookup~relationship_status` lrs ON up.relationship_status_id = lrs.relationship_status_id
-LEFT JOIN `lookup~smoker` ls ON up.smoker_id = ls.smoker_id
-LEFT JOIN `lookup~starsign` lst ON up.starsign_id = lst.starsign_id
-LEFT JOIN `lookup~thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
-LEFT JOIN `user~info` ui ON up.user_id = ui.user_id
-LEFT JOIN `lookup~continent~country` lco ON ui.country_code = lco.country_code
-LEFT JOIN `lookup~continent~country~city1000` lcs ON ui.subentity_code = lcs.subentity_code
+LEFT JOIN `lookup_body_hair` lbh ON up.body_hair_id = lbh.body_hair_id
+LEFT JOIN `lookup_body_type` lbt ON up.body_type_id = lbt.body_type_id
+LEFT JOIN `lookup_drinker` ldi ON up.drinker_id = ldi.drinker_id
+LEFT JOIN `lookup_drug_user` ldu ON up.drug_user_id = ldu.drug_user_id
+LEFT JOIN `lookup_ethnic_origin` leo ON up.ethnic_origin_id = leo.ethnic_origin_id
+LEFT JOIN `lookup_eye_colour` lec ON up.eye_colour_id = lec.eye_colour_id
+LEFT JOIN `lookup_relationship_status` lrs ON up.relationship_status_id = lrs.relationship_status_id
+LEFT JOIN `lookup_smoker` ls ON up.smoker_id = ls.smoker_id
+LEFT JOIN `lookup_starsign` lst ON up.starsign_id = lst.starsign_id
+LEFT JOIN `lookup_thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
+LEFT JOIN `user_info` ui ON up.user_id = ui.user_id
+LEFT JOIN `lookup_continent_country` lco ON ui.country_code = lco.country_code
+LEFT JOIN `lookup_continent_country_city1000` lcs ON ui.subentity_code = lcs.subentity_code
 
 WHERE up.profile_name = ?
 LIMIT 1

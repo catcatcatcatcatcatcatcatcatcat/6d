@@ -27,7 +27,7 @@ my $session_cookie = rusty::CGI->cookie( -name => "session" );
 
 my $query = <<ENDSQL
 SELECT us.user_id, u.profile_id
-FROM `user~session` us
+FROM `user_session` us
 INNER JOIN `user` u ON u.user_id = us.user_id
 WHERE us.session_id = ?
   AND us.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
@@ -52,7 +52,7 @@ die "no read status specified by user $user_id" unless defined $read;
 my $read_flag = $read > 0 ? 1 : 0;
 
 $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET recipient_read_flag = ?
 WHERE message_id = ?
   AND recipient_profile_id = ?
@@ -72,7 +72,7 @@ if ($rows eq '0E0') {
   # (as the outcome they wanted has been (was already) achieved! =)
   $query = <<ENDSQL
 SELECT message_id, recipient_profile_id, recipient_read_flag, read_date, flag
-FROM `user~profile~message`
+FROM `user_profile_message`
 WHERE message_id = ?
 LIMIT 1
 ENDSQL

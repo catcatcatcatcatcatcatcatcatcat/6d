@@ -35,7 +35,7 @@ SELECT FLOOR((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(created)) / 60) AS search_a
        result_set, last_page_offset,
        num_results_per_page,
        onlyonline
-FROM `user~profile~search~cache`
+FROM `user_profile_search_cache`
 WHERE search_id = ?
 LIMIT 1
 ENDSQL
@@ -83,7 +83,7 @@ ENDSQL
           $self->{core}->{'visitor_id'} == $search_cache->{'visitor_id'}) {
         
         $query = <<ENDSQL
-UPDATE `user~profile~search~cache`
+UPDATE `user_profile_search_cache`
 SET user_id = ?
 WHERE search_id = ?
 user_id IS NULL
@@ -208,11 +208,11 @@ lco.name AS country, lcs.name AS subentity
 #up.fave_animal, up.fave_person, up.fave_website,
 #up.fave_place, up.fave_thing,
 #up.thought_text
-FROM `user~profile` up
-INNER JOIN `user~info` ui ON ui.user_id = up.user_id
-LEFT JOIN `lookup~continent~country` lco ON lco.country_code = ui.country_code
-LEFT JOIN `lookup~continent~country~city1000` lcs ON lcs.subentity_code = ui.subentity_code
-LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
+FROM `user_profile` up
+INNER JOIN `user_info` ui ON ui.user_id = up.user_id
+LEFT JOIN `lookup_continent_country` lco ON lco.country_code = ui.country_code
+LEFT JOIN `lookup_continent_country_city1000` lcs ON lcs.subentity_code = ui.subentity_code
+LEFT JOIN `user_profile_photo` ph ON ph.profile_id = up.profile_id
 WHERE up.updated IS NOT NULL
 AND up.profile_id = ?
 ENDSQL
@@ -234,7 +234,7 @@ ENDSQL
   # Update our search cache so we know how much the search has been used
   # (how many search results pages have been requested)
   $query = <<ENDSQL
-UPDATE `user~profile~search~cache`
+UPDATE `user_profile_search_cache`
 SET results_pages_requested = results_pages_requested + 1,
     last_page_offset = ?,
     num_results_per_page = ?,
@@ -323,7 +323,7 @@ sub getSearchPrefs() {
     my $query = <<ENDSQL
 SELECT remember_previous_search, search_id, num_results_per_page,
        show_search_history, show_advanced_search
-FROM `user~profile~search~prefs`
+FROM `user_profile_search_prefs`
 WHERE user_id = ?
 LIMIT 1
 ENDSQL
@@ -339,7 +339,7 @@ ENDSQL
     my $query = <<ENDSQL
 SELECT remember_previous_search, search_id, num_results_per_page,
        show_search_history, show_advanced_search
-FROM `visitor~profile~search~prefs`
+FROM `visitor_profile_search_prefs`
 WHERE visitor_id = ?
 LIMIT 1
 ENDSQL

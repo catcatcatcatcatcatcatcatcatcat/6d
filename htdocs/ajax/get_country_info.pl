@@ -33,7 +33,7 @@ SELECT SQL_CACHE name, capital, population,
                         IF(bounding_box_west>=0,
                            CONCAT(FORMAT(bounding_box_west,3),'&deg;E'),
                            CONCAT(FORMAT(bounding_box_west*-1,3),'&deg;W'))) AS longitude
-FROM `lookup~continent~country`
+FROM `lookup_continent_country`
 WHERE country_code = ?
 LIMIT 1
 ENDSQL

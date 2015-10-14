@@ -967,7 +967,7 @@ sub get_utf8_params {
       
       my $dbh = $self->DBH;
       my $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats~benchmarks`
+INSERT DELAYED INTO `site_stats_benchmarks`
 SET num_benchmarks = 1,
     total_time = ?,
     date = CURRENT_DATE(),
@@ -1004,7 +1004,7 @@ sub _get_user_id($) {
   
   my $query = <<ENDSQL
 SELECT user_id, ip_address
-FROM `user~session`
+FROM `user_session`
 WHERE session_id = ?
   AND updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
   AND created IS NOT NULL
@@ -1031,7 +1031,7 @@ ENDSQL
   } else {
     
     $query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET updated = NOW()
 ENDSQL
 ;
@@ -1145,7 +1145,7 @@ ENDSQL
       
       # Create stats for visitor (when they first visited).
       $query = <<ENDSQL
-INSERT INTO `visitor~stats`
+INSERT INTO `visitor_stats`
 ( visitor_id, user_agent, first_visit )
 VALUES
 ( ?, ?, NOW() )
@@ -1157,7 +1157,7 @@ ENDSQL
       
       # Create this session for them..
       $query = <<ENDSQL
-INSERT INTO `visitor~session`
+INSERT INTO `visitor_session`
 ( visitor_ref, visitor_id, ip_address, created, clicks )
 VALUES
 ( ?, ?, ?, NOW(), 1 )
@@ -1194,7 +1194,7 @@ ENDSQL
     # check to see if that visitor reference has a current session.
     $query = <<ENDSQL
 SELECT visitor_id, ip_address
-FROM `visitor~session`
+FROM `visitor_session`
 WHERE visitor_ref = ?
   AND updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 LIMIT 1
@@ -1209,7 +1209,7 @@ ENDSQL
       
       # If a valid session exists, just update it to say we are still here.
       $query = <<ENDSQL
-UPDATE `visitor~session`
+UPDATE `visitor_session`
 SET updated = NOW()
 ENDSQL
 ;
@@ -1269,7 +1269,7 @@ ENDSQL
       $self->cleanUpOldVisitorSession($visitor_id);
       
       $query = <<ENDSQL
-INSERT INTO `visitor~session`
+INSERT INTO `visitor_session`
 ( visitor_ref, visitor_id, ip_address, created, clicks )
 VALUES
 ( ?, ?, ?, NOW(), 1 )
@@ -1319,7 +1319,7 @@ sub update_page_clicks($) {
   if ($self->session_cookie) {
     
     my $query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET clicks = clicks + 1,
     updated = NOW()
 WHERE session_id = ?
@@ -1335,7 +1335,7 @@ ENDSQL
   } elsif ($self->visitor_cookie) {
     
     my $query = <<ENDSQL
-UPDATE `visitor~session`
+UPDATE `visitor_session`
 SET clicks = clicks + 1
 WHERE visitor_id = ?
   AND updated > DATE_SUB(NOW(), INTERVAL 31 MINUTE)
@@ -1657,7 +1657,7 @@ sub cleanUpOldUserSession($$) {
   # for this user.
   
   my $query = <<ENDSQL
-DELETE FROM `user~session`
+DELETE FROM `user_session`
 WHERE user_id = ?
   AND created IS NULL
 ENDSQL
@@ -1676,7 +1676,7 @@ ENDSQL
 SELECT session_id, user_id, clicks,
        FLOOR((UNIX_TIMESTAMP(updated) - UNIX_TIMESTAMP(created)) / 60)
          AS mins_online, updated
-FROM `user~session`
+FROM `user_session`
 WHERE user_id = ?
 ENDSQL
 ;
@@ -1687,7 +1687,7 @@ ENDSQL
   # for the UPDATE and DELETE statements for each session id.
   
   my $update_query = <<ENDSQL
-UPDATE `user~stats`
+UPDATE `user_stats`
 SET last_session_end = IF(ISNULL(last_session_end), ?,
                           IF(? > last_session_end, ?, last_session_end)),
     mins_online = mins_online + ?, 
@@ -1699,7 +1699,7 @@ ENDSQL
   my $update_sth = $dbh->prepare_cached($update_query);
   
   my $delete_query = <<ENDSQL
-DELETE FROM `user~session`
+DELETE FROM `user_session`
 WHERE session_id = ?
 LIMIT 1
 ENDSQL
@@ -1707,7 +1707,7 @@ ENDSQL
   my $delete_sth = $dbh->prepare_cached($delete_query);
   
   my $rot_query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET session_id = CONCAT("ERROR: ", SUBSTRING(session_id, 8)),
     user_id = NULL,
     updated = updated # Make sure it is not updated on update!
@@ -1784,7 +1784,7 @@ sub cleanUpOldVisitorSession($$) {
 SELECT visitor_id, clicks,
        FLOOR((UNIX_TIMESTAMP(updated) - UNIX_TIMESTAMP(created)) / 60)
          AS mins_online, updated
-FROM `visitor~session`
+FROM `visitor_session`
 WHERE visitor_id = ?
 ENDSQL
 ;
@@ -1795,7 +1795,7 @@ ENDSQL
   # for the UPDATE and DELETE statements for each session id.
   
   my $update_query = <<ENDSQL
-UPDATE `visitor~stats`
+UPDATE `visitor_stats`
 SET last_session_end = IF(ISNULL(last_session_end), ?,
                           IF(? > last_session_end, ?, last_session_end)),
     num_visits = num_visits + 1,
@@ -1808,7 +1808,7 @@ ENDSQL
   my $update_sth = $dbh->prepare_cached($update_query);
   
   my $delete_query = <<ENDSQL
-DELETE FROM `visitor~session`
+DELETE FROM `visitor_session`
 WHERE visitor_id = ?
 LIMIT 1
 ENDSQL
@@ -1816,7 +1816,7 @@ ENDSQL
   my $delete_sth = $dbh->prepare_cached($delete_query);
   
   my $rot_query = <<ENDSQL
-UPDATE `visitor~session`
+UPDATE `visitor_session`
 SET visitor_ref = CONCAT("ERROR: ", SUBSTRING(visitor_ref, 8)),
     visitor_id = NULL,
     updated = updated # Make sure it is not updated on update!
@@ -1891,7 +1891,7 @@ sub convertVisitorSessionToUserSession($$) {
   
   my $query = <<ENDSQL
 SELECT created, clicks
-FROM `visitor~session`
+FROM `visitor_session`
 WHERE visitor_id = ?
   AND updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 LIMIT 1
@@ -1905,7 +1905,7 @@ ENDSQL
   if ($visitor_session) {
     
     $query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET created = ?,
     clicks = clicks + ?,
     updated = NOW()
@@ -1921,7 +1921,7 @@ ENDSQL
     $sth->finish;
     
     $query = <<ENDSQL
-DELETE FROM `visitor~session`
+DELETE FROM `visitor_session`
 WHERE visitor_id = ?
 LIMIT 1
 ENDSQL
@@ -1946,7 +1946,7 @@ sub populate_site_stats() {
   
   my $query = <<ENDSQL
 SELECT SUM(signups) AS signups, SUM(logins) AS logins
-FROM `site~stats`
+FROM `site_stats`
 ENDSQL
 ;
   my $sth = $dbh->prepare_cached($query);
@@ -1962,7 +1962,7 @@ ENDSQL
   
   $query = <<ENDSQL
 SELECT COUNT(*) AS online
-FROM `user~session`
+FROM `user_session`
 WHERE updated >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
   AND created IS NOT NULL
 ENDSQL
@@ -1992,8 +1992,8 @@ SELECT DATE_FORMAT(stats.joined, "%l%p on %a %D %b %y") AS joined,
          + stats.mins_online AS mins_online,
        stats.total_visited_count,
        stats.unique_visited_count
-FROM `user~stats` stats
-LEFT JOIN `user~session` sess ON sess.user_id = stats.user_id
+FROM `user_stats` stats
+LEFT JOIN `user_session` sess ON sess.user_id = stats.user_id
                              AND sess.updated IS NOT NULL
                              AND sess.created IS NOT NULL
 WHERE stats.user_id = ?

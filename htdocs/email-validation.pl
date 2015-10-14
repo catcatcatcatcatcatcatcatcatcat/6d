@@ -36,8 +36,8 @@ unless ($email && $profile_name && $email_validation_code) {
   $query = <<ENDSQL
 SELECT u.email, u.email_validation_code, u.email_validated, ui.real_name
 FROM `user` u
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
+INNER JOIN `user_info` ui ON ui.user_id = u.user_id
+INNER JOIN `user_profile` up ON up.user_id = u.user_id
 WHERE up.profile_name = ?
 LIMIT 1
 ENDSQL
@@ -67,7 +67,7 @@ ENDSQL
     
     $query = <<ENDSQL
 UPDATE `user` u
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
+INNER JOIN `user_profile` up ON up.user_id = u.user_id
 SET u.email_validation_code = NULL,
     u.email_validated = NOW()
 WHERE up.profile_name = ?

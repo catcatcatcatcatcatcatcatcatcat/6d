@@ -51,7 +51,7 @@ if ($params->{profile_name_search} eq 'start') {
 
 my $query = <<ENDSQL
 SELECT profile_name
-FROM `user~profile`
+FROM `user_profile`
 WHERE profile_name LIKE ?
 LIMIT 1
 ENDSQL

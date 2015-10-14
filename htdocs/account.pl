@@ -215,7 +215,7 @@ ENDSQL
       
       # Update basic user info
       $query = <<ENDSQL
-UPDATE `user~info` SET
+UPDATE `user_info` SET
 real_name = ?,
 gender = ?,
 dob = ?,
@@ -320,7 +320,7 @@ SELECT real_name, gender,
       DATE_FORMAT(dob, "%c") AS dob_month,
       DATE_FORMAT(dob, "%e") AS dob_day,
       sexuality, subentity_code, country_code
-FROM `user~info`
+FROM `user_info`
 WHERE user_id = ?
 LIMIT 1
 ENDSQL
@@ -362,7 +362,7 @@ ENDSQL
     
     $query = <<ENDSQL
 SELECT subentity_code, name
-FROM `lookup~continent~country~city1000`
+FROM `lookup_continent_country_city1000`
 WHERE country_code = ?
 ORDER BY name
 ENDSQL
@@ -433,7 +433,7 @@ ENDSQL
   if (not exists $rusty->{param_errors}->{profile_name}) {
     
     # Check that profile name isn't already in use.
-    $query = "SELECT user_id FROM `user~profile` WHERE profile_name = ? LIMIT 1";
+    $query = "SELECT user_id FROM `user_profile` WHERE profile_name = ? LIMIT 1";
     $sth = $rusty->DBH->prepare_cached($query);
     $sth->execute($rusty->{params}->{profile_name});
     (my $profile_exists) = $sth->fetchrow_array();
@@ -582,7 +582,7 @@ ENDSQL
     
     # Build query to log successful passphrase hits as well as misses in stats db.
     $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats`
+INSERT DELAYED INTO `site_stats`
 SET $passphrase_success_field = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE $passphrase_success_field = $passphrase_success_field + 1
@@ -635,7 +635,7 @@ ENDSQL
     
     # Insert the profile_name into empty profile entry
     $query = <<ENDSQL
-INSERT INTO `user~profile`
+INSERT INTO `user_profile`
 ( user_id, profile_name )
 VALUES
 ( ?, ? )
@@ -665,7 +665,7 @@ ENDSQL
     
     # Create some basic user info
     $query = <<ENDSQL
-INSERT INTO `user~info`
+INSERT INTO `user_info`
 ( user_id, real_name, gender, dob, age, sexuality, country_code, subentity_code )
 VALUES
 ( ?, ?, ?, ?, ?, ?, ?, ? )
@@ -693,7 +693,7 @@ ENDSQL
     
     # Create stats for user (when they joined)
     $query = <<ENDSQL
-INSERT INTO `user~stats`
+INSERT INTO `user_stats`
 ( user_id, joined )
 VALUES
 ( ?, NOW() )
@@ -755,7 +755,7 @@ ENDMSG
     
     # Update site stats for number of signups per day
     $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats`
+INSERT DELAYED INTO `site_stats`
 SET signups = 1,
 date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE signups = signups + 1
@@ -771,7 +771,7 @@ ENDSQL
     my $session_id = $ENV{'UNIQUE_ID'};
     
     $query = <<ENDSQL
-INSERT INTO `user~session`
+INSERT INTO `user_session`
 ( session_id, user_id, ip_address )
 VALUES
 ( ?, ?, ? )
@@ -881,7 +881,7 @@ sub get_signup_select_options() {
   if ($rusty->{params}->{country_code} && $rusty->{params}->{country_code} ne 'select') {
     my $query = <<ENDSQL
 SELECT subentity_code, name
-FROM `lookup~continent~country~city1000`
+FROM `lookup_continent_country_city1000`
 WHERE country_code = ?
 ORDER BY name
 ENDSQL

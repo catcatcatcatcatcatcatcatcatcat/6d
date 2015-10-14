@@ -144,7 +144,7 @@ ENDSQL
       
       # Build query to log successful passphrase hits as well as misses in stats db.
       $query = <<ENDSQL
-INSERT DELAYED INTO `site~stats`
+INSERT DELAYED INTO `site_stats`
 SET $passphrase_success_field = 1,
     date = CURRENT_DATE()
 ON DUPLICATE KEY UPDATE $passphrase_success_field = $passphrase_success_field + 1
@@ -190,7 +190,7 @@ ENDSQL
     $query = <<ENDSQL
 SELECT u.email, ui.real_name
 FROM `user` u
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
+INNER JOIN `user_info` ui ON ui.user_id = u.user_id
 WHERE u.user_id = ?
 LIMIT 1
 ENDSQL

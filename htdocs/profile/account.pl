@@ -103,8 +103,8 @@ unless ($rusty->{core}->{'user_id'} > 0) {
 
 $query = <<ENDSQL
 SELECT ui.gender, up.profile_name
-FROM `user~profile` up
-LEFT JOIN `user~info` ui ON ui.user_id = up.user_id
+FROM `user_profile` up
+LEFT JOIN `user_info` ui ON ui.user_id = up.user_id
 WHERE up.user_id = ?
 LIMIT 1
 ENDSQL
@@ -188,7 +188,7 @@ if ($rusty->{params}->{'submitting'}) {
     " successfully";
     
     $query = <<ENDSQL
-UPDATE `user~profile` SET
+UPDATE `user_profile` SET
 updated = NOW(),
 ENDSQL
 ;

@@ -44,7 +44,7 @@ if (($rows = $dbh->do($query)) ne '0E0') {
 # on the side of caution and leave all from the last minute.
 
 $query = <<ENDSQL
-DELETE FROM `user~session`
+DELETE FROM `user_session`
 WHERE created IS NULL
 AND updated < DATE_SUB(NOW(), INTERVAL 1 MINUTE)
 ENDSQL
@@ -63,7 +63,7 @@ $query = <<ENDSQL
 SELECT session_id, user_id, clicks,
 FLOOR((UNIX_TIMESTAMP(updated) - UNIX_TIMESTAMP(created)) / 60)
 AS mins_online, updated
-FROM `user~session`
+FROM `user_session`
 WHERE updated < DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 ENDSQL
 ;
@@ -74,7 +74,7 @@ $sth->execute();
 # for the UPDATE and DELETE statements for each session id.
 
 my $update_query = <<ENDSQL
-UPDATE `user~stats`
+UPDATE `user_stats`
 SET last_session_end = IF(ISNULL(last_session_end), ?,
                           IF(? > last_session_end, ?, last_session_end)),
 mins_online = mins_online + ?, 
@@ -87,7 +87,7 @@ ENDSQL
 my $update_sth = $dbh->prepare($update_query);
 
 my $delete_query = <<ENDSQL
-DELETE FROM `user~session`
+DELETE FROM `user_session`
 WHERE session_id = ?
 LIMIT 1
 ENDSQL
@@ -96,7 +96,7 @@ ENDSQL
 my $delete_sth = $dbh->prepare($delete_query);
 
 my $rot_query = <<ENDSQL
-UPDATE `user~session`
+UPDATE `user_session`
 SET session_id = CONCAT("ERROR: ", SUBSTRING(session_id, 8)),
     user_id = NULL,
     updated = updated # Make sure it is not updated on update!
@@ -163,7 +163,7 @@ $sth->finish;
 # Update site~benchmark~stats averages -
 # this only needs to be run just after midnight every night.
 my $site_benchmarks_query = <<ENDSQL
-UPDATE `site~stats~benchmarks` SET
+UPDATE `site_stats_benchmarks` SET
 mean_benchmark = TRUNCATE(total_time / num_benchmarks,3)
 WHERE mean_benchmark IS NULL
   AND num_benchmarks > 0

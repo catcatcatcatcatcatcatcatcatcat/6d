@@ -25,7 +25,7 @@ sub getProfileIdFromPhotoId($) {
   
   my $query = <<ENDSQL
 SELECT profile_id
-FROM `user~profile~photo` upp
+FROM `user_profile_photo` upp
 WHERE upp.photo_id = ?
 LIMIT 1
 ENDSQL
@@ -52,7 +52,7 @@ sub getPhotoCount($) {
 
   my $query = <<ENDSQL
 SELECT COUNT(*)
-FROM `user~profile~photo` photo
+FROM `user_profile_photo` photo
 WHERE photo.profile_id = ?
   AND deleted_date IS NULL
   AND rejected != 1
@@ -81,7 +81,7 @@ sub getCheckedPhotoCount($) {
 
   my $query = <<ENDSQL
 SELECT COUNT(*)
-FROM `user~profile~photo` photo
+FROM `user_profile_photo` photo
 WHERE photo.profile_id = ?
   AND checked_date IS NOT NULL
   AND deleted_date IS NULL
@@ -110,7 +110,7 @@ sub hasAdultPics($) {
 
   my $query = <<ENDSQL
 SELECT COUNT(*)
-FROM `user~profile~photo`
+FROM `user_profile_photo`
 WHERE profile_id = ?
   AND adult = 1
   AND deleted_date IS NULL
@@ -146,7 +146,7 @@ sub hasAdultPass() {
 SELECT IF(adultpass_expiry > NOW(),
           (UNIX_TIMESTAMP(adultpass_expiry) - UNIX_TIMESTAMP()) / 60,
           -1)
-FROM `user~info`
+FROM `user_info`
 WHERE user_id = ?
 AND adultpass_expiry IS NOT NULL
 LIMIT 1
@@ -183,8 +183,8 @@ SELECT SQL_CACHE up.profile_name,
        DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
        DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
        upp.adult, upp.total_visit_count
-FROM `user~profile~photo` upp
-LEFT JOIN `user~profile` up ON up.main_photo_id = upp.photo_id
+FROM `user_profile_photo` upp
+LEFT JOIN `user_profile` up ON up.main_photo_id = upp.photo_id
 WHERE upp.profile_id = ?
   AND upp.deleted_date IS NULL
   AND upp.rejected != 1
@@ -218,7 +218,7 @@ ENDSQL
     # This should be done via the photo admin but we'll do it
     # here just to be safe! - Set main_photo_id to NOTHING :)
     $query = <<ENDSQL
-UPDATE `user~profile` SET main_photo_id = NULL
+UPDATE `user_profile` SET main_photo_id = NULL
 WHERE profile_id = ?
 LIMIT 1
 ENDSQL
@@ -234,7 +234,7 @@ ENDSQL
     # If no main photo found,
     # set this earliest pic to be the main photo.
     $query = <<ENDSQL
-UPDATE `user~profile` SET main_photo_id = ?
+UPDATE `user_profile` SET main_photo_id = ?
 WHERE profile_id = ?
 LIMIT 1
 ENDSQL
@@ -271,7 +271,7 @@ SELECT photo_id,
        DATE_FORMAT(uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
        DATE_FORMAT(checked_date, '%d/%m/%y %H:%i') AS checked_date,
        adult, total_visit_count
-FROM `user~profile~photo`
+FROM `user_profile_photo`
 WHERE profile_id = ?
   AND deleted_date IS NULL
   AND rejected != 1
@@ -311,7 +311,7 @@ SELECT photo_id,
        DATE_FORMAT(uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
        DATE_FORMAT(checked_date, '%d/%m/%y %H:%i') AS checked_date,
        adult, rejected, checked_by_user_id, deleted_date, total_visit_count
-FROM `user~profile~photo`
+FROM `user_profile_photo`
 WHERE photo_id = ?
 LIMIT 1
 ENDSQL
@@ -398,8 +398,8 @@ SELECT upp.photo_id, upp.profile_id, up.profile_name,
        upp.thumbnail_nocrop_filename, upp.tnnc_width, upp.tnnc_height,
        upp.caption,
              SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.uploaded_date)) AS elapsed_time_since_upload
-FROM `user~profile~photo` upp
-INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
+FROM `user_profile_photo` upp
+INNER JOIN `user_profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NULL
   AND upp.deleted_date IS NULL
 ORDER BY upp.uploaded_date ASC
@@ -436,8 +436,8 @@ SELECT upp.photo_id, upp.profile_id, up.profile_name,
              SEC_TO_TIME(UNIX_TIMESTAMP(upp.checked_date) - UNIX_TIMESTAMP(upp.uploaded_date)) AS time_waited_for_check,
              SEC_TO_TIME(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(upp.checked_date)) AS elapsed_time_since_check,
        upp.adult, upp.rejected
-FROM `user~profile~photo` upp
-INNER JOIN `user~profile` up ON up.profile_id = upp.profile_id
+FROM `user_profile_photo` upp
+INNER JOIN `user_profile` up ON up.profile_id = upp.profile_id
 WHERE upp.checked_date IS NOT NULL
   AND upp.deleted_date IS NULL
 ORDER BY upp.checked_date DESC

@@ -28,8 +28,8 @@ SELECT SQL_CACHE c.subentity_code, c.name AS subentity_name,
        IF(c.longitude>=0,
           CONCAT(FORMAT(c.longitude,3),'&deg;E'),
           CONCAT(FORMAT(c.longitude*-1,3),'&deg;W')) AS longitude_formatted
-FROM `lookup~continent~country~city1000` c
-LEFT JOIN `lookup~continent~country~city1000~timezones` t
+FROM `lookup_continent_country_city1000` c
+LEFT JOIN `lookup_continent_country_city1000_timezones` t
        ON t.TimeZoneId = c.TimeZoneId
 WHERE c.country_code = ?
 ORDER BY c.name

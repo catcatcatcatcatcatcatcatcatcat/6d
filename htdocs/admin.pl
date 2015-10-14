@@ -27,7 +27,7 @@ $query = <<ENDSQL
 SELECT date,
        SUM(num_benchmarks) AS hits,
        ROUND(SUM(total_time) / SUM(num_benchmarks)) AS mean
-FROM `site~stats~benchmarks`
+FROM `site_stats_benchmarks`
 WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK)
 GROUP BY date
 ORDER BY date DESC
@@ -46,7 +46,7 @@ $query = <<ENDSQL
 SELECT IF(mode='',script,CONCAT_WS('?mode=', script, mode)) AS request,
        SUM(num_benchmarks) AS hits,
        ROUND(SUM(total_time) / SUM(num_benchmarks)) AS mean
-FROM `site~stats~benchmarks`
+FROM `site_stats_benchmarks`
 GROUP BY request
 ORDER BY mean DESC
 ENDSQL
@@ -64,7 +64,7 @@ $query = <<ENDSQL
 SELECT IF(mode='',script,CONCAT_WS('?mode=', script, mode)) AS request,
        SUM(num_benchmarks) AS hits,
        ROUND(SUM(total_time) / SUM(num_benchmarks)) AS mean
-FROM `site~stats~benchmarks`
+FROM `site_stats_benchmarks`
 GROUP BY request
 ORDER BY hits DESC
 ENDSQL
@@ -94,7 +94,7 @@ SELECT IF(date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 WEEK),
        SUM(passphrase_hit) AS passphrase_hit,
        SUM(passphrase_near_miss) AS passphrase_near_miss,
        SUM(passphrase_miss) AS passphrase_miss
-FROM `site~stats`
+FROM `site_stats`
 GROUP BY period
 ORDER BY period DESC
 ENDSQL

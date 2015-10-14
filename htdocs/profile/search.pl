@@ -155,14 +155,14 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   $query = <<ENDSQL
 SELECT up.profile_id
-FROM `user~profile` up
-INNER JOIN `user~info` ui ON ui.user_id = up.user_id
+FROM `user_profile` up
+INNER JOIN `user_info` ui ON ui.user_id = up.user_id
 ENDSQL
 ;
   
   if ($rusty->{params}->{onlyonline} && $rusty->{params}->{onlyonline} == 1) {
     $query .= <<ENDSQL
-LEFT JOIN `user~session` usess ON usess.user_id = up.user_id
+LEFT JOIN `user_session` usess ON usess.user_id = up.user_id
 ENDSQL
 ;
   }
@@ -170,7 +170,7 @@ ENDSQL
   if (($rusty->{params}->{onlyadult} && $rusty->{params}->{onlyadult} == 1) ||
       ($rusty->{params}->{onlyphotos} && $rusty->{params}->{onlyphotos} == 1)) {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile~photo` ph ON ph.profile_id = up.profile_id
+LEFT JOIN `user_profile_photo` ph ON ph.profile_id = up.profile_id
 ENDSQL
 ;
 
@@ -350,7 +350,7 @@ ENDSQL
   $sth->finish;
   
   $query = <<ENDSQL
-INSERT INTO `user~profile~search~cache`
+INSERT INTO `user_profile_search_cache`
 SET user_id = ?,
     visitor_id = ?,
     gender = ?,
@@ -398,7 +398,7 @@ ENDSQL
   if ($rusty->{core}->{'user_id'}) {
     
     $query = <<ENDSQL
-INSERT DELAYED INTO `user~stats`
+INSERT DELAYED INTO `user_stats`
 SET user_id = ?, num_profile_searches = 1
 ON DUPLICATE KEY
 UPDATE num_profile_searches = num_profile_searches + 1
@@ -409,7 +409,7 @@ ENDSQL
     $sth->finish;
     
     $query = <<ENDSQL
-INSERT INTO `user~profile~search~prefs`
+INSERT INTO `user_profile_search_prefs`
 SET user_id = ?,
     remember_previous_search = ?,
     search_id = ?,
@@ -435,7 +435,7 @@ ENDSQL
   } elsif ($rusty->{core}->{'visitor_id'}) {
     
     $query = <<ENDSQL
-UPDATE `visitor~stats`
+UPDATE `visitor_stats`
 SET num_profile_searches = num_profile_searches + 1
 WHERE visitor_id = ?
 ENDSQL
@@ -445,7 +445,7 @@ ENDSQL
     $sth->finish;
     
     $query = <<ENDSQL
-INSERT INTO `visitor~profile~search~prefs`
+INSERT INTO `visitor_profile_search_prefs`
 SET visitor_id = ?,
     remember_previous_search = ?,
     search_id = ?,
@@ -597,7 +597,7 @@ SELECT SQL_CACHE country_code AS value, name AS name,
        bounding_box_north AS north,
        bounding_box_east AS east,
        bounding_box_south AS south
-FROM `lookup~continent~country`
+FROM `lookup_continent_country`
 ORDER BY name
 ENDSQL
 ;
@@ -628,7 +628,7 @@ ENDSQL
   if ($country_code && $country_code ne 'any') {
     $query = <<ENDSQL
 SELECT SQL_CACHE subentity_code, name AS subentity_name
-FROM `lookup~continent~country~city1000`
+FROM `lookup_continent_country_city1000`
 WHERE country_code = ?
 ORDER BY name
 ENDSQL
@@ -656,7 +656,7 @@ SELECT SQL_CACHE name, capital, population,
                         IF(bounding_box_west>=0,
                            CONCAT(FORMAT(bounding_box_west,3),'&deg;E'),
                            CONCAT(FORMAT(bounding_box_west*-1,3),'&deg;W'))) AS longitude
-FROM `lookup~continent~country`
+FROM `lookup_continent_country`
 WHERE country_code = ?
 LIMIT 1
 ENDSQL
@@ -687,8 +687,8 @@ SELECT SQL_CACHE c.subentity_code, c.name,
        IF(c.longitude>=0,
           CONCAT(FORMAT(c.longitude,3),'&deg;E'),
           CONCAT(FORMAT(c.longitude*-1,3),'&deg;W')) AS longitude_formatted
-FROM `lookup~continent~country~city1000` c
-LEFT JOIN `lookup~continent~country~city1000~timezones` t
+FROM `lookup_continent_country_city1000` c
+LEFT JOIN `lookup_continent_country_city1000_timezones` t
        ON t.TimeZoneId = c.TimeZoneId
 WHERE c.subentity_code = ?
 LIMIT 1
@@ -721,7 +721,7 @@ SELECT search_id, created,
        country_code, subentity_code, profile_name,
        onlyphotos, onlyonline, onlyadult,
        relationship_status_id
-FROM `user~profile~search~cache`
+FROM `user_profile_search_cache`
 WHERE search_id = ?
 LIMIT 1
 ENDSQL

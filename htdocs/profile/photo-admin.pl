@@ -103,8 +103,8 @@ sub setmainphoto {
   }
   
   $query = <<ENDSQL
-UPDATE `user~profile` up
-INNER JOIN `user~profile~photo` upp ON upp.profile_id = up.profile_id
+UPDATE `user_profile` up
+INNER JOIN `user_profile_photo` upp ON upp.profile_id = up.profile_id
 SET up.main_photo_id = upp.photo_id
 WHERE up.profile_id = ?
   AND upp.photo_id = ?
@@ -171,7 +171,7 @@ sub delete {
     or warn "could not move profile original photo to deleted folder: $photo_info->{thumbnail_filename}";
   
   $query = <<ENDSQL
-UPDATE `user~profile~photo`
+UPDATE `user_profile_photo`
 SET deleted_date = NOW(),
     resized_filename = NULL,
     thumbnail_filename = NULL,
@@ -239,7 +239,7 @@ sub editcaption {
   if ($rusty->{params}->{submitting}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~photo`
+UPDATE `user_profile_photo`
 SET caption = ?
 WHERE photo_id = ?
 LIMIT 1

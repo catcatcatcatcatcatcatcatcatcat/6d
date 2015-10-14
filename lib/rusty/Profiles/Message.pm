@@ -31,7 +31,7 @@ sub saveDraftMessage(@) {
   if ($params{message_id}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET subject = ?,
     body = ?,
     sent_date = NOW()
@@ -54,7 +54,7 @@ ENDSQL
   # the message_id of the so-called 'existing' draft was
   # invalid, then save a new copy.
   $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~message`
+INSERT DELAYED INTO `user_profile_message`
        (sender_profile_id, draft_recipient_profile_name,
         is_draft, subject, body, reply_id, forward_id,
         sender_read_flag, sent_date)
@@ -94,11 +94,11 @@ sub sendSavedMessage(@) {
   # so historical message archives will show user's main photo at
   # the time of sending, rather than just showing the current photo..
   my $query = <<ENDSQL
-UPDATE `user~profile~message` upm
-LEFT JOIN `user~profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
-LEFT JOIN `user~profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
-LEFT JOIN `user~profile~message` upm_reply ON upm_reply.message_id = upm.reply_id
-LEFT JOIN `user~profile~message` upm_forward ON upm_forward.message_id = upm.forward_id
+UPDATE `user_profile_message` upm
+LEFT JOIN `user_profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
+LEFT JOIN `user_profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
+LEFT JOIN `user_profile_message` upm_reply ON upm_reply.message_id = upm.reply_id
+LEFT JOIN `user_profile_message` upm_forward ON upm_forward.message_id = upm.forward_id
 SET upm.is_draft = 0,
     upm.sent_date = NOW(),
     upm.draft_recipient_profile_name = NULL,
@@ -119,13 +119,13 @@ ENDSQL
   
   # Set reply/forward flag on whatever we might have been forwarding/replying to.
   $query = <<ENDSQL
-UPDATE `user~profile~message` upm_to_update
-LEFT JOIN `user~profile~message` upm_reply
+UPDATE `user_profile_message` upm_to_update
+LEFT JOIN `user_profile_message` upm_reply
        ON upm_reply.reply_id = upm_to_update.message_id
-LEFT JOIN `user~profile~message` upm_recipient_forward
+LEFT JOIN `user_profile_message` upm_recipient_forward
        ON upm_recipient_forward.forward_id = upm_to_update.message_id
       AND upm_recipient_forward.sender_profile_id = upm_to_update.recipient_profile_id
-LEFT JOIN `user~profile~message` upm_sender_forward
+LEFT JOIN `user_profile_message` upm_sender_forward
        ON upm_sender_forward.forward_id = upm_to_update.message_id
       AND upm_sender_forward.sender_profile_id = upm_to_update.sender_profile_id
 SET upm_to_update.recipient_replied_flag = IF(ISNULL(upm_reply.message_id),
@@ -147,7 +147,7 @@ ENDSQL
   
   # Update unread message count for recipient
   $query = <<ENDSQL
-UPDATE `user~profile` SET
+UPDATE `user_profile` SET
 unread_message_count = unread_message_count + 1
 WHERE profile_id = ?
 ENDSQL
@@ -174,7 +174,7 @@ sub sendMessage(@) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~message`
+INSERT DELAYED INTO `user_profile_message`
        (is_draft, sent_date, sender_profile_id, recipient_profile_id,
        subject, body)
 VALUES (0, NOW(), ?, ?, ?, ?)
@@ -193,9 +193,9 @@ ENDSQL
   # Now add the extra info if any was given..
   
   $query = <<ENDSQL
-UPDATE `user~profile~message` upm
-LEFT JOIN `user~profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
-LEFT JOIN `user~profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
+UPDATE `user_profile_message` upm
+LEFT JOIN `user_profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
+LEFT JOIN `user_profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
 SET
 upm.sender_main_photo_id = up_sender.main_photo_id,
 upm.recipient_main_photo_id = up_recipient.main_photo_id,
@@ -224,13 +224,13 @@ ENDSQL
   
   # Set reply/forward flag on whatever we might have been forwarding/replying to.
   $query = <<ENDSQL
-UPDATE `user~profile~message` upm_to_update
-LEFT JOIN `user~profile~message` upm_reply
+UPDATE `user_profile_message` upm_to_update
+LEFT JOIN `user_profile_message` upm_reply
        ON upm_reply.reply_id = upm_to_update.message_id
-LEFT JOIN `user~profile~message` upm_recipient_forward
+LEFT JOIN `user_profile_message` upm_recipient_forward
        ON upm_recipient_forward.forward_id = upm_to_update.message_id
       AND upm_recipient_forward.sender_profile_id = upm_to_update.recipient_profile_id
-LEFT JOIN `user~profile~message` upm_sender_forward
+LEFT JOIN `user_profile_message` upm_sender_forward
        ON upm_sender_forward.forward_id = upm_to_update.message_id
       AND upm_sender_forward.sender_profile_id = upm_to_update.sender_profile_id
 SET upm_to_update.recipient_replied_flag = IF(ISNULL(upm_reply.message_id),
@@ -250,7 +250,7 @@ ENDSQL
   
   # Update unread message count for recipient
   $query = <<ENDSQL
-UPDATE `user~profile` SET
+UPDATE `user_profile` SET
 unread_message_count = unread_message_count + 1
 WHERE profile_id = ?
 ENDSQL
@@ -280,7 +280,7 @@ sub getNewMessagesCount($$) {
   # (and that msg could be to us) so can't cache. :(
 #  my $query = <<ENDSQL
 #SELECT COUNT(*)
-#FROM `user~profile~message`
+#FROM `user_profile_message`
 #WHERE recipient_profile_id = ?
 #  AND recipient_deleted_date IS NULL
 #  AND recipient_hidden_from = 0
@@ -292,7 +292,7 @@ sub getNewMessagesCount($$) {
   # Now we can cache! :)
   my $query = <<ENDSQL
 SELECT SQL_CACHE unread_message_count
-FROM `user~profile`
+FROM `user_profile`
 WHERE profile_id = ?
 ENDSQL
 ;
@@ -317,7 +317,7 @@ sub getMessagesSummary($$$) {
   
   my $query = <<ENDSQL
 SELECT COUNT(read_date) AS read, COUNT(*) AS total
-FROM `user~profile~message`
+FROM `user_profile_message`
 ENDSQL
 ;
   if ($tray eq 'inbox') {
@@ -385,7 +385,7 @@ SELECT IF(recipient_profile_id = ?, 'inbox',
        COUNT(read_date) AS read_count,
        SUM(recipient_read_flag) AS read_flag_count,
        COUNT(*) AS total_count
-FROM `user~profile~message`
+FROM `user_profile_message`
 WHERE (recipient_profile_id = ?
        AND recipient_deleted_date IS NULL
        AND recipient_hidden_from = 0
@@ -415,7 +415,7 @@ ENDSQL
   
   # Update unread message count
   $query = <<ENDSQL
-UPDATE `user~profile` SET
+UPDATE `user_profile` SET
 unread_message_count = ?
 WHERE profile_id = ?
 ENDSQL
@@ -442,7 +442,7 @@ sub setMessageViewPrefs(@) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-INSERT INTO `user~profile~messageviewprefs`
+INSERT INTO `user_profile_messageviewprefs`
   (profile_id, tray, offset, `limit`, `order`, suborder)
 VALUES
   (?, ?, ?, ?, ?, ?)
@@ -478,7 +478,7 @@ sub getMessageViewPrefs($$$) {
   
   my $query = <<ENDSQL
 SELECT offset, `limit`, `order`, suborder, result_cache
-FROM `user~profile~messageviewprefs`
+FROM `user_profile_messageviewprefs`
 WHERE profile_id = ?
   AND tray = ?
 ENDSQL
@@ -504,12 +504,12 @@ sub createMessageListCache($$$$$$$) {
   
   my $query = <<ENDSQL
 SELECT upm.message_id
-FROM `user~profile~message` upm
+FROM `user_profile_message` upm
 ENDSQL
 ;
   if ($tray eq 'inbox') {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile` up ON up.profile_id = upm.sender_profile_id
+LEFT JOIN `user_profile` up ON up.profile_id = upm.sender_profile_id
 WHERE upm.recipient_profile_id = ?
   AND upm.recipient_deleted_date IS NULL
   AND upm.recipient_hidden_from = 0
@@ -518,7 +518,7 @@ ENDSQL
 ;
   } elsif ($tray eq 'sent') {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
+LEFT JOIN `user_profile` up ON up.profile_id = upm.recipient_profile_id
 WHERE upm.sender_profile_id = ?
   AND upm.sender_deleted_date IS NULL
   AND upm.sender_hidden_from = 0
@@ -527,7 +527,7 @@ ENDSQL
 ;
   } elsif ($tray eq 'drafts') {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
+LEFT JOIN `user_profile` up ON up.profile_id = upm.recipient_profile_id
 WHERE upm.sender_profile_id = ?
   AND upm.sender_deleted_date IS NULL
   AND upm.sender_hidden_from = 0
@@ -569,7 +569,7 @@ ENDSQL
   $sth->finish;
   
   $query = <<ENDSQL
-INSERT INTO `user~profile~messageviewprefs`
+INSERT INTO `user_profile_messageviewprefs`
   (profile_id, tray, result_cache_date, result_cache_count, result_cache)
 VALUES
   (?, ?, NOW(), ?, ?)
@@ -598,7 +598,7 @@ sub getMessagesFromCache($$$$$) {
   
   my $query = <<ENDSQL
 SELECT result_cache_date, result_cache_count, result_cache
-FROM `user~profile~messageviewprefs`
+FROM `user_profile_messageviewprefs`
 WHERE profile_id = ?
   AND tray = ?
 LIMIT 1
@@ -632,19 +632,19 @@ SELECT upm.message_id,
        upm.recipient_forwarded_flag, upm.sender_forwarded_flag,
        up.profile_name,
        upm.subject, upm.body
-FROM `user~profile~message` upm
+FROM `user_profile_message` upm
 ENDSQL
 ;
 
   if ($tray eq 'inbox') {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile` up ON up.profile_id = upm.sender_profile_id
+LEFT JOIN `user_profile` up ON up.profile_id = upm.sender_profile_id
 ENDSQL
   ;
   } elsif ($tray eq 'sent' ||
            $tray eq 'drafts') {
     $query .= <<ENDSQL
-LEFT JOIN `user~profile` up ON up.profile_id = upm.recipient_profile_id
+LEFT JOIN `user_profile` up ON up.profile_id = upm.recipient_profile_id
 ENDSQL
   ;
   }
@@ -689,7 +689,7 @@ sub getPrevAndNextMessages($$$$) {
   
   my $query = <<ENDSQL
 SELECT result_cache, result_cache_count, result_cache_date
-FROM `user~profile~messageviewprefs`
+FROM `user_profile_messageviewprefs`
 WHERE profile_id = ?
   AND tray = ?
 LIMIT 1
@@ -746,9 +746,9 @@ SELECT upm.message_id, is_draft,
        upm.recipient_flagged_flag, upm.sender_flagged_flag,
        upm.recipient_replied_flag, upm.flag, upm.suspected_spam_date,
        upm.reply_id, upm.forward_id
-FROM `user~profile~message` upm
-LEFT JOIN `user~profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
-LEFT JOIN `user~profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
+FROM `user_profile_message` upm
+LEFT JOIN `user_profile` up_sender ON up_sender.profile_id = upm.sender_profile_id
+LEFT JOIN `user_profile` up_recipient ON up_recipient.profile_id = upm.recipient_profile_id
 WHERE upm.message_id = ?
 LIMIT 1
 ENDSQL
@@ -810,7 +810,7 @@ sub deleteMessages(@) {
   if ($params{recipient_profile_id}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET recipient_deleted_date = NOW()
 WHERE message_id IN ( $message_ids_string )
   AND recipient_profile_id = ?
@@ -826,7 +826,7 @@ ENDSQL
   } elsif ($params{sender_profile_id}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET sender_deleted_date = NOW()
 WHERE message_id IN ( $message_ids_string )
   AND sender_profile_id = ?
@@ -876,7 +876,7 @@ sub markMessageRead($) {
   my $dbh = $self->DBH;
 
   my $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET read_date = NOW()
 WHERE message_id = ?
   AND read_date IS NULL
@@ -892,8 +892,8 @@ ENDSQL
     
     # Update unread message count for recipient
     $query = <<ENDSQL
-UPDATE `user~profile` up
-INNER JOIN `user~profile~message` upm ON upm.recipient_profile_id = up.profile_id
+UPDATE `user_profile` up
+INNER JOIN `user_profile_message` upm ON upm.recipient_profile_id = up.profile_id
 SET up.unread_message_count = up.unread_message_count - 1
 WHERE upm.message_id = ?
 ENDSQL
@@ -918,7 +918,7 @@ sub markMessageReadAndFlag($) {
   my $dbh = $self->DBH;
 
   my $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET read_date = NOW(),
     recipient_read_flag = 1
 WHERE message_id = ?
@@ -935,8 +935,8 @@ ENDSQL
     
     # Update unread message count for recipient
     $query = <<ENDSQL
-UPDATE `user~profile` up
-INNER JOIN `user~profile~message` upm ON upm.recipient_profile_id = up.profile_id
+UPDATE `user_profile` up
+INNER JOIN `user_profile_message` upm ON upm.recipient_profile_id = up.profile_id
 SET up.unread_message_count = up.unread_message_count - 1
 WHERE upm.message_id = ?
 ENDSQL
@@ -965,7 +965,7 @@ sub markMessageReadFlags($) {
   my $message_ids_string = join ', ', @{$params{message_ids}};
   
   my $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET recipient_read_flag = 1
 WHERE message_id IN ( $message_ids_string )
   AND recipient_profile_id = ?
@@ -1008,7 +1008,7 @@ sub markMessageUnreadFlags($) {
   my $message_ids_string = join ', ', @{$params{message_ids}};
   
   my $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET recipient_read_flag = 0
 WHERE message_id IN ( $message_ids_string )
   AND recipient_profile_id = ?
@@ -1046,7 +1046,7 @@ sub submitMessageAsSpam($) {
   my $dbh = $self->DBH;
 
   my $query = <<ENDSQL
-UPDATE `user~profile~message`
+UPDATE `user_profile_message`
 SET suspected_spam_date = NOW()
 WHERE message_id = ?
   AND suspected_spam_date IS NULL
@@ -1084,7 +1084,7 @@ sub sendPoke(@) {
   
   my $query = <<ENDSQL
 SELECT last_poke_date, pokee_responded
-FROM `user~profile~poke`
+FROM `user_profile_poke`
 WHERE poker_profile_id = ?
   AND pokee_profile_id = ?
 LIMIT 1
@@ -1107,7 +1107,7 @@ ENDSQL
     }
     
     $query = <<ENDSQL
-UPDATE `user~profile~poke`
+UPDATE `user_profile_poke`
 SET total_pokes = total_pokes + 1,
     pokee_responded = NULL,
     last_poke_date = NOW()
@@ -1121,7 +1121,7 @@ ENDSQL
   } else {
     
     $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~poke`
+INSERT DELAYED INTO `user_profile_poke`
        (poker_profile_id, pokee_profile_id,
         pokee_responded, total_pokes, last_poke_date)
 VALUES (?, ?, NULL, 1, NOW())
@@ -1154,8 +1154,8 @@ sub getPokes($$) {
   my $query = <<ENDSQL
 SELECT upp.poker_profile_id AS profile_id, up.profile_name AS profile_name,
        upp.last_poke_date AS last_poke_date, upp.total_pokes AS total_pokes
-FROM `user~profile~poke` upp
-INNER JOIN `user~profile` up ON up.poker_profile_id = upp.profile_id
+FROM `user_profile_poke` upp
+INNER JOIN `user_profile` up ON up.poker_profile_id = upp.profile_id
 WHERE pokee_profile_id = ?
   AND pokee_responded IS NULL
 ORDER BY last_poke_date ASC

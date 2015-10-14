@@ -37,7 +37,7 @@ if (!$rusty->{core}->{'user_id'}) {
 $query = <<ENDSQL
 SELECT user_id, profile_name, profile_id,
        updated, main_photo_id
-FROM `user~profile`
+FROM `user_profile`
 WHERE user_id = ?
 LIMIT 1
 ENDSQL
@@ -428,7 +428,7 @@ if ($photo->{bytes} > 1024) {
 }
 
 $query = <<ENDSQL
-INSERT INTO `user~profile~photo`
+INSERT INTO `user_profile_photo`
 ( profile_id, filename,
   resized_filename, thumbnail_filename, original_filename,
   kilobytes, width, height,
@@ -460,7 +460,7 @@ $rusty->{data}->{photo_id} = $rusty->DBH->{mysql_insertid};
 # If we didn't previously have a main photo set in the profile, set it to this one!
 if (!$profile->{main_photo_id}) {
   $query = <<ENDSQL
-UPDATE `user~profile`
+UPDATE `user_profile`
 SET main_photo_id = ? WHERE profile_id = ?
 ENDSQL
 ;

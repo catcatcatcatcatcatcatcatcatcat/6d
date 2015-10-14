@@ -20,7 +20,7 @@ my $params = rusty::get_utf8_params();
 
 my $query = <<ENDSQL
 SELECT profile_name
-FROM `user~profile`
+FROM `user_profile`
 WHERE profile_name = ?
 LIMIT 1
 ENDSQL

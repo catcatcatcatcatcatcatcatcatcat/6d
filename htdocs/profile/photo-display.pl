@@ -53,8 +53,8 @@ SELECT up.profile_name,
        DATE_FORMAT(upp.uploaded_date, '%d/%m/%y %H:%i') AS uploaded_date,
        DATE_FORMAT(upp.checked_date, '%d/%m/%y %H:%i') AS checked_date,
        upp.adult, upp.total_visit_count
-FROM `user~profile~photo` upp
-LEFT JOIN `user~profile` up ON up.profile_id = upp.profile_id
+FROM `user_profile_photo` upp
+LEFT JOIN `user_profile` up ON up.profile_id = upp.profile_id
 WHERE upp.photo_id = ?
   AND upp.deleted_date IS NULL
   AND rejected != 1
@@ -118,7 +118,7 @@ ENDSQL
   if ($rusty->{core}->{'profile_id'} != $rusty->{data}->{photo}->{'profile_id'}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~photo` SET
+UPDATE `user_profile_photo` SET
 total_visit_count = total_visit_count + 1
 WHERE photo_id = ?
 LIMIT 1

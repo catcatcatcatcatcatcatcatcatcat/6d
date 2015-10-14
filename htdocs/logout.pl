@@ -58,7 +58,7 @@ my $query = <<ENDSQL
 SELECT user_id, clicks,
 FLOOR((UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(created)) / 60)
 AS mins_online
-FROM `user~session`
+FROM `user_session`
 WHERE session_id = ?
 AND updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
 AND created IS NOT NULL
@@ -75,7 +75,7 @@ if ($user_id) {
   # Update stats for this user with session about to be logged out
   
   my $update_query = <<ENDSQL
-UPDATE `user~stats`
+UPDATE `user_stats`
 SET last_session_end = NOW(),
 mins_online = mins_online + ?, 
 num_clicks = num_clicks + ?
@@ -90,7 +90,7 @@ ENDSQL
   # Delete the session from the database
 
   my $delete_query = <<ENDSQL
-DELETE FROM `user~session`
+DELETE FROM `user_session`
 WHERE session_id = ?
 LIMIT 1
 ENDSQL

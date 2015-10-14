@@ -46,8 +46,8 @@ if (!$rusty->{core}->{'user_id'}) {
 SELECT u.email, u.email_validation_code, u.email_validated,
        ui.real_name, up.profile_name
 FROM `user` u
-INNER JOIN `user~info` ui ON ui.user_id = u.user_id
-INNER JOIN `user~profile` up ON up.user_id = u.user_id
+INNER JOIN `user_info` ui ON ui.user_id = u.user_id
+INNER JOIN `user_profile` up ON up.user_id = u.user_id
 WHERE u.user_id = ?
 LIMIT 1
 ENDSQL

@@ -20,7 +20,7 @@ my $session_cookie = rusty::CGI->cookie( -name => "session" );
 
 my $query = <<ENDSQL
 SELECT us.user_id, u.profile_id
-FROM `user~session` us
+FROM `user_session` us
 INNER JOIN `user` u ON u.user_id = us.user_id
 WHERE us.session_id = ?
   AND us.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
@@ -45,7 +45,7 @@ die "no flagged status specified by user $user_id" unless defined $flagged;
 my $flagged_flag = $flagged > 0 ? 1 : 0;
 
 $query = <<ENDSQL
-UPDATE `user~profile~message` SET
+UPDATE `user_profile_message` SET
   recipient_flagged_flag = IF(recipient_profile_id = ?, ?, recipient_flagged_flag),
   sender_flagged_flag = IF(sender_profile_id = ?, ?, sender_flagged_flag)
 WHERE message_id = ?
@@ -70,7 +70,7 @@ if ($rows eq '0E0') {
   $query = <<ENDSQL
 SELECT message_id, recipient_profile_id, recipient_flagged_flag
                    sender_profile_id, sender_flagged_flag
-FROM `user~profile~message`
+FROM `user_profile_message`
 WHERE message_id = ?
 LIMIT 1
 ENDSQL

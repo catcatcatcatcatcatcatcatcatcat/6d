@@ -253,7 +253,7 @@ sub gramsToSt($) {
     
     my $query = <<ENDSQL
 SELECT SQL_CACHE *
-FROM `user~profile`
+FROM `user_profile`
 WHERE $field = ?
 LIMIT 1
 ENDSQL
@@ -296,7 +296,7 @@ sub profileLogVisit($$) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-SELECT time FROM `user~profile~visit`
+SELECT time FROM `user_profile_visit`
 WHERE profile_id = ?
 AND visitor_profile_id = ?
 LIMIT 1
@@ -311,7 +311,7 @@ ENDSQL
   if ($visit_info->{time}) {
     
     $query = <<ENDSQL
-UPDATE `user~profile~visit`
+UPDATE `user_profile_visit`
 SET time = NOW()
 WHERE profile_id = ?
 AND visitor_profile_id = ?
@@ -328,7 +328,7 @@ ENDSQL
     # entry and update both the viewer user's unique visited count
     # and the visted profile's unique visit count.
     $query = <<ENDSQL
-INSERT DELAYED INTO `user~profile~visit`
+INSERT DELAYED INTO `user_profile_visit`
 (profile_id, visitor_profile_id, time) VALUES
 (?, ?, NOW())
 ENDSQL
@@ -338,8 +338,8 @@ ENDSQL
     $sth->finish;
     
     $query = <<ENDSQL
-UPDATE `user~stats` us
-INNER JOIN `user~profile` up ON up.user_id = us.user_id
+UPDATE `user_stats` us
+INNER JOIN `user_profile` up ON up.user_id = us.user_id
 SET us.unique_visited_count = us.unique_visited_count + 1
 WHERE up.profile_id = ?
 ENDSQL
@@ -349,7 +349,7 @@ ENDSQL
     $sth->finish;
     
     $query = <<ENDSQL
-UPDATE `user~profile`
+UPDATE `user_profile`
 SET unique_user_visit_count = unique_user_visit_count + 1
 WHERE profile_id = ?
 ENDSQL
@@ -362,8 +362,8 @@ ENDSQL
   # No matter what has gone on before, update the total visited and
   # visit counts for the visiting user..
   $query = <<ENDSQL
-UPDATE `user~stats` us
-INNER JOIN `user~profile` up ON up.user_id = us.user_id
+UPDATE `user_stats` us
+INNER JOIN `user_profile` up ON up.user_id = us.user_id
 SET us.total_visited_count = us.total_visited_count + 1
 WHERE up.profile_id = ?
 ENDSQL
@@ -383,7 +383,7 @@ sub incrementExternalVisitCount($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile`
+UPDATE `user_profile`
 SET external_visit_count = external_visit_count + 1
 WHERE profile_id = ?
 ENDSQL
@@ -403,7 +403,7 @@ sub incrementVisitCount($) {
   my $dbh = $self->DBH;
   
   my $query = <<ENDSQL
-UPDATE `user~profile`
+UPDATE `user_profile`
 SET total_visit_count = total_visit_count + 1
 WHERE profile_id = ?
 ENDSQL
@@ -436,8 +436,8 @@ SELECT upv.visitor_profile_id, up.profile_name, up.main_photo_id,
       )
     ), DATE_FORMAT(upv.time, '%H:%i')
   ) AS time
-FROM `user~profile~visit` upv
-INNER JOIN `user~profile` up ON up.profile_id = upv.visitor_profile_id
+FROM `user_profile_visit` upv
+INNER JOIN `user_profile` up ON up.profile_id = upv.visitor_profile_id
 WHERE upv.profile_id = ?
 ORDER BY upv.time DESC
 LIMIT ?
@@ -480,10 +480,10 @@ ui.gender, ui.sexuality, ui.subentity_code, ui.country_code, ui.age,
   ) AS time,
   up.main_photo_id,
   upp.photo_id, upp.thumbnail_filename, upp.checked_date, upp.adult
-FROM `user~profile~visit` upv
-INNER JOIN `user~profile` up ON up.profile_id = upv.visitor_profile_id
-LEFT  JOIN `user~profile~photo` upp ON upp.photo_id = up.main_photo_id
-INNER JOIN `user~info` ui ON ui.user_id = up.user_id
+FROM `user_profile_visit` upv
+INNER JOIN `user_profile` up ON up.profile_id = upv.visitor_profile_id
+LEFT  JOIN `user_profile_photo` upp ON upp.photo_id = up.main_photo_id
+INNER JOIN `user_info` ui ON ui.user_id = up.user_id
 WHERE upv.profile_id = ?
 ORDER BY upv.time DESC
 LIMIT ?
