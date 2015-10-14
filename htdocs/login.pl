@@ -448,7 +448,7 @@ ENDSQL
   $rusty->{data}->{countries} = [
     { value => 'select', name => 'Please Select', },
     $rusty->get_ordered_lookup_list(
-      table => "lookup~continent~country",
+      table => "lookup_continent_country",
       id    => "country_code",
       data  => "name",
                                    ),

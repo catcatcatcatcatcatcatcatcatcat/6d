@@ -301,49 +301,49 @@ $rusty->{data} = { %{$rusty->{data}}, %{$rusty->{params}} };
 $rusty->{data}->{starsigns} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~starsign",
+    table => "lookup_starsign",
     id    => "starsign_id",
     data  => "name" )];
 
 $rusty->{data}->{relationship_statuses} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~relationship_status",
+    table => "lookup_relationship_status",
     id    => "relationship_status_id",
     data  => "name" )];
 
 $rusty->{data}->{smokers} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~smoker",
+    table => "lookup_smoker",
     id    => "smoker_id",
     data  => "name" )];
 
 $rusty->{data}->{drinkers} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~drinker",
+    table => "lookup_drinker",
     id    => "drinker_id",
     data  => "name" )];
 
 $rusty->{data}->{drug_users} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~drug_user",
+    table => "lookup_drug_user",
     id    => "drug_user_id",
     data  => "name" )];
 
 $rusty->{data}->{ethnic_origins} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~ethnic_origin",
+    table => "lookup_ethnic_origin",
     id    => "ethnic_origin_id",
     data  => "name" )];
 
 $rusty->{data}->{eye_colours} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~eye_colour",
+    table => "lookup_eye_colour",
     id    => "eye_colour_id",
     data  => "name" )];
 
@@ -396,20 +396,20 @@ $rusty->{data}->{weight_types} = [{ value  => "lbs", name => "lbs" },
 $rusty->{data}->{body_types} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~body_type",
+    table => "lookup_body_type",
     id    => "body_type_id",
     data  => "name" )];
 
 $rusty->{data}->{body_hairs} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup~body_hair",
+    table => "lookup_body_hair",
     id    => "body_hair_id",
     data  => "name" )];
 
 $rusty->{data}->{thought_types} = 
   [$rusty->get_ordered_lookup_list(
-    table => "lookup~thought_type",
+    table => "lookup_thought_type",
     id    => "thought_type_id",
     data  => "name" )];
 

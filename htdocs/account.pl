@@ -864,7 +864,7 @@ sub get_signup_select_options() {
   
   $rusty->{data}->{countries} = [
     $rusty->get_ordered_lookup_list(
-      table => "lookup~continent~country",
+      table => "lookup_continent_country",
       id    => "country_code",
       data  => "name",
       order => "name",

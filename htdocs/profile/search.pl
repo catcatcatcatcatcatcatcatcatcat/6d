@@ -132,7 +132,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   my $countries =
     $rusty->get_lookup_hash(
-      table => "lookup~continent~country",
+      table => "lookup_continent_country",
       id    => "country_code",
       data  => "name" );
   
@@ -140,7 +140,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   if ($rusty->{params}->{country_code} =~ /^\w{2}$/ ) {
     $subentities =
       $rusty->get_lookup_hash(
-        table => "lookup~continent~country~city1000",
+        table => "lookup_continent_country_city1000",
         id    => "subentity_code",
         data  => "name",
         where => "country_code = '".$rusty->{params}->{country_code}."'" );
@@ -149,7 +149,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   my $relationship_statuses =
     $rusty->get_lookup_hash(
-      table => "lookup~relationship_status",
+      table => "lookup_relationship_status",
       id    => "relationship_status_id",
       data  => "name" );
   
@@ -584,7 +584,7 @@ sub populate_common_data() {
   
   #$rusty->{data}->{countries} = [
   #  $rusty->get_ordered_lookup_list(
-  #    table => "lookup~continent~country",
+  #    table => "lookup_continent_country",
   #    id    => "country_code",
   #    data  => "name",
   #    order => "name",
@@ -617,7 +617,7 @@ ENDSQL
   
   $rusty->{data}->{relationship_statuses} =
     [$rusty->get_ordered_lookup_list(
-      table => "lookup~relationship_status",
+      table => "lookup_relationship_status",
       id    => "relationship_status_id",
       data  => "name",
       where => "relationship_status_id != 1" )];
