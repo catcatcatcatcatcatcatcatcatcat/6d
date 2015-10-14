@@ -308,7 +308,7 @@ $rusty->{data}->{starsigns} =
 $rusty->{data}->{relationship_statuses} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_relationship_status",
+    table => "lookup_relationshipstatus",
     id    => "relationship_status_id",
     data  => "name" )];
 
@@ -329,21 +329,21 @@ $rusty->{data}->{drinkers} =
 $rusty->{data}->{drug_users} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_drug_user",
+    table => "lookup_druguser",
     id    => "drug_user_id",
     data  => "name" )];
 
 $rusty->{data}->{ethnic_origins} =
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_ethnic_origin",
+    table => "lookup_ethnicorigin",
     id    => "ethnic_origin_id",
     data  => "name" )];
 
 $rusty->{data}->{eye_colours} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_eye_colour",
+    table => "lookup_eyecolour",
     id    => "eye_colour_id",
     data  => "name" )];
 
@@ -396,20 +396,20 @@ $rusty->{data}->{weight_types} = [{ value  => "lbs", name => "lbs" },
 $rusty->{data}->{body_types} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_body_type",
+    table => "lookup_bodytype",
     id    => "body_type_id",
     data  => "name" )];
 
 $rusty->{data}->{body_hairs} = 
   [{ value => 0,  name => "Rather not say", },
    $rusty->get_ordered_lookup_list(
-    table => "lookup_body_hair",
+    table => "lookup_bodyhair",
     id    => "body_hair_id",
     data  => "name" )];
 
 $rusty->{data}->{thought_types} = 
   [$rusty->get_ordered_lookup_list(
-    table => "lookup_thought_type",
+    table => "lookup_thoughttype",
     id    => "thought_type_id",
     data  => "name" )];
 

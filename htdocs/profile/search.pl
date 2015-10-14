@@ -149,7 +149,7 @@ if ($rusty->{params}->{'mode'} eq 'search') {
   
   my $relationship_statuses =
     $rusty->get_lookup_hash(
-      table => "lookup_relationship_status",
+      table => "lookup_relationshipstatus",
       id    => "relationship_status_id",
       data  => "name" );
   
@@ -617,7 +617,7 @@ ENDSQL
   
   $rusty->{data}->{relationship_statuses} =
     [$rusty->get_ordered_lookup_list(
-      table => "lookup_relationship_status",
+      table => "lookup_relationshipstatus",
       id    => "relationship_status_id",
       data  => "name",
       where => "relationship_status_id != 1" )];

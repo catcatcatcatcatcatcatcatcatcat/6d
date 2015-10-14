@@ -115,16 +115,16 @@ LEFT JOIN `user_stats` us ON up.user_id = us.user_id
 LEFT JOIN `user_session` usess ON up.user_id = usess.user_id
                               AND usess.updated > DATE_SUB(NOW(), INTERVAL 30 MINUTE)
                               AND usess.created IS NOT NULL
-LEFT JOIN `lookup_body_hair` lbh ON up.body_hair_id = lbh.body_hair_id
-LEFT JOIN `lookup_body_type` lbt ON up.body_type_id = lbt.body_type_id
+LEFT JOIN `lookup_bodyhair` lbh ON up.body_hair_id = lbh.body_hair_id
+LEFT JOIN `lookup_bodytype` lbt ON up.body_type_id = lbt.body_type_id
 LEFT JOIN `lookup_drinker` ldi ON up.drinker_id = ldi.drinker_id
-LEFT JOIN `lookup_drug_user` ldu ON up.drug_user_id = ldu.drug_user_id
-LEFT JOIN `lookup_ethnic_origin` leo ON up.ethnic_origin_id = leo.ethnic_origin_id
-LEFT JOIN `lookup_eye_colour` lec ON up.eye_colour_id = lec.eye_colour_id
-LEFT JOIN `lookup_relationship_status` lrs ON up.relationship_status_id = lrs.relationship_status_id
+LEFT JOIN `lookup_druguser` ldu ON up.drug_user_id = ldu.drug_user_id
+LEFT JOIN `lookup_ethnicorigin` leo ON up.ethnic_origin_id = leo.ethnic_origin_id
+LEFT JOIN `lookup_eyecolour` lec ON up.eye_colour_id = lec.eye_colour_id
+LEFT JOIN `lookup_relationshipstatus` lrs ON up.relationship_status_id = lrs.relationship_status_id
 LEFT JOIN `lookup_smoker` ls ON up.smoker_id = ls.smoker_id
 LEFT JOIN `lookup_starsign` lst ON up.starsign_id = lst.starsign_id
-LEFT JOIN `lookup_thought_type` ltt ON up.thought_type_id = ltt.thought_type_id
+LEFT JOIN `lookup_thoughttype` ltt ON up.thought_type_id = ltt.thought_type_id
 LEFT JOIN `user_info` ui ON up.user_id = ui.user_id
 LEFT JOIN `lookup_continent_country` lco ON ui.country_code = lco.country_code
 LEFT JOIN `lookup_continent_country_city1000` lcs ON ui.subentity_code = lcs.subentity_code
