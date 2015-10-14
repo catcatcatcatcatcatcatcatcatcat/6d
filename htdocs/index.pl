@@ -55,7 +55,10 @@ foreach (@{$rusty->{data}->{countries}}) {
   }
 }
 
-$rusty->{data}->{pokes} = $rusty->getPokes();
+# If user is logged in, get their pokes (if any) and show
+if ($rusty->{core}->{'profile_name'}) {
+  $rusty->{data}->{pokes} = $rusty->getPokes();
+}
 
 $rusty->process_template;
 $rusty->exit;
