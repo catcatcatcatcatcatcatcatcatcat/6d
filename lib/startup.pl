@@ -137,13 +137,15 @@ sub My::ProxyRemoteAddr ($) {
   my $c = $r->connection;
   
   # we'll only look at the X-Forwarded-For header if the requests
-  # comes from our proxy at localhost
-  return OK unless ($c->remote_ip eq "127.0.0.1");
-  
-  if (my ($ip) = $r->headers_in->{'X-Forwarded-For'} =~ /([^,\s]+)$/o) {
-    $c->remote_ip($ip);
+  # comes from our proxy at localhost and if it sent a forwarded IP
+  if ($c->remote_ip eq "127.0.0.1") {
+    if ($r->headers_in->{'X-Forwarded-For'}) {
+      if (my ($ip) = $r->headers_in->{'X-Forwarded-For'} =~ /([^,\s]+)$/o) {
+        $c->remote_ip($ip);
+      }
+    }
   }
-  
+
   return OK;
 }
 
