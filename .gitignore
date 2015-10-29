@@ -1,0 +1,54 @@
+#config for DB (password)
+lib/conf/db_conf.pm
+
+# Vagrant Boxes
+.vagrant
+
+# Magento Connect 2 cache directories and files
+downloader/pearlib/cache/
+downloader/*.cfg
+downloader/.cache/
+
+# Magento runtime media files
+media/catalog/product/cache/
+media/tmp/
+media/js/
+media/css/
+media/import/
+media/.thumbs/
+media/catalog
+media/wysiwyg
+# keep the media and any other important directories
+!media/.gitkeep
+!media/**/.gitkeep
+
+
+# Magento runtime directories and files
+var/*
+!var/.htaccess
+!var/package/
+!var/.gitkeep
+!var/**/.gitkeep
+
+# Development IDE settings
+nbproject/
+.buildpath
+.project
+.settings
+*.sublime-workspace
+*.sublime-project
+
+# Cruft files
+events.txt
+REVISION
+
+# SASS
+.sass-cache
+#skin/frontend/<package>/<theme>/assets/css/application.css
+
+# Wordpress directories
+#wp/wp-content/cache
+
+# Sitemaps
+sitemap
+sitemap.xml
